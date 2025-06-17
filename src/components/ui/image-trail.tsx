@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react" // Added `useRef` here
 import type React from "react"
 
 import { motion, AnimatePresence } from "framer-motion"
@@ -25,7 +25,7 @@ export function ImageTrail({ children, imageSrcs, trailLength = 5, imageSize = 3
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isInside, setIsInside] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
-  const currentImageIndexRef = React.useRef(0)
+  const currentImageIndexRef = useRef(0) // Updated to use `useRef` directly
 
   useEffect(() => {
     currentImageIndexRef.current = currentImageIndex
