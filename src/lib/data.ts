@@ -1,0 +1,212 @@
+import type { Product, Category, UserOrder } from "./types"
+import { Gem, Brush, Hammer, Shirt, PaletteIcon } from "lucide-react"
+
+export const categories: Category[] = [
+  { id: "pottery", name: "Pottery", icon: PaletteIcon, image: "/images/pottery-1.jpg" },
+  { id: "textiles", name: "Textiles", icon: Shirt, image: "/images/textiles-1.jpg" },
+  { id: "woodwork", name: "Woodwork", icon: Hammer, image: "/images/woodwork-1.jpg" },
+  { id: "jewelry", name: "Jewelry", icon: Gem, image: "/images/jewelry-1.jpg" },
+  { id: "painting", name: "Painting", icon: Brush, image: "/images/painting-1.jpg" },
+]
+
+export const products: Product[] = [
+  {
+    id: "1",
+    name: "Handcrafted Ceramic Vase",
+    price: 750,
+    originalPrice: 900,
+    rating: 4.5,
+    reviewCount: 120,
+    images: ["/images/pottery-1.jpg", "/images/crafts-1.jpg"],
+    category: "Pottery",
+    artisanName: "Artisan Priya",
+    description:
+      "A beautifully handcrafted ceramic vase, perfect for adding an artistic touch to your home decor. Made with locally sourced clay.",
+    features: ["Material: Clay", "Hand-painted", "Dimensions: 12in x 6in"],
+    stock: 15,
+    tags: ["home decor", "vase", "ceramic"],
+  },
+  {
+    id: "2",
+    name: "Handwoven Silk Scarf",
+    price: 1200,
+    rating: 4.8,
+    reviewCount: 85,
+    images: ["/images/textiles-1.jpg"],
+    category: "Textiles",
+    artisanName: "Artisan Ravi",
+    description: "Elegant handwoven silk scarf with intricate patterns. A versatile accessory for any occasion.",
+    features: ["Material: 100% Silk", "Handwoven", "Size: 70in x 20in"],
+    stock: 20,
+    tags: ["fashion", "accessory", "silk"],
+  },
+  {
+    id: "3",
+    name: "Carved Wooden Elephant",
+    price: 950,
+    rating: 4.2,
+    reviewCount: 60,
+    images: ["/images/woodwork-1.jpg"],
+    category: "Woodwork",
+    artisanName: "Artisan Meena",
+    description: "Exquisite carved wooden elephant statue, showcasing traditional craftsmanship.",
+    features: ["Material: Teak Wood", "Hand-carved", "Eco-friendly polish"],
+    stock: 10,
+    tags: ["decor", "statue", "wood"],
+  },
+  {
+    id: "4",
+    name: "Silver Filigree Earrings",
+    price: 1500,
+    rating: 4.9,
+    reviewCount: 200,
+    images: ["/images/jewelry-1.jpg"],
+    category: "Jewelry",
+    artisanName: "Artisan Anjali",
+    description: "Delicate silver filigree earrings, handcrafted with precision. Lightweight and elegant.",
+    features: ["Material: Sterling Silver", "Handmade", "Hypoallergenic"],
+    stock: 25,
+    tags: ["jewelry", "earrings", "silver"],
+  },
+  {
+    id: "5",
+    name: "Abstract Canvas Painting",
+    price: 2500,
+    rating: 4.6,
+    reviewCount: 45,
+    images: ["/images/painting-1.jpg"],
+    category: "Painting",
+    artisanName: "Artisan Vivek",
+    description:
+      "Vibrant abstract canvas painting, perfect for modern interiors. Adds a splash of color and creativity.",
+    features: ["Medium: Acrylic on Canvas", "Size: 24in x 36in", "Ready to hang"],
+    stock: 5,
+    tags: ["art", "wall decor", "abstract"],
+  },
+  {
+    id: "6",
+    name: "Terracotta Planter Set",
+    price: 600,
+    rating: 4.3,
+    reviewCount: 70,
+    images: ["/images/pottery-1.jpg"],
+    category: "Pottery",
+    artisanName: "Artisan Priya",
+    description: "Set of three handcrafted terracotta planters. Ideal for indoor plants and succulents.",
+    features: ["Material: Terracotta", "Set of 3", "Drainage holes included"],
+    stock: 30,
+    tags: ["garden", "planters", "terracotta"],
+  },
+]
+
+export const userOrders: UserOrder[] = [
+  {
+    id: "order1",
+    orderNumber: "ART001",
+    date: "2023-10-01",
+    status: "Delivered",
+    items: [
+      { ...products[0], quantity: 1, priceAtPurchase: products[0].price },
+      { ...products[1], quantity: 1, priceAtPurchase: products[1].price },
+    ],
+    totalAmount: products[0].price + products[1].price + 50,
+    shippingAddress: "123 Art Lane, Craftsville, CT 06001",
+  },
+  {
+    id: "order2",
+    orderNumber: "ART002",
+    date: "2023-09-15",
+    status: "Shipped",
+    items: [{ ...products[2], quantity: 2, priceAtPurchase: products[2].price }],
+    totalAmount: products[2].price * 2 + 50,
+    shippingAddress: "456 Design Rd, Potterytown, PT 78901",
+  },
+]
+
+export const featuredCategories = [
+  {
+    id: "pottery",
+    name: "Handcrafted Pottery",
+    description: "Traditional clay work with modern designs",
+    image: "/images/pottery-1.jpg",
+    price: "₹750",
+  },
+  {
+    id: "textiles",
+    name: "Woven Textiles",
+    description: "Silk scarves and handwoven fabrics",
+    image: "/images/textiles-1.jpg",
+    price: "₹1,200",
+  },
+  {
+    id: "woodwork",
+    name: "Carved Woodwork",
+    description: "Intricate wooden sculptures and decor",
+    image: "/images/woodwork-1.jpg",
+    price: "₹950",
+  },
+  {
+    id: "jewelry",
+    name: "Artisan Jewelry",
+    description: "Handmade silver and traditional pieces",
+    image: "/images/jewelry-1.jpg",
+    price: "₹1,500",
+  },
+]
+
+export const testimonials = [
+  {
+    id: 1,
+    text: "Best handcrafted items I've ever purchased!",
+    name: "Alice",
+    rating: 5,
+  },
+  {
+    id: 2,
+    text: "Authentic craftsmanship and great service.",
+    name: "Bob",
+    rating: 4,
+  },
+  {
+    id: 3,
+    text: "Amazing quality and attention to detail.",
+    name: "Priya",
+    rating: 5,
+  },
+  {
+    id: 4,
+    text: "The pottery is so beautifully crafted!",
+    name: "Mia",
+    rating: 5,
+  },
+  {
+    id: 5,
+    text: "Love the unique designs and the story behind each piece.",
+    name: "Ethan",
+    rating: 5,
+  },
+  {
+    id: 6,
+    text: "Excellent customer service and fast delivery.",
+    name: "Sara",
+    rating: 4,
+  },
+  {
+    id: 7,
+    text: "Perfect gifts for art lovers.",
+    name: "Kim",
+    rating: 5,
+  },
+  {
+    id: 8,
+    text: "Supporting local artisans has never been easier.",
+    name: "David",
+    rating: 4,
+  },
+  {
+    id: 9,
+    text: "Each piece tells a beautiful story.",
+    name: "Maya",
+    rating: 5,
+  },
+]
