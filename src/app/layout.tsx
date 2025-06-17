@@ -1,19 +1,11 @@
+import '@/styles/globals.css'
 import type React from "react"
 import type { Metadata } from "next"
-import { Kalam } from "next/font/google"
-import "./globals.css"
-import { cn } from "@/lib/utils"
-
-const kalam = Kalam({
-  subsets: ["latin"],
-  weight: ["300", "400", "700"],
-  variable: "--font-kalam",
-})
+import ClientLayout from "./clientLayout"
 
 export const metadata: Metadata = {
-  title: "Local Artisans Marketplace",
-  description: "Explore handcrafted treasures from local artisans.",
-    generator: 'v0.dev'
+  title: "Karigarverse",
+  description: "A platform connecting skilled artisans with customers.",
 }
 
 export default function RootLayout({
@@ -23,7 +15,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={cn("min-h-screen bg-background font-sans antialiased", kalam.variable)}>{children}</body>
+      <body>
+        <ClientLayout>{children}</ClientLayout>
+      </body>
     </html>
   )
 }
