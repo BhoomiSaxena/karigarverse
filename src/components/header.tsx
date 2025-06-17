@@ -32,7 +32,7 @@ export function Header() {
             <div className="border-2 border-black p-1">
               <Palette className="h-8 w-8 text-blue-500" />
             </div>
-            <span className="text-2xl font-bold hidden sm:inline">Artisans</span>
+            <span className="text-2xl font-bold hidden sm:inline">KarigarVerse</span>
           </Link>
 
           {/* Center: Search Bar */}
