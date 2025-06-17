@@ -25,6 +25,11 @@ export function ImageTrail({ children, imageSrcs, trailLength = 5, imageSize = 3
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 })
   const [isInside, setIsInside] = useState(false)
   const [currentImageIndex, setCurrentImageIndex] = useState(0)
+  const currentImageIndexRef = React.useRef(0)
+
+  useEffect(() => {
+    currentImageIndexRef.current = currentImageIndex
+  }, [currentImageIndex])
 
   useEffect(() => {
     if (!enabled || !isInside) return
@@ -39,7 +44,7 @@ export function ImageTrail({ children, imageSrcs, trailLength = 5, imageSize = 3
             id: Date.now() + Math.random(), // Unique ID
             x: e.clientX - imageSize / 2, // Adjust for image center
             y: e.clientY - imageSize / 2, // Adjust for image center
-            src: imageSrcs[currentImageIndex % imageSrcs.length],
+            src: imageSrcs[currentImageIndexRef.current % imageSrcs.length],
           },
         ]
         setCurrentImageIndex((prev) => prev + 1)
@@ -49,7 +54,7 @@ export function ImageTrail({ children, imageSrcs, trailLength = 5, imageSize = 3
 
     window.addEventListener("mousemove", handleMouseMove)
     return () => window.removeEventListener("mousemove", handleMouseMove)
-  }, [enabled, isInside, trailLength, imageSrcs, currentImageIndex, imageSize])
+  }, [enabled, isInside, trailLength, imageSrcs, imageSize])
 
   return (
     <div

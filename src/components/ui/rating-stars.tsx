@@ -23,7 +23,10 @@ export function RatingStars({
   const emptyStars = maxStars - fullStars - (halfStar ? 1 : 0)
 
   return (
-    <div className={cn("flex items-center gap-1", className)}>
+    <div
+      className={cn("flex items-center gap-1", className)}
+      aria-label={`Rating: ${rating} out of ${maxStars} stars${showReviewCount && reviewCount !== undefined ? `, ${reviewCount} review${reviewCount === 1 ? "" : "s"}` : ""}`}
+    >
       {[...Array(fullStars)].map((_, i) => (
         <Star key={`full-${i}`} fill="currentColor" className="text-yellow-400" size={starSize} />
       ))}
