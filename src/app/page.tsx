@@ -41,11 +41,18 @@ export default function HomePage() {
         <div className="bg-gradient-to-r from-orange-100 to-orange-50 py-8 px-4 text-center border-b-2 border-orange-200">
           <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome to Our Artisan Marketplace</h2>
           <p className="text-gray-600 mb-4">Discover authentic handcrafted treasures from local artisans</p>
-          <Link href="/landing">
-            <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2 rounded-md">
-              Learn Our Story
-            </Button>
-          </Link>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <Link href="/landing">
+              <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2 rounded-md">
+                Learn Our Story
+              </Button>
+            </Link>
+            <Link href="/artisan/dashboard">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2 rounded-md border-2 border-blue-700">
+                🎨 Artisan Dashboard
+              </Button>
+            </Link>
+          </div>
         </div>
 
         <HeroCarousel />
@@ -76,6 +83,54 @@ export default function HomePage() {
             </motion.section>
           ))}
 
+          {/* Artisan Call-to-Action Section */}
+          <motion.section 
+            className="my-20 p-8 bg-gradient-to-r from-blue-50 to-purple-50 border-2 border-blue-200 rounded-lg"
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="text-center">
+              <h2 className="text-4xl font-bold mb-4 text-gray-800">Are You an Artisan?</h2>
+              <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
+                Join our growing community of talented artisans! Showcase your crafts, reach thousands of customers, 
+                and grow your business with our comprehensive seller dashboard.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="text-center p-4">
+                  <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl">🛍️</span>
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2">Manage Products</h3>
+                  <p className="text-gray-600 text-sm">Easy-to-use tools to add, edit, and track your products</p>
+                </div>
+                <div className="text-center p-4">
+                  <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl">📦</span>
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2">Track Orders</h3>
+                  <p className="text-gray-600 text-sm">Monitor sales and manage customer orders efficiently</p>
+                </div>
+                <div className="text-center p-4">
+                  <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <span className="text-2xl">📊</span>
+                  </div>
+                  <h3 className="font-semibold text-lg mb-2">View Analytics</h3>
+                  <p className="text-gray-600 text-sm">Get insights on your sales performance and earnings</p>
+                </div>
+              </div>
+              <Link href="/artisan/dashboard">
+                <Button 
+                  size="lg"
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-8 py-3 rounded-lg text-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  🎨 Access Artisan Dashboard
+                </Button>
+              </Link>
+            </div>
+          </motion.section>
+
           {/* Newsletter Section */}
           <section className="my-20 p-8 border-2 border-black">
             <h2 className="text-4xl font-bold mb-4">Subscribe to Our Newsletter</h2>
@@ -101,6 +156,20 @@ export default function HomePage() {
               </Button>
             </div>
           </section>
+        </div>
+
+        {/* Floating Artisan Dashboard Button */}
+        <div className="fixed bottom-6 right-6 z-50">
+          <Link href="/artisan/dashboard">
+            <Button 
+              size="lg"
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-purple-500"
+            >
+              <span className="hidden sm:inline mr-2">🎨 Artisan</span>
+              <span className="sm:hidden mr-2">🎨</span>
+              Dashboard
+            </Button>
+          </Link>
         </div>
       </main>
       <Footer />
