@@ -111,11 +111,11 @@ importers:
         specifier: ^3.0.0
         version: 3.6.0
       embla-carousel:
-        specifier: latest
-        version: 8.6.0
+        specifier: 8.5.1
+        version: 8.5.1
       embla-carousel-autoplay:
-        specifier: latest
-        version: 8.6.0(embla-carousel@8.6.0)
+        specifier: 8.5.1
+        version: 8.5.1(embla-carousel@8.5.1)
       embla-carousel-react:
         specifier: 8.5.1
         version: 8.5.1(react@19.1.0)
@@ -1309,10 +1309,10 @@ packages:
   electron-to-chromium@1.5.168:
     resolution: {integrity: sha512-RUNQmFLNIWVW6+z32EJQ5+qx8ci6RGvdtDC0Ls+F89wz6I2AthpXF0w0DIrn2jpLX0/PU9ZCo+Qp7bg/EckJmA==}
 
-  embla-carousel-autoplay@8.6.0:
-    resolution: {integrity: sha512-OBu5G3nwaSXkZCo1A6LTaFMZ8EpkYbwIaH+bPqdBnDGQ2fh4+NbzjXjs2SktoPNKCtflfVMc75njaDHOYXcrsA==}
+  embla-carousel-autoplay@8.5.1:
+    resolution: {integrity: sha512-FnZklFpePfp8wbj177UwVaGFehgs+ASVcJvYLWTtHuYKURynCc3IdDn2qrn0E5Qpa3g9yeGwCS4p8QkrZmO8xg==}
     peerDependencies:
-      embla-carousel: 8.6.0
+      embla-carousel: 8.5.1
 
   embla-carousel-react@8.5.1:
     resolution: {integrity: sha512-z9Y0K84BJvhChXgqn2CFYbfEi6AwEr+FFVVKm/MqbTQ2zIzO1VQri6w67LcfpVF0AjbhwVMywDZqY4alYkjW5w==}
@@ -1326,9 +1326,6 @@ packages:
 
   embla-carousel@8.5.1:
     resolution: {integrity: sha512-JUb5+FOHobSiWQ2EJNaueCNT/cQU9L6XWBbWmorWPQT9bkbk+fhsuLr8wWrzXKagO3oWszBO7MSx+GfaRk4E6A==}
-
-  embla-carousel@8.6.0:
-    resolution: {integrity: sha512-SjWyZBHJPbqxHOzckOfo8lHisEaJWmwd23XppYFYVh10bU66/Pn5tkVkbkCMZVdbUE5eTCI2nD8OyIP4Z+uwkA==}
 
   emoji-regex@8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -3019,9 +3016,9 @@ snapshots:
 
   electron-to-chromium@1.5.168: {}
 
-  embla-carousel-autoplay@8.6.0(embla-carousel@8.6.0):
+  embla-carousel-autoplay@8.5.1(embla-carousel@8.5.1):
     dependencies:
-      embla-carousel: 8.6.0
+      embla-carousel: 8.5.1
 
   embla-carousel-react@8.5.1(react@19.1.0):
     dependencies:
@@ -3034,8 +3031,6 @@ snapshots:
       embla-carousel: 8.5.1
 
   embla-carousel@8.5.1: {}
-
-  embla-carousel@8.6.0: {}
 
   emoji-regex@8.0.0: {}
 
