@@ -253,10 +253,21 @@
     "newest": "नवीनतम"
   },
   "footer": {
+    "get_to_know_us": "हमें जानें",
     "about_us": "हमारे बारे में",
     "our_story": "हमारी कहानी",
+    "our_mission": "हमारा मिशन",
+    "language_support": "भाषा समर्थन",
     "team": "टीम",
     "careers": "करियर",
+    "connect_with_us": "हमसे जुड़ें",
+    "email_us": "हमें ईमेल करें",
+    "facebook": "फेसबुक",
+    "instagram": "इंस्टाग्राम",
+    "twitter": "ट्विटर",
+    "sell_with_us": "हमारे साथ बेचें",
+    "become_artisan": "कारीगर बनें",
+    "seller_portal": "विक्रेता पोर्टल",
     "artisans": "कारीगरों के लिए",
     "become_seller": "विक्रेता बनें",
     "seller_help": "विक्रेता सहायता",
@@ -266,7 +277,10 @@
     "contact_support": "सहायता संपर्क",
     "shipping_returns": "शिपिंग और रिटर्न",
     "copyright": "© {{year}} स्थानीय कारीगर मार्केटप्लेस",
-    "language_selector": "भाषा"
+    "language_selector": "भाषा",
+    "country_india": "भारत",
+    "language_english": "English",
+    "language_hindi": "हिंदी (Hindi)"
   },
   "landing": {
     "nav": {

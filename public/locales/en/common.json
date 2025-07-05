@@ -258,10 +258,21 @@
     "newest": "Newest"
   },
   "footer": {
+    "get_to_know_us": "Get to Know Us",
     "about_us": "About Us",
     "our_story": "Our Story",
+    "our_mission": "Our Mission",
+    "language_support": "Language Support",
     "team": "Team",
     "careers": "Careers",
+    "connect_with_us": "Connect with Us",
+    "email_us": "Email Us",
+    "facebook": "Facebook",
+    "instagram": "Instagram",
+    "twitter": "Twitter",
+    "sell_with_us": "Sell with Us",
+    "become_artisan": "Become an Artisan",
+    "seller_portal": "Seller Portal",
     "artisans": "For Artisans",
     "become_seller": "Become a Seller",
     "seller_help": "Seller Help",
@@ -271,7 +282,10 @@
     "contact_support": "Contact Support",
     "shipping_returns": "Shipping & Returns",
     "copyright": "© {{year}} Local Artisans Marketplace",
-    "language_selector": "Language"
+    "language_selector": "Language",
+    "country_india": "India",
+    "language_english": "English",
+    "language_hindi": "हिंदी (Hindi)"
   },
   "landing": {
     "nav": {
