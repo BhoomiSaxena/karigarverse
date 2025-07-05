@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Extend the Window interface to include speech recognition
 declare global {
@@ -100,6 +101,7 @@ export function VoiceInputModal({
   currentValue = "",
   fieldLabel,
 }: VoiceInputModalProps) {
+  const { t } = useLanguage();
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [selectedLang, setSelectedLang] = useState("en-US");
@@ -201,18 +203,18 @@ export function VoiceInputModal({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Mic className="h-6 w-6 text-blue-500" />
-            Voice Input for {fieldLabel || "Field"}
+            {t("voice.voice_input_for", {
+              field: fieldLabel || t("common.field"),
+            })}
           </DialogTitle>
           <DialogDescription>
-            Click "Start Listening" and begin speaking. Your transcribed text
-            will appear below.
+            {t("voice.click_start_speaking")}
           </DialogDescription>
         </DialogHeader>
 
         {!isSupported ? (
           <div className="text-red-600 bg-red-50 p-4 rounded-md">
-            Speech recognition is not supported in this browser. Please try
-            using Chrome, Edge, or Safari.
+            {t("voice.not_supported")}
           </div>
         ) : (
           <div className="space-y-4">
@@ -230,12 +232,12 @@ export function VoiceInputModal({
                 {isListening ? (
                   <>
                     <MicOff className="h-5 w-5 mr-2" />
-                    Stop Listening
+                    {t("voice.stop_listening")}
                   </>
                 ) : (
                   <>
                     <Mic className="h-5 w-5 mr-2" />
-                    Start Listening
+                    {t("voice.start_listening")}
                   </>
                 )}
               </Button>
@@ -252,7 +254,7 @@ export function VoiceInputModal({
                   <SelectContent className="border-2 border-black rounded-none">
                     {supportedLanguages.map((lang) => (
                       <SelectItem key={lang.code} value={lang.code}>
-                        {lang.name}
+                        {t(`voice.supported_languages.${lang.code}`, lang.name)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -264,13 +266,13 @@ export function VoiceInputModal({
               <Textarea
                 value={transcript}
                 onChange={(e) => setTranscript(e.target.value)}
-                placeholder="Your transcribed text will appear here..."
+                placeholder={t("voice.transcribed_text_placeholder")}
                 className="min-h-[150px] border-2 border-black/20 rounded-none text-base"
               />
               {isListening && (
                 <div className="absolute bottom-3 right-3 flex items-center gap-2 text-sm text-red-500">
                   <CircleDot className="h-4 w-4 animate-ping" />
-                  Listening...
+                  {t("voice.listening")}
                 </div>
               )}
             </div>
@@ -284,14 +286,14 @@ export function VoiceInputModal({
             onClick={onClose}
             className="border-2 border-black rounded-none"
           >
-            Cancel
+            {t("common.cancel")}
           </Button>
           <Button
             onClick={handleApply}
             disabled={!isSupported}
             className="bg-blue-500 hover:bg-blue-600 text-white border-2 border-black rounded-none"
           >
-            Apply Text
+            {t("voice.apply_text")}
           </Button>
         </DialogFooter>
       </DialogContent>

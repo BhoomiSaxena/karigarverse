@@ -1,31 +1,42 @@
-"use client"
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import Link from "next/link"
-import { motion, AnimatePresence } from "framer-motion"
-import { Palette, Menu, X, Star, MapPin, Instagram, Facebook, Twitter } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { featuredCategories, testimonials } from "@/lib/data"
-
-const navItems = [
-  { href: "#home", label: "Home" },
-  { href: "#about", label: "About Us" },
-  { href: "#crafts", label: "Our Crafts" },
-  { href: "#contact", label: "Contact" },
-]
+"use client";
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Palette,
+  Menu,
+  X,
+  Star,
+  MapPin,
+  Instagram,
+  Facebook,
+  Twitter,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { featuredCategories, testimonials } from "@/lib/data";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function LandingPage() {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [isLoading, setIsLoading] = useState(true)
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const { t } = useLanguage();
+
+  const navItems = [
+    { href: "#home", label: t("landing.nav.home") },
+    { href: "#about", label: t("landing.nav.about") },
+    { href: "#crafts", label: t("landing.nav.crafts") },
+    { href: "#contact", label: t("landing.nav.contact") },
+  ];
 
   useEffect(() => {
     const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 2000)
-    return () => clearTimeout(timer)
-  }, [])
+      setIsLoading(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
@@ -40,7 +51,11 @@ export default function LandingPage() {
           >
             <motion.div
               animate={{ rotate: 360 }}
-              transition={{ duration: 2, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+              transition={{
+                duration: 2,
+                repeat: Number.POSITIVE_INFINITY,
+                ease: "linear",
+              }}
             >
               <Palette className="w-12 h-12 text-orange-500" />
             </motion.div>
@@ -65,14 +80,19 @@ export default function LandingPage() {
           {/* Navigation */}
           <nav className="relative z-10 flex justify-between items-center p-4 md:p-8 bg-gray-900/95 backdrop-blur-sm border-b border-gray-700">
             <div className="flex items-center gap-4">
-              <div className="text-2xl font-bold text-orange-500 tracking-wider">AM</div>
+              <div className="text-2xl font-bold text-orange-500 tracking-wider">
+                AM
+              </div>
             </div>
 
             {/* Desktop Navigation */}
             <ul className="hidden md:flex gap-8">
               {navItems.map((item) => (
                 <li key={item.href}>
-                  <a href={item.href} className="text-white hover:text-orange-400 transition-colors font-semibold">
+                  <a
+                    href={item.href}
+                    className="text-white hover:text-orange-400 transition-colors font-semibold"
+                  >
                     {item.label}
                   </a>
                 </li>
@@ -80,7 +100,10 @@ export default function LandingPage() {
             </ul>
 
             {/* Mobile Menu Button */}
-            <button className="md:hidden text-orange-500 text-2xl" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            <button
+              className="md:hidden text-orange-500 text-2xl"
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+            >
               {isMenuOpen ? <X /> : <Menu />}
             </button>
 
@@ -121,7 +144,9 @@ export default function LandingPage() {
               <h1 className="text-6xl md:text-8xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-orange-600 stroke-orange-500 stroke-1">
                 ARTISAN MARKETPLACE
               </h1>
-              <p className="text-xl md:text-2xl text-gray-300 mb-8">Every piece tells a story</p>
+              <p className="text-xl md:text-2xl text-gray-300 mb-8">
+                Every piece tells a story
+              </p>
               <Link href="/shop">
                 <Button
                   size="lg"
@@ -144,17 +169,14 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                <h2 className="text-4xl font-bold text-orange-500 mb-6">About Us</h2>
+                <h2 className="text-4xl font-bold text-orange-500 mb-6">
+                  {t("landing.about_title")}
+                </h2>
                 <p className="text-lg text-gray-300 mb-6 leading-relaxed">
-                  Artisan Marketplace was born from a passion for authentic handcrafted treasures and a love for
-                  bringing people together with local talent. Our artisans have mastered traditional techniques,
-                  blending heritage craftsmanship with modern creativity. Every piece is a journey—crafted with
-                  time-honored methods, premium materials, and the finest attention to detail.
+                  {t("landing.about_desc_1")}
                 </p>
                 <p className="text-lg text-gray-300 leading-relaxed">
-                  Whether you seek pottery that speaks to your soul, textiles that tell ancient stories, or jewelry that
-                  captures timeless beauty, our marketplace is designed to connect you with authentic artisan creations.
-                  Join us and experience the warmth, heritage, and soul of handcrafted art.
+                  {t("landing.about_desc_2")}
                 </p>
               </motion.div>
               <motion.div
@@ -207,15 +229,21 @@ export default function LandingPage() {
                         height={100}
                         className="rounded-full mb-4 border-4 border-orange-500 object-cover"
                       />
-                      <h3 className="text-xl font-bold text-white mb-2">{category.name}</h3>
-                      <p className="text-orange-500 font-bold text-lg">{category.price}</p>
+                      <h3 className="text-xl font-bold text-white mb-2">
+                        {category.name}
+                      </h3>
+                      <p className="text-orange-500 font-bold text-lg">
+                        {category.price}
+                      </p>
                       <Button className="mt-4 bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold">
                         View Collection
                       </Button>
                     </div>
                     {/* Back of card */}
                     <div className="absolute inset-0 backface-hidden rotate-y-180 bg-gray-800 rounded-2xl p-6 flex flex-col items-center justify-center border border-gray-700 shadow-xl">
-                      <p className="text-gray-300 text-center">{category.description}</p>
+                      <p className="text-gray-300 text-center">
+                        {category.description}
+                      </p>
                     </div>
                   </div>
                 </motion.div>
@@ -233,24 +261,30 @@ export default function LandingPage() {
               viewport={{ once: true }}
               className="text-4xl font-bold text-orange-500 text-center mb-12"
             >
-              What Our Customers Say
+              {t("landing.testimonials_title")}
             </motion.h2>
             <div className="relative overflow-hidden h-48 rounded-2xl border-4 border-orange-500 bg-gray-900">
               <div className="flex animate-scroll-left">
-                {[...testimonials, ...testimonials].map((testimonial, index) => (
-                  <div
-                    key={`${testimonial.id}-${index}`}
-                    className="flex-shrink-0 w-80 h-48 bg-gray-800 rounded-2xl p-6 mx-4 flex flex-col justify-center items-center border border-gray-700 shadow-lg"
-                  >
-                    <p className="text-gray-300 text-center mb-4">"{testimonial.text}"</p>
-                    <div className="text-orange-500 font-bold">— {testimonial.name}</div>
-                    <div className="flex text-orange-500 mt-2">
-                      {[...Array(testimonial.rating)].map((_, i) => (
-                        <Star key={i} className="w-4 h-4 fill-current" />
-                      ))}
+                {[...testimonials, ...testimonials].map(
+                  (testimonial, index) => (
+                    <div
+                      key={`${testimonial.id}-${index}`}
+                      className="flex-shrink-0 w-80 h-48 bg-gray-800 rounded-2xl p-6 mx-4 flex flex-col justify-center items-center border border-gray-700 shadow-lg"
+                    >
+                      <p className="text-gray-300 text-center mb-4">
+                        "{testimonial.text}"
+                      </p>
+                      <div className="text-orange-500 font-bold">
+                        — {testimonial.name}
+                      </div>
+                      <div className="flex text-orange-500 mt-2">
+                        {[...Array(testimonial.rating)].map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-current" />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                )}
               </div>
             </div>
           </div>
@@ -266,22 +300,24 @@ export default function LandingPage() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.6 }}
               >
-                <h2 className="text-4xl font-bold text-orange-500 mb-8 text-center md:text-left">Contact Us</h2>
+                <h2 className="text-4xl font-bold text-orange-500 mb-8 text-center md:text-left">
+                  {t("landing.contact_title")}
+                </h2>
                 <form className="space-y-6">
                   <Input
                     type="text"
-                    placeholder="Name"
+                    placeholder={t("landing.contact_name")}
                     className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-orange-500"
                     required
                   />
                   <Input
                     type="email"
-                    placeholder="Email"
+                    placeholder={t("landing.contact_email")}
                     className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-orange-500"
                     required
                   />
                   <Textarea
-                    placeholder="Message"
+                    placeholder={t("landing.contact_message")}
                     className="bg-gray-800 border-gray-600 text-white placeholder-gray-400 focus:border-orange-500 min-h-32"
                     required
                   />
@@ -289,7 +325,7 @@ export default function LandingPage() {
                     type="submit"
                     className="w-full bg-orange-500 hover:bg-orange-600 text-gray-900 font-bold py-3"
                   >
-                    Send Message
+                    {t("landing.send_message")}
                   </Button>
                 </form>
               </motion.div>
@@ -304,7 +340,9 @@ export default function LandingPage() {
                   <div className="text-center">
                     <MapPin className="w-12 h-12 text-orange-500 mx-auto mb-4" />
                     <p className="text-gray-300">Visit our artisan workshops</p>
-                    <p className="text-gray-400 text-sm mt-2">Uttrakhand, India</p>
+                    <p className="text-gray-400 text-sm mt-2">
+                      Uttrakhand, India
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -316,15 +354,26 @@ export default function LandingPage() {
         <footer className="bg-gray-900 border-t-2 border-gray-700 py-8 px-4 md:px-8">
           <div className="max-w-6xl mx-auto text-center">
             <div className="flex flex-col items-center gap-4">
-              <span className="text-gray-300">© 2025 Artisan Marketplace. All rights reserved.</span>
+              <span className="text-gray-300">
+                © 2025 Artisan Marketplace. All rights reserved.
+              </span>
               <div className="flex gap-6">
-                <a href="#" className="text-orange-500 hover:text-white transition-colors">
+                <a
+                  href="#"
+                  className="text-orange-500 hover:text-white transition-colors"
+                >
                   <Instagram className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-orange-500 hover:text-white transition-colors">
+                <a
+                  href="#"
+                  className="text-orange-500 hover:text-white transition-colors"
+                >
                   <Facebook className="w-5 h-5" />
                 </a>
-                <a href="#" className="text-orange-500 hover:text-white transition-colors">
+                <a
+                  href="#"
+                  className="text-orange-500 hover:text-white transition-colors"
+                >
                   <Twitter className="w-5 h-5" />
                 </a>
               </div>
@@ -359,5 +408,5 @@ export default function LandingPage() {
         }
       `}</style>
     </>
-  )
+  );
 }

@@ -40,6 +40,7 @@ import Image from "next/image";
 import { motion } from "framer-motion";
 import { VoiceInputModal } from "@/components/ui/voice-input-modal";
 import { VoiceCommandModal } from "@/components/ui/voice-command-modal";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface ProductFormData {
   name: string;
@@ -66,6 +67,7 @@ const initialFormData: ProductFormData = {
 };
 
 export default function AddEditProduct() {
+  const { t } = useLanguage();
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
   const [newFeature, setNewFeature] = useState("");
   const [newTag, setNewTag] = useState("");
@@ -211,17 +213,15 @@ export default function AddEditProduct() {
                   className="border-2 border-black rounded-none"
                 >
                   <ArrowLeft className="h-4 w-4 mr-2" />
-                  Back to Products
+                  {t("common.back")} to {t("artisan.products")}
                 </Button>
               </Link>
             </div>
             <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
               <Package className="h-8 w-8 text-blue-500" />
-              Add New Product
+              {t("products.add_new_product")}
             </h1>
-            <p className="text-gray-600 mt-2">
-              Create a new product listing for your artisan store
-            </p>
+            <p className="text-gray-600 mt-2">{t("products.create_listing")}</p>
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
@@ -234,11 +234,10 @@ export default function AddEditProduct() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ImageIcon className="h-5 w-5 text-green-500" />
-                    Product Images
+                    {t("products.product_images")}
                   </CardTitle>
                   <CardDescription>
-                    Add high-quality images of your product (first image will be
-                    the main image)
+                    {t("products.product_images_desc")}
                   </CardDescription>
                 </CardHeader>
                 <CardContent>

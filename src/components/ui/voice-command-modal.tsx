@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Mic, MicOff, CircleDot, Languages } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Extend the Window interface to include speech recognition
 declare global {
@@ -93,6 +94,7 @@ export function VoiceCommandModal({
   onApply,
   fieldLabel,
 }: VoiceCommandModalProps) {
+  const { t } = useLanguage();
   const [isListening, setIsListening] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
   const [transcript, setTranscript] = useState("");

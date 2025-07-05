@@ -1,9 +1,19 @@
-import Link from "next/link"
-import { Palette, ChevronDown } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+"use client";
+
+import Link from "next/link";
+import { Palette, ChevronDown } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function Footer() {
+  const { t } = useLanguage();
+
   return (
     <footer className="bg-gray-50 font-kalam text-black border-t-2 border-black py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -13,7 +23,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link href="/about" className="hover:underline">
-                  About Us
+                  {t("footer.about_us")}
                 </Link>
               </li>
               <li>
@@ -37,7 +47,10 @@ export function Footer() {
             <h3 className="text-xl font-bold mb-4">Connect with Us</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="mailto:info@localartisans.com" className="hover:underline">
+                <Link
+                  href="mailto:info@localartisans.com"
+                  className="hover:underline"
+                >
                   Email Us
                 </Link>
               </li>
@@ -102,13 +115,22 @@ export function Footer() {
         <div className="border-t-2 border-black/20 pt-8 flex flex-col sm:flex-row justify-between items-center text-sm">
           <div className="flex items-center gap-2 mb-4 sm:mb-0">
             <Palette className="h-6 w-6 text-blue-500" />
-            <span>© {new Date().getFullYear()} Local Artisans Marketplace</span>
+            <span>
+              {t("footer.copyright", { year: new Date().getFullYear() })}
+            </span>
           </div>
           <div className="flex items-center gap-4">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-none p-1 text-sm hover:bg-gray-100">
-                  <img src="/placeholder.svg?width=20&height=15&text=IN" alt="India Flag" className="w-5 h-auto mr-2" />{" "}
+                <Button
+                  variant="ghost"
+                  className="rounded-none p-1 text-sm hover:bg-gray-100"
+                >
+                  <img
+                    src="/placeholder.svg?width=20&height=15&text=IN"
+                    alt="India Flag"
+                    className="w-5 h-auto mr-2"
+                  />{" "}
                   India <ChevronDown className="h-4 w-4 inline ml-1" />
                 </Button>
               </DropdownMenuTrigger>
@@ -119,7 +141,10 @@ export function Footer() {
             </DropdownMenu>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-none p-1 text-sm hover:bg-gray-100">
+                <Button
+                  variant="ghost"
+                  className="rounded-none p-1 text-sm hover:bg-gray-100"
+                >
                   English <ChevronDown className="h-4 w-4 inline ml-1" />
                 </Button>
               </DropdownMenuTrigger>
@@ -132,5 +157,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

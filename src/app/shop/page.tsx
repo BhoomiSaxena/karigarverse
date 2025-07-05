@@ -1,18 +1,25 @@
-"use client"
+"use client";
 
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { ProductCard } from "@/components/product-card"
-import { products, categories } from "@/lib/data"
-import { Checkbox } from "@/components/ui/checkbox"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Slider } from "@/components/ui/slider"
-import { Button } from "@/components/ui/button"
-import { Filter } from "lucide-react"
-import { motion } from "framer-motion" // Import motion
-import { ProductCardSkeleton } from "@/components/skeletons/product-card-skeleton"
-import { useEffect, useState } from "react" // For simulating loading
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
+import { ProductCard } from "@/components/product-card";
+import { products, categories } from "@/lib/data";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Slider } from "@/components/ui/slider";
+import { Button } from "@/components/ui/button";
+import { Filter } from "lucide-react";
+import { motion } from "framer-motion"; // Import motion
+import { ProductCardSkeleton } from "@/components/skeletons/product-card-skeleton";
+import { useEffect, useState } from "react"; // For simulating loading
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -22,23 +29,24 @@ const containerVariants = {
       staggerChildren: 0.1, // Stagger animation for product cards
     },
   },
-}
+};
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-}
+};
 
 export default function ShopPage() {
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(true);
+  const { t } = useLanguage();
 
   useEffect(() => {
     // Simulate data fetching
     const timer = setTimeout(() => {
-      setIsLoading(false)
-    }, 1500) // Simulate 1.5 second load time
-    return () => clearTimeout(timer)
-  }, [])
+      setIsLoading(false);
+    }, 1500); // Simulate 1.5 second load time
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <div className="bg-white font-kalam text-black flex flex-col min-h-screen">
@@ -52,29 +60,45 @@ export default function ShopPage() {
           {/* Filter Sidebar (can also be animated) */}
           <motion.aside
             initial={{ opacity: 0, x: -20 }}
-            animate={{ opacity: 1, x: 0, transition: { duration: 0.5, delay: 0.2 } }}
+            animate={{
+              opacity: 1,
+              x: 0,
+              transition: { duration: 0.5, delay: 0.2 },
+            }}
             className="w-full md:w-1/4 lg:w-1/5 p-6 border-2 border-black/10 rounded-lg h-fit"
           >
             {/* ... (rest of filter sidebar content) ... */}
             <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold">Filters</h2>
+              <h2 className="text-2xl font-bold">{t("shop.filters")}</h2>
               <Button variant="ghost" className="md:hidden">
                 <Filter size={20} />
               </Button>
             </div>
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Price Range</h3>
-              <Slider defaultValue={[500]} max={5000} step={100} className="my-4" />
+              <h3 className="text-lg font-semibold mb-2">
+                {t("shop.price_range")}
+              </h3>
+              <Slider
+                defaultValue={[500]}
+                max={5000}
+                step={100}
+                className="my-4"
+              />
               <div className="flex justify-between text-sm">
                 <span>₹0</span>
                 <span>₹5000+</span>
               </div>
             </div>
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Category</h3>
+              <h3 className="text-lg font-semibold mb-2">
+                {t("shop.category")}
+              </h3>
               <div className="space-y-2">
                 {categories.map((category) => (
-                  <div key={category.id} className="flex items-center space-x-2">
+                  <div
+                    key={category.id}
+                    className="flex items-center space-x-2"
+                  >
                     <Checkbox id={`cat-${category.id}`} />
                     <Label htmlFor={`cat-${category.id}`} className="text-base">
                       {category.name}
@@ -84,12 +108,12 @@ export default function ShopPage() {
               </div>
             </div>
             <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Rating</h3>
+              <h3 className="text-lg font-semibold mb-2">{t("shop.rating")}</h3>
               {[4, 3, 2, 1].map((rating) => (
                 <div key={rating} className="flex items-center space-x-2">
                   <Checkbox id={`rating-${rating}`} />
                   <Label htmlFor={`rating-${rating}`} className="text-base">
-                    {rating}+ Stars
+                    {rating}+ {t("shop.stars")}
                   </Label>
                 </div>
               ))}
@@ -98,7 +122,7 @@ export default function ShopPage() {
               variant="outline"
               className="w-full border-2 border-black rounded-none bg-[#f3f3f3] hover:bg-gray-200"
             >
-              Apply Filters
+              {t("shop.apply_filters")}
             </Button>
           </motion.aside>
 
@@ -106,16 +130,24 @@ export default function ShopPage() {
           <section className="w-full md:w-3/4 lg:w-4/5">
             {/* ... (rest of sort options) ... */}
             <div className="flex justify-between items-center mb-6">
-              <p className="text-sm text-gray-600">{products.length} products found</p>
+              <p className="text-sm text-gray-600">
+                {t("shop.products_found", { count: products.length })}
+              </p>
               <Select>
                 <SelectTrigger className="w-[180px] border-2 border-black rounded-none focus:ring-0">
-                  <SelectValue placeholder="Sort by" />
+                  <SelectValue placeholder={t("shop.sort_by")} />
                 </SelectTrigger>
                 <SelectContent className="font-kalam border-2 border-black rounded-none bg-white">
-                  <SelectItem value="relevance">Relevance</SelectItem>
-                  <SelectItem value="price-asc">Price: Low to High</SelectItem>
-                  <SelectItem value="price-desc">Price: High to Low</SelectItem>
-                  <SelectItem value="newest">Newest</SelectItem>
+                  <SelectItem value="relevance">
+                    {t("shop.relevance")}
+                  </SelectItem>
+                  <SelectItem value="price-asc">
+                    {t("shop.price_low_high")}
+                  </SelectItem>
+                  <SelectItem value="price-desc">
+                    {t("shop.price_high_low")}
+                  </SelectItem>
+                  <SelectItem value="newest">{t("shop.newest")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -126,7 +158,9 @@ export default function ShopPage() {
               animate="visible"
             >
               {isLoading
-                ? Array.from({ length: 6 }).map((_, index) => <ProductCardSkeleton key={`skeleton-${index}`} />)
+                ? Array.from({ length: 6 }).map((_, index) => (
+                    <ProductCardSkeleton key={`skeleton-${index}`} />
+                  ))
                 : products.map((product) => (
                     <motion.div key={product.id} variants={itemVariants}>
                       <ProductCard product={product} />
@@ -135,17 +169,29 @@ export default function ShopPage() {
             </motion.div>
             {/* ... (rest of pagination) ... */}
             <div className="mt-12 flex justify-center">
-              <Button variant="outline" className="border-2 border-black rounded-none px-4 py-2 mx-1">
-                Previous
+              <Button
+                variant="outline"
+                className="border-2 border-black rounded-none px-4 py-2 mx-1"
+              >
+                {t("common.previous")}
               </Button>
-              <Button variant="outline" className="border-2 border-black rounded-none px-4 py-2 mx-1 bg-gray-200">
+              <Button
+                variant="outline"
+                className="border-2 border-black rounded-none px-4 py-2 mx-1 bg-gray-200"
+              >
                 1
               </Button>
-              <Button variant="outline" className="border-2 border-black rounded-none px-4 py-2 mx-1">
+              <Button
+                variant="outline"
+                className="border-2 border-black rounded-none px-4 py-2 mx-1"
+              >
                 2
               </Button>
-              <Button variant="outline" className="border-2 border-black rounded-none px-4 py-2 mx-1">
-                Next
+              <Button
+                variant="outline"
+                className="border-2 border-black rounded-none px-4 py-2 mx-1"
+              >
+                {t("common.next")}
               </Button>
             </div>
           </section>
@@ -153,5 +199,5 @@ export default function ShopPage() {
       </main>
       <Footer />
     </div>
-  )
+  );
 }
