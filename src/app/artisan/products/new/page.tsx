@@ -1,47 +1,56 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { useState } from "react";
+import { Header } from "@/components/header";
+import { Footer } from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
-import { 
-  Plus, 
-  X, 
-  Upload, 
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import {
+  Plus,
+  X,
+  Upload,
   Image as ImageIcon,
   Package,
   DollarSign,
   Tag,
   Save,
-  ArrowLeft
-} from "lucide-react"
-import { categories } from "@/lib/data"
-import Link from "next/link"
-import Image from "next/image"
-import { motion } from "framer-motion"
+  ArrowLeft,
+  Mic,
+} from "lucide-react";
+import { categories } from "@/lib/data";
+import Link from "next/link";
+import Image from "next/image";
+import { motion } from "framer-motion";
+import { VoiceInputModal } from "@/components/ui/voice-input-modal";
+import { VoiceCommandModal } from "@/components/ui/voice-command-modal";
 
 interface ProductFormData {
-  name: string
-  description: string
-  price: string
-  originalPrice: string
-  category: string
-  stock: string
-  images: string[]
-  features: string[]
-  tags: string[]
+  name: string;
+  description: string;
+  price: string;
+  originalPrice: string;
+  category: string;
+  stock: string;
+  images: string[];
+  features: string[];
+  tags: string[];
 }
 
 const initialFormData: ProductFormData = {
@@ -52,115 +61,155 @@ const initialFormData: ProductFormData = {
   category: "",
   stock: "",
   images: [],
-  features: [""],
-  tags: []
-}
+  features: [],
+  tags: [],
+};
 
 export default function AddEditProduct() {
-  const [formData, setFormData] = useState<ProductFormData>(initialFormData)
-  const [newTag, setNewTag] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [formData, setFormData] = useState<ProductFormData>(initialFormData);
+  const [newFeature, setNewFeature] = useState("");
+  const [newTag, setNewTag] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isCommandModalOpen, setIsCommandModalOpen] = useState(false);
+  const [commandModalConfig, setCommandModalConfig] = useState<{
+    field: "price" | "stock";
+    label: string;
+  } | null>(null);
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [voiceModalConfig, setVoiceModalConfig] = useState<{
+    field: "name" | "description" | "newFeature" | "newTag";
+    currentValue: string;
+    label: string;
+  } | null>(null);
+
+  const openCommandModal = (field: "price" | "stock", label: string) => {
+    setCommandModalConfig({ field, label });
+    setIsCommandModalOpen(true);
+  };
+
+  const handleCommandApply = (value: number) => {
+    if (!commandModalConfig) return;
+    handleInputChange(commandModalConfig.field, value.toString());
+  };
 
   const handleInputChange = (field: keyof ProductFormData, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
-    }))
-  }
+      [field]: value,
+    }));
+  };
+
+  const openVoiceModal = (
+    field: "name" | "description" | "newFeature" | "newTag",
+    label: string,
+    currentValue: string = ""
+  ) => {
+    setVoiceModalConfig({ field, currentValue, label });
+    setIsVoiceModalOpen(true);
+  };
+
+  const handleVoiceApply = (transcript: string) => {
+    if (!voiceModalConfig) return;
+
+    const { field } = voiceModalConfig;
+
+    if (field === "name" || field === "description") {
+      handleInputChange(field, transcript);
+    } else if (field === "newFeature") {
+      setNewFeature(transcript);
+    } else if (field === "newTag") {
+      setNewTag(transcript);
+    }
+  };
 
   const addFeature = () => {
-    setFormData(prev => ({
-      ...prev,
-      features: [...prev.features, ""]
-    }))
-  }
-
-  const updateFeature = (index: number, value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      features: prev.features.map((feature, i) => i === index ? value : feature)
-    }))
-  }
+    if (newFeature.trim()) {
+      setFormData((prev) => ({
+        ...prev,
+        features: [...prev.features, newFeature.trim()],
+      }));
+      setNewFeature("");
+    }
+  };
 
   const removeFeature = (index: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      features: prev.features.filter((_, i) => i !== index)
-    }))
-  }
+      features: prev.features.filter((_, i) => i !== index),
+    }));
+  };
 
   const addTag = () => {
     if (newTag.trim() && !formData.tags.includes(newTag.trim())) {
-      setFormData(prev => ({
+      setFormData((prev) => ({
         ...prev,
-        tags: [...prev.tags, newTag.trim()]
-      }))
-      setNewTag("")
+        tags: [...prev.tags, newTag.trim()],
+      }));
+      setNewTag("");
     }
-  }
+  };
 
   const removeTag = (tagToRemove: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      tags: prev.tags.filter(tag => tag !== tagToRemove)
-    }))
-  }
+      tags: prev.tags.filter((tag) => tag !== tagToRemove),
+    }));
+  };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files
+    const files = e.target.files;
     if (files) {
-      // In a real app, you would upload these files to a server
-      // For now, we'll just add placeholder URLs
-      const newImages = Array.from(files).map((file, index) => 
-        `/images/placeholder-${Date.now()}-${index}.jpg`
-      )
-      setFormData(prev => ({
+      const newImages = Array.from(files).map(
+        (file, index) => `/images/placeholder-${Date.now()}-${index}.jpg`
+      );
+      setFormData((prev) => ({
         ...prev,
-        images: [...prev.images, ...newImages]
-      }))
+        images: [...prev.images, ...newImages],
+      }));
     }
-  }
+  };
 
   const removeImage = (indexToRemove: number) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      images: prev.images.filter((_, index) => index !== indexToRemove)
-    }))
-  }
+      images: prev.images.filter((_, index) => index !== indexToRemove),
+    }));
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Here you would make an actual API call to save the product
-    console.log("Product data:", formData)
-    
-    setIsSubmitting(false)
-    // Navigate back to products page
-    // router.push('/artisan/products')
-  }
+    e.preventDefault();
+    setIsSubmitting(true);
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    console.log("Product data:", formData);
+    setIsSubmitting(false);
+  };
 
-  const isFormValid = formData.name && formData.description && formData.price && 
-                     formData.category && formData.stock && formData.images.length > 0
+  const isFormValid =
+    formData.name &&
+    formData.description &&
+    formData.price &&
+    formData.category &&
+    formData.stock &&
+    formData.images.length > 0;
 
   return (
     <div className="bg-white font-kalam text-black flex flex-col min-h-screen">
       <Header />
-      
+
       <main className="flex-grow">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <motion.div 
+          <motion.div
             className="mb-8"
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
             <div className="flex items-center gap-4 mb-4">
               <Link href="/artisan/products">
-                <Button variant="outline" size="sm" className="border-2 border-black rounded-none">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-2 border-black rounded-none"
+                >
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Products
                 </Button>
@@ -170,11 +219,12 @@ export default function AddEditProduct() {
               <Package className="h-8 w-8 text-blue-500" />
               Add New Product
             </h1>
-            <p className="text-gray-600 mt-2">Create a new product listing for your artisan store</p>
+            <p className="text-gray-600 mt-2">
+              Create a new product listing for your artisan store
+            </p>
           </motion.div>
 
           <form onSubmit={handleSubmit} className="space-y-8">
-            {/* Product Images */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -186,14 +236,18 @@ export default function AddEditProduct() {
                     <ImageIcon className="h-5 w-5 text-green-500" />
                     Product Images
                   </CardTitle>
-                  <CardDescription>Add high-quality images of your product (first image will be the main image)</CardDescription>
+                  <CardDescription>
+                    Add high-quality images of your product (first image will be
+                    the main image)
+                  </CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {/* Image Upload Area */}
                     <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                       <Upload className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 mb-4">Drag and drop images here, or click to select</p>
+                      <p className="text-gray-600 mb-4">
+                        Drag and drop images here, or click to select
+                      </p>
                       <input
                         type="file"
                         accept="image/*"
@@ -202,17 +256,17 @@ export default function AddEditProduct() {
                         className="hidden"
                         id="image-upload"
                       />
-                      <Button 
+                      <Button
                         type="button"
-                        variant="outline" 
+                        variant="outline"
                         className="border-2 border-black rounded-none"
-                        onClick={() => document.getElementById('image-upload')?.click()}
+                        onClick={() =>
+                          document.getElementById("image-upload")?.click()
+                        }
                       >
                         Choose Images
                       </Button>
                     </div>
-
-                    {/* Image Preview */}
                     {formData.images.length > 0 && (
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {formData.images.map((image, index) => (
@@ -249,7 +303,6 @@ export default function AddEditProduct() {
               </Card>
             </motion.div>
 
-            {/* Basic Information */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -258,38 +311,77 @@ export default function AddEditProduct() {
               <Card className="border-2 border-black rounded-none">
                 <CardHeader>
                   <CardTitle>Basic Information</CardTitle>
-                  <CardDescription>Provide the essential details about your product</CardDescription>
+                  <CardDescription>
+                    Provide the essential details about your product
+                  </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="name">Product Name *</Label>
-                    <Input
-                      id="name"
-                      value={formData.name}
-                      onChange={(e) => handleInputChange('name', e.target.value)}
-                      placeholder="Enter product name"
-                      className="border-2 border-black rounded-none mt-1"
-                      required
-                    />
+                    <div className="relative mt-1">
+                      <Input
+                        id="name"
+                        value={formData.name}
+                        onChange={(e) =>
+                          handleInputChange("name", e.target.value)
+                        }
+                        placeholder="Enter product name"
+                        className="border-2 border-black rounded-none pr-10"
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                        onClick={() =>
+                          openVoiceModal("name", "Product Name", formData.name)
+                        }
+                      >
+                        <Mic className="h-5 w-5 text-gray-500" />
+                      </Button>
+                    </div>
                   </div>
-
                   <div>
                     <Label htmlFor="description">Description *</Label>
-                    <Textarea
-                      id="description"
-                      value={formData.description}
-                      onChange={(e) => handleInputChange('description', e.target.value)}
-                      placeholder="Describe your product, its features, and craftsmanship..."
-                      className="border-2 border-black rounded-none mt-1"
-                      rows={4}
-                      required
-                    />
+                    <div className="relative mt-1">
+                      <Textarea
+                        id="description"
+                        value={formData.description}
+                        onChange={(e) =>
+                          handleInputChange("description", e.target.value)
+                        }
+                        placeholder="Describe your product..."
+                        className="border-2 border-black rounded-none pr-10"
+                        rows={4}
+                        required
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-1 top-2 h-8 w-8"
+                        onClick={() =>
+                          openVoiceModal(
+                            "description",
+                            "Description",
+                            formData.description
+                          )
+                        }
+                      >
+                        <Mic className="h-5 w-5 text-gray-500" />
+                      </Button>
+                    </div>
                   </div>
-
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="category">Category *</Label>
-                      <Select value={formData.category} onValueChange={(value) => handleInputChange('category', value)}>
+                      <Select
+                        value={formData.category}
+                        onValueChange={(value) =>
+                          handleInputChange("category", value)
+                        }
+                      >
                         <SelectTrigger className="border-2 border-black rounded-none mt-1">
                           <SelectValue placeholder="Select a category" />
                         </SelectTrigger>
@@ -302,26 +394,39 @@ export default function AddEditProduct() {
                         </SelectContent>
                       </Select>
                     </div>
-
                     <div>
                       <Label htmlFor="stock">Stock Quantity *</Label>
-                      <Input
-                        id="stock"
-                        type="number"
-                        value={formData.stock}
-                        onChange={(e) => handleInputChange('stock', e.target.value)}
-                        placeholder="Available quantity"
-                        className="border-2 border-black rounded-none mt-1"
-                        min="0"
-                        required
-                      />
+                      <div className="relative mt-1">
+                        <Input
+                          id="stock"
+                          type="number"
+                          value={formData.stock}
+                          onChange={(e) =>
+                            handleInputChange("stock", e.target.value)
+                          }
+                          placeholder="Available quantity"
+                          className="border-2 border-black rounded-none pr-10"
+                          min="0"
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                          onClick={() =>
+                            openCommandModal("stock", "Stock Quantity")
+                          }
+                        >
+                          <Mic className="h-5 w-5 text-gray-500" />
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             </motion.div>
 
-            {/* Pricing */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -339,46 +444,70 @@ export default function AddEditProduct() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <Label htmlFor="price">Selling Price (₹) *</Label>
-                      <Input
-                        id="price"
-                        type="number"
-                        value={formData.price}
-                        onChange={(e) => handleInputChange('price', e.target.value)}
-                        placeholder="0"
-                        className="border-2 border-black rounded-none mt-1"
-                        min="0"
-                        step="1"
-                        required
-                      />
+                      <div className="relative mt-1">
+                        <Input
+                          id="price"
+                          type="number"
+                          value={formData.price}
+                          onChange={(e) =>
+                            handleInputChange("price", e.target.value)
+                          }
+                          placeholder="0"
+                          className="border-2 border-black rounded-none pr-10"
+                          min="0"
+                          step="1"
+                          required
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                          onClick={() =>
+                            openCommandModal("price", "Selling Price")
+                          }
+                        >
+                          <Mic className="h-5 w-5 text-gray-500" />
+                        </Button>
+                      </div>
                     </div>
-
                     <div>
                       <Label htmlFor="originalPrice">Original Price (₹)</Label>
                       <Input
                         id="originalPrice"
                         type="number"
                         value={formData.originalPrice}
-                        onChange={(e) => handleInputChange('originalPrice', e.target.value)}
-                        placeholder="0 (optional, for showing discounts)"
+                        onChange={(e) =>
+                          handleInputChange("originalPrice", e.target.value)
+                        }
+                        placeholder="0 (optional)"
                         className="border-2 border-black rounded-none mt-1"
                         min="0"
                         step="1"
                       />
                     </div>
                   </div>
-
-                  {formData.price && formData.originalPrice && parseFloat(formData.originalPrice) > parseFloat(formData.price) && (
-                    <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
-                      <p className="text-green-700 text-sm">
-                        Discount: {Math.round(((parseFloat(formData.originalPrice) - parseFloat(formData.price)) / parseFloat(formData.originalPrice)) * 100)}% off
-                      </p>
-                    </div>
-                  )}
+                  {formData.price &&
+                    formData.originalPrice &&
+                    parseFloat(formData.originalPrice) >
+                      parseFloat(formData.price) && (
+                      <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-md">
+                        <p className="text-green-700 text-sm">
+                          Discount:{" "}
+                          {Math.round(
+                            ((parseFloat(formData.originalPrice) -
+                              parseFloat(formData.price)) /
+                              parseFloat(formData.originalPrice)) *
+                              100
+                          )}
+                          % off
+                        </p>
+                      </div>
+                    )}
                 </CardContent>
               </Card>
             </motion.div>
 
-            {/* Features */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -387,36 +516,55 @@ export default function AddEditProduct() {
               <Card className="border-2 border-black rounded-none">
                 <CardHeader>
                   <CardTitle>Product Features</CardTitle>
-                  <CardDescription>List the key features and specifications of your product</CardDescription>
+                  <CardDescription>
+                    Highlight key features and specifications
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
+                <CardContent className="space-y-4">
+                  <div className="flex flex-wrap gap-2">
                     {formData.features.map((feature, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          value={feature}
-                          onChange={(e) => updateFeature(index, e.target.value)}
-                          placeholder={`Feature ${index + 1}`}
-                          className="border-2 border-black rounded-none"
-                        />
-                        {formData.features.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeFeature(index)}
-                            className="border-2 border-red-500 text-red-500 hover:bg-red-50 rounded-none px-3"
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
+                      <Badge
+                        key={index}
+                        variant="outline"
+                        className="border-2 border-black/20 text-sm px-3 py-1 flex items-center gap-2"
+                      >
+                        {feature}
+                        <button
+                          type="button"
+                          onClick={() => removeFeature(index)}
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </Badge>
                     ))}
+                  </div>
+                  <div className="flex gap-3 items-center">
+                    <Input
+                      value={newFeature}
+                      onChange={(e) => setNewFeature(e.target.value)}
+                      placeholder="e.g., Handmade, Premium Quality"
+                      className="border-2 border-black rounded-none h-12 pr-10"
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && (e.preventDefault(), addFeature())
+                      }
+                    />
                     <Button
                       type="button"
-                      variant="outline"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() =>
+                        openVoiceModal("newFeature", "Feature", newFeature)
+                      }
+                    >
+                      <Mic className="h-5 w-5 text-gray-500" />
+                    </Button>
+                    <Button
+                      type="button"
                       onClick={addFeature}
-                      className="border-2 border-black rounded-none"
+                      variant="outline"
+                      className="border-2 border-black rounded-none whitespace-nowrap"
                     >
                       <Plus className="h-4 w-4 mr-2" />
                       Add Feature
@@ -426,7 +574,6 @@ export default function AddEditProduct() {
               </Card>
             </motion.div>
 
-            {/* Tags */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -438,53 +585,62 @@ export default function AddEditProduct() {
                     <Tag className="h-5 w-5 text-purple-500" />
                     Tags
                   </CardTitle>
-                  <CardDescription>Add tags to help customers find your product</CardDescription>
+                  <CardDescription>
+                    Add tags to help customers find your product
+                  </CardDescription>
                 </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex gap-2">
-                      <Input
-                        value={newTag}
-                        onChange={(e) => setNewTag(e.target.value)}
-                        placeholder="Enter a tag"
-                        className="border-2 border-black rounded-none"
-                        onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                      />
-                      <Button
-                        type="button"
-                        onClick={addTag}
-                        className="bg-purple-500 hover:bg-purple-600 text-white border-2 border-black rounded-none"
-                      >
-                        Add
-                      </Button>
-                    </div>
-
-                    {formData.tags.length > 0 && (
-                      <div className="flex flex-wrap gap-2">
-                        {formData.tags.map((tag, index) => (
-                          <Badge 
-                            key={index} 
-                            variant="secondary"
-                            className="bg-purple-100 text-purple-700 border border-purple-300 pr-1"
-                          >
-                            {tag}
-                            <button
-                              type="button"
-                              onClick={() => removeTag(tag)}
-                              className="ml-2 hover:bg-purple-200 rounded-full p-0.5"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </Badge>
-                        ))}
-                      </div>
-                    )}
+                <CardContent className="space-y-3">
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      value={newTag}
+                      onChange={(e) => setNewTag(e.target.value)}
+                      placeholder="Enter a tag"
+                      className="border-2 border-black rounded-none pr-10"
+                      onKeyPress={(e) =>
+                        e.key === "Enter" && (e.preventDefault(), addTag())
+                      }
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="h-8 w-8"
+                      onClick={() => openVoiceModal("newTag", "Tag", newTag)}
+                    >
+                      <Mic className="h-5 w-5 text-gray-500" />
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={addTag}
+                      className="bg-purple-500 hover:bg-purple-600 text-white border-2 border-black rounded-none"
+                    >
+                      Add
+                    </Button>
                   </div>
+                  {formData.tags.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {formData.tags.map((tag, index) => (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="bg-purple-100 text-purple-700 border border-purple-300 pr-1"
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => removeTag(tag)}
+                            className="ml-2 hover:bg-purple-200 rounded-full p-0.5"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             </motion.div>
 
-            {/* Submit Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -492,16 +648,16 @@ export default function AddEditProduct() {
               className="flex gap-4 justify-end"
             >
               <Link href="/artisan/products">
-                <Button 
+                <Button
                   type="button"
-                  variant="outline" 
+                  variant="outline"
                   className="border-2 border-black rounded-none"
                   disabled={isSubmitting}
                 >
                   Cancel
                 </Button>
               </Link>
-              <Button 
+              <Button
                 type="submit"
                 className="bg-orange-500 hover:bg-orange-600 text-white border-2 border-black rounded-none"
                 disabled={!isFormValid || isSubmitting}
@@ -520,7 +676,26 @@ export default function AddEditProduct() {
         </div>
       </main>
 
+      {isVoiceModalOpen && voiceModalConfig && (
+        <VoiceInputModal
+          isOpen={isVoiceModalOpen}
+          onClose={() => setIsVoiceModalOpen(false)}
+          onApply={handleVoiceApply}
+          currentValue={voiceModalConfig.currentValue}
+          fieldLabel={voiceModalConfig.label}
+        />
+      )}
+
+      {isCommandModalOpen && commandModalConfig && (
+        <VoiceCommandModal
+          isOpen={isCommandModalOpen}
+          onClose={() => setIsCommandModalOpen(false)}
+          onApply={handleCommandApply}
+          fieldLabel={commandModalConfig.label}
+        />
+      )}
+
       <Footer />
     </div>
-  )
+  );
 }
