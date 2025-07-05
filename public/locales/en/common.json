@@ -400,5 +400,29 @@
     "in_stock": "In Stock",
     "low_stock": "Low Stock",
     "out_of_stock": "Out of Stock"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "shipping_address": "Shipping Address",
+    "full_name": "Full Name",
+    "street_address": "Street Address",
+    "city": "City",
+    "state": "State",
+    "zip_code": "ZIP Code",
+    "phone": "Phone Number",
+    "save_address": "Save Address",
+    "delivery_options": "Delivery Options",
+    "standard_delivery": "Standard Delivery (3-5 days)",
+    "express_delivery": "Express Delivery (1-2 days)",
+    "payment_method": "Payment Method",
+    "credit_debit_card": "Credit/Debit Card",
+    "upi_payment": "UPI Payment",
+    "cash_on_delivery": "Cash on Delivery",
+    "order_summary": "Order Summary",
+    "quantity_short": "Qty",
+    "subtotal": "Subtotal",
+    "shipping": "Shipping",
+    "total": "Total",
+    "confirm_order": "Confirm Order"
   }
 }

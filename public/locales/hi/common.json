@@ -395,5 +395,29 @@
     "in_stock": "स्टॉक में",
     "low_stock": "कम स्टॉक",
     "out_of_stock": "स्टॉक में नहीं"
+  },
+  "checkout": {
+    "title": "चेकआउट",
+    "shipping_address": "शिपिंग पता",
+    "full_name": "पूरा नाम",
+    "street_address": "गली का पता",
+    "city": "शहर",
+    "state": "राज्य",
+    "zip_code": "पिन कोड",
+    "phone": "फोन नंबर",
+    "save_address": "पता सहेजें",
+    "delivery_options": "डिलीवरी विकल्प",
+    "standard_delivery": "मानक डिलीवरी (3-5 दिन)",
+    "express_delivery": "एक्सप्रेस डिलीवरी (1-2 दिन)",
+    "payment_method": "भुगतान विधि",
+    "credit_debit_card": "क्रेडिट/डेबिट कार्ड",
+    "upi_payment": "UPI भुगतान",
+    "cash_on_delivery": "कैश ऑन डिलीवरी",
+    "order_summary": "ऑर्डर सारांश",
+    "quantity_short": "मात्रा",
+    "subtotal": "उप-योग",
+    "shipping": "शिपिंग",
+    "total": "कुल",
+    "confirm_order": "ऑर्डर की पुष्टि करें"
   }
 }

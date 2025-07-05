@@ -19,7 +19,9 @@ export function Footer() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="text-xl font-bold mb-4">{t("footer.get_to_know_us")}</h3>
+            <h3 className="text-xl font-bold mb-4">
+              {t("footer.get_to_know_us")}
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/about" className="hover:underline">
@@ -44,7 +46,9 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-xl font-bold mb-4">{t("footer.connect_with_us")}</h3>
+            <h3 className="text-xl font-bold mb-4">
+              {t("footer.connect_with_us")}
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link
@@ -72,7 +76,9 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-xl font-bold mb-4">{t("footer.sell_with_us")}</h3>
+            <h3 className="text-xl font-bold mb-4">
+              {t("footer.sell_with_us")}
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/sell" className="hover:underline">
@@ -92,7 +98,9 @@ export function Footer() {
             </ul>
           </div>
           <div>
-            <h3 className="text-xl font-bold mb-4">{t("footer.help_support")}</h3>
+            <h3 className="text-xl font-bold mb-4">
+              {t("footer.help_support")}
+            </h3>
             <ul className="space-y-2">
               <li>
                 <Link href="/faq" className="hover:underline">
@@ -131,7 +139,8 @@ export function Footer() {
                     alt="India Flag"
                     className="w-5 h-auto mr-2"
                   />{" "}
-                  {t("footer.country_india")} <ChevronDown className="h-4 w-4 inline ml-1" />
+                  {t("footer.country_india")}{" "}
+                  <ChevronDown className="h-4 w-4 inline ml-1" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="font-kalam border-2 border-black rounded-none bg-white">
@@ -145,12 +154,17 @@ export function Footer() {
                   variant="ghost"
                   className="rounded-none p-1 text-sm hover:bg-gray-100"
                 >
-                  {t("footer.language_english")} <ChevronDown className="h-4 w-4 inline ml-1" />
+                  {t("footer.language_english")}{" "}
+                  <ChevronDown className="h-4 w-4 inline ml-1" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="font-kalam border-2 border-black rounded-none bg-white">
-                <DropdownMenuItem>{t("footer.language_english")}</DropdownMenuItem>
-                <DropdownMenuItem>{t("footer.language_hindi")}</DropdownMenuItem>
+                <DropdownMenuItem>
+                  {t("footer.language_english")}
+                </DropdownMenuItem>
+                <DropdownMenuItem>
+                  {t("footer.language_hindi")}
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
