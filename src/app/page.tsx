@@ -10,11 +10,12 @@ import { ArrowRight } from "lucide-react"
 import { motion } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 const productSections = [
-  { title: "Deals of the Day", products: products.slice(0, 4) },
-  { title: "Top Artisan Picks", products: products.slice(1, 5).reverse() },
-  { title: "Inspired by Your Browsing", products: products.slice(2, 6) },
+  { titleKey: "home.deals_of_day", products: products.slice(0, 4) },
+  { titleKey: "home.top_picks", products: products.slice(1, 5).reverse() },
+  { titleKey: "home.inspired_browsing", products: products.slice(2, 6) },
 ]
 
 const sectionVariants = {
@@ -33,24 +34,31 @@ const cardItemVariants = {
 }
 
 export default function HomePage() {
+  const { t } = useLanguage()
+  
   return (
     <div className="bg-white font-kalam text-black flex flex-col min-h-screen">
       <Header />
       <main className="flex-grow">
         {/* Hero Banner */}
         <div className="bg-gradient-to-r from-orange-100 to-orange-50 py-8 px-4 text-center border-b-2 border-orange-200">
-          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Welcome to Our Artisan Marketplace</h2>
-          <p className="text-gray-600 mb-4">Discover authentic handcrafted treasures from local artisans</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-800 mb-2">{t('home.hero_title')}</h2>
+          <p className="text-gray-600 mb-4">{t('home.hero_subtitle')}</p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-3">
             <Link href="/landing">
               <Button className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-2 rounded-md">
-                Learn Our Story
+                {t('home.learn_story')}
               </Button>
             </Link>
             <Link href="/artisan/dashboard">
               <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2 rounded-md border-2 border-blue-700">
-                🎨 Artisan Dashboard
+                {t('home.artisan_dashboard')}
               </Button>
+            </Link>
+          </div>
+          <div className="text-sm text-gray-500">
+            <Link href="/language-support" className="hover:underline">
+              ✨ Experience in English & हिन्दी - Try Language Support Demo
             </Link>
           </div>
         </div>
@@ -68,9 +76,9 @@ export default function HomePage() {
               viewport={{ once: true, amount: 0.2 }}
             >
               <div className="flex justify-between items-center mb-6">
-                <h2 className="text-3xl font-bold">{section.title}</h2>
+                <h2 className="text-3xl font-bold">{t(section.titleKey)}</h2>
                 <Link href="/shop" className="text-lg flex items-center gap-1 hover:underline" prefetch={false}>
-                  View All <ArrowRight className="h-5 w-5" />
+                  {t('home.view_all')} <ArrowRight className="h-5 w-5" />
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
@@ -92,32 +100,31 @@ export default function HomePage() {
             transition={{ duration: 0.6 }}
           >
             <div className="text-center">
-              <h2 className="text-4xl font-bold mb-4 text-gray-800">Are You an Artisan?</h2>
+              <h2 className="text-4xl font-bold mb-4 text-gray-800">{t('home.artisan_cta_title')}</h2>
               <p className="text-lg text-gray-600 mb-6 max-w-2xl mx-auto">
-                Join our growing community of talented artisans! Showcase your crafts, reach thousands of customers, 
-                and grow your business with our comprehensive seller dashboard.
+                {t('home.artisan_cta_subtitle')}
               </p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="text-center p-4">
                   <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-2xl">🛍️</span>
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">Manage Products</h3>
-                  <p className="text-gray-600 text-sm">Easy-to-use tools to add, edit, and track your products</p>
+                  <h3 className="font-semibold text-lg mb-2">{t('home.manage_products')}</h3>
+                  <p className="text-gray-600 text-sm">{t('home.manage_products_desc')}</p>
                 </div>
                 <div className="text-center p-4">
                   <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-2xl">📦</span>
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">Track Orders</h3>
-                  <p className="text-gray-600 text-sm">Monitor sales and manage customer orders efficiently</p>
+                  <h3 className="font-semibold text-lg mb-2">{t('home.track_orders')}</h3>
+                  <p className="text-gray-600 text-sm">{t('home.track_orders_desc')}</p>
                 </div>
                 <div className="text-center p-4">
                   <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-3">
                     <span className="text-2xl">📊</span>
                   </div>
-                  <h3 className="font-semibold text-lg mb-2">View Analytics</h3>
-                  <p className="text-gray-600 text-sm">Get insights on your sales performance and earnings</p>
+                  <h3 className="font-semibold text-lg mb-2">{t('home.view_analytics')}</h3>
+                  <p className="text-gray-600 text-sm">{t('home.view_analytics_desc')}</p>
                 </div>
               </div>
               <Link href="/artisan/dashboard">
@@ -125,7 +132,7 @@ export default function HomePage() {
                   size="lg"
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-8 py-3 rounded-lg text-xl shadow-lg hover:shadow-xl transition-all duration-300"
                 >
-                  🎨 Access Artisan Dashboard
+                  {t('home.access_dashboard')}
                 </Button>
               </Link>
             </div>

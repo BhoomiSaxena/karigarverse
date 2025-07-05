@@ -22,6 +22,11 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/language-support" className="hover:underline">
+                  Language Support
+                </Link>
+              </li>
+              <li>
                 <Link href="/careers" className="hover:underline">
                   Careers
                 </Link>

@@ -4,11 +4,14 @@ import { Palette, Search, ShoppingCart, UserCircle, Package, ChevronDown } from 
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { LanguageToggle } from "@/components/language-toggle"
+import { useLanguage } from "@/contexts/LanguageContext"
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
 
 export function Header() {
   const [isSticky, setIsSticky] = useState(false)
+  const { t } = useLanguage()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -40,7 +43,7 @@ export function Header() {
             <div className="relative">
               <Input
                 type="search"
-                placeholder="Search for artisan crafts..."
+                placeholder={t('navigation.search_placeholder')}
                 className="w-full pl-10 pr-4 py-2 border-2 border-black rounded-none focus:ring-0 focus:border-blue-500"
               />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -49,28 +52,18 @@ export function Header() {
 
           {/* Right: Icons & Actions */}
           <div className="flex items-center gap-3 sm:gap-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="rounded-none p-1 sm:p-2 text-sm hover:bg-gray-100">
-                  EN <ChevronDown className="h-4 w-4 inline" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="font-kalam border-2 border-black rounded-none bg-white">
-                <DropdownMenuItem>English</DropdownMenuItem>
-                <DropdownMenuItem>हिंदी (Hindi)</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <LanguageToggle />
             <span className="text-xs sm:text-sm hidden lg:inline">
-              Deliver to <span className="font-bold">Uttrakhand</span>
+              {t('navigation.deliver_to')} <span className="font-bold">Uttrakhand</span>
             </span>
 
-            <Link href="/cart" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label="Cart">
+            <Link href="/cart" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label={t('navigation.cart')}>
               <ShoppingCart className="h-6 w-6" />
             </Link>
-            <Link href="/login" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label="Sign In">
+            <Link href="/login" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label={t('navigation.login')}>
               <UserCircle className="h-6 w-6" />
             </Link>
-            <Link href="/orders" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label="Orders">
+            <Link href="/orders" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label={t('navigation.orders')}>
               <Package className="h-6 w-6" />
             </Link>
           </div>
@@ -80,7 +73,7 @@ export function Header() {
           <div className="relative">
             <Input
               type="search"
-              placeholder="Search..."
+              placeholder={t('navigation.mobile_search_placeholder')}
               className="w-full pl-10 pr-4 py-2 border-2 border-black rounded-none focus:ring-0 focus:border-blue-500"
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
