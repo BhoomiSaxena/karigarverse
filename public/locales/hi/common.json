@@ -158,6 +158,27 @@
     "no_account": "खाता नहीं है?",
     "signup_link": "साइन अप करें"
   },
+  "signup": {
+    "title": "अपना खाता बनाएं",
+    "first_name_label": "पहला नाम",
+    "first_name_placeholder": "अपना पहला नाम दर्ज करें",
+    "last_name_label": "अंतिम नाम",
+    "last_name_placeholder": "अपना अंतिम नाम दर्ज करें",
+    "email_label": "ईमेल पता",
+    "email_placeholder": "you@example.com",
+    "password_label": "पासवर्ड",
+    "password_placeholder": "एक पासवर्ड बनाएं",
+    "confirm_password_label": "पासवर्ड की पुष्टि करें",
+    "confirm_password_placeholder": "अपने पासवर्ड की पुष्टि करें",
+    "phone_label": "फोन नंबर (वैकल्पिक)",
+    "phone_placeholder": "+91 12345 67890",
+    "terms_agreement": "मैं इससे सहमत हूं",
+    "terms_link": "सेवा की शर्तें",
+    "privacy_link": "गोपनीयता नीति",
+    "signup_button": "खाता बनाएं",
+    "already_have_account": "पहले से खाता है?",
+    "login_link": "यहां लॉग इन करें"
+  },
   "voice": {
     "start_listening": "सुनना शुरू करें",
     "stop_listening": "सुनना बंद करें",

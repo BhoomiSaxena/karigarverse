@@ -163,6 +163,27 @@
     "no_account": "Don't have an account?",
     "signup_link": "Sign up"
   },
+  "signup": {
+    "title": "Create Your Account",
+    "first_name_label": "First Name",
+    "first_name_placeholder": "Enter your first name",
+    "last_name_label": "Last Name",
+    "last_name_placeholder": "Enter your last name",
+    "email_label": "Email Address",
+    "email_placeholder": "you@example.com",
+    "password_label": "Password",
+    "password_placeholder": "Create a password",
+    "confirm_password_label": "Confirm Password",
+    "confirm_password_placeholder": "Confirm your password",
+    "phone_label": "Phone Number (Optional)",
+    "phone_placeholder": "+91 12345 67890",
+    "terms_agreement": "I agree to the",
+    "terms_link": "Terms of Service",
+    "privacy_link": "Privacy Policy",
+    "signup_button": "Create Account",
+    "already_have_account": "Already have an account?",
+    "login_link": "Login here"
+  },
   "language_support": {
     "title": "Language Support Demo",
     "subtitle": "Experience our marketplace in both English and Hindi. Switch between languages seamlessly and see how our platform adapts to your preferred language instantly.",
