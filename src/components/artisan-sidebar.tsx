@@ -16,37 +16,38 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { artisanNotifications } from "@/lib/data"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 const navigation = [
   {
-    name: "Dashboard",
+    nameKey: "artisan.dashboard",
     href: "/artisan/dashboard",
     icon: LayoutDashboard,
-    description: "Overview & Analytics"
+    descriptionKey: "artisan.overview_analytics"
   },
   {
-    name: "Products",
+    nameKey: "artisan.products",
     href: "/artisan/products", 
     icon: Package,
-    description: "Manage Your Products"
+    descriptionKey: "artisan.manage_your_products"
   },
   {
-    name: "Orders",
+    nameKey: "artisan.orders",
     href: "/artisan/orders",
     icon: ShoppingBag,
-    description: "Track & Update Orders"
+    descriptionKey: "artisan.track_update_orders"
   },
   {
-    name: "Profile",
+    nameKey: "artisan.profile",
     href: "/artisan/profile",
     icon: User,
-    description: "Account Settings"
+    descriptionKey: "artisan.account_settings"
   },
   {
-    name: "Notifications",
+    nameKey: "artisan.notifications",
     href: "/artisan/notifications",
     icon: Bell,
-    description: "Alerts & Updates",
+    descriptionKey: "artisan.alerts_updates",
     badge: artisanNotifications.filter(n => !n.isRead).length
   }
 ]
@@ -57,6 +58,7 @@ interface ArtisanSidebarProps {
 
 export function ArtisanSidebar({ className }: ArtisanSidebarProps) {
   const pathname = usePathname()
+  const { t } = useLanguage()
 
   return (
     <div className={cn("pb-12 min-h-screen", className)}>
@@ -64,14 +66,14 @@ export function ArtisanSidebar({ className }: ArtisanSidebarProps) {
         <div className="px-3 py-2">
           <div className="flex items-center gap-2 mb-6">
             <BarChart3 className="h-8 w-8 text-orange-500" />
-            <h2 className="text-2xl font-bold tracking-tight">Artisan Hub</h2>
+            <h2 className="text-2xl font-bold tracking-tight">{t('artisan.artisan_hub')}</h2>
           </div>
           <div className="space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href
               return (
                 <Link
-                  key={item.name}
+                  key={item.nameKey}
                   href={item.href}
                   className={cn(
                     "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium hover:bg-gray-100 transition-colors relative",
@@ -83,14 +85,14 @@ export function ArtisanSidebar({ className }: ArtisanSidebarProps) {
                   <item.icon className={cn("h-5 w-5", isActive ? "text-orange-600" : "text-gray-500")} />
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <span>{item.name}</span>
+                      <span>{t(item.nameKey)}</span>
                       {item.badge && item.badge > 0 && (
                         <Badge className="bg-red-500 text-white text-xs px-1.5 py-0.5 ml-2">
                           {item.badge}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-0.5">{item.description}</p>
+                    <p className="text-xs text-gray-500 mt-0.5">{t(item.descriptionKey)}</p>
                   </div>
                 </Link>
               )
@@ -102,10 +104,10 @@ export function ArtisanSidebar({ className }: ArtisanSidebarProps) {
           <div className="bg-orange-50 border-2 border-orange-200 rounded-lg p-4 mb-4">
             <div className="flex items-center gap-2 mb-2">
               <BarChart3 className="h-5 w-5 text-orange-600" />
-              <h3 className="font-semibold text-orange-800">Quick Tip</h3>
+              <h3 className="font-semibold text-orange-800">{t('artisan.quick_tip')}</h3>
             </div>
             <p className="text-sm text-orange-700">
-              Add high-quality images to increase your product visibility and sales!
+              {t('artisan.quick_tip_text')}
             </p>
           </div>
           
@@ -116,7 +118,7 @@ export function ArtisanSidebar({ className }: ArtisanSidebarProps) {
           >
             <Link href="/login">
               <LogOut className="h-4 w-4 mr-2" />
-              Sign Out
+              {t('artisan.sign_out')}
             </Link>
           </Button>
         </div>

@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect, useCallback } from "react";
 import {
   Carousel,
   CarouselContent,
@@ -10,7 +11,6 @@ import {
   type CarouselApi,
 } from "@/components/ui/carousel";
 import { Button } from "@/components/ui/button";
-import { useEffect, useCallback, useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export function HeroCarousel() {
@@ -66,7 +66,7 @@ export function HeroCarousel() {
             <div className="relative aspect-[16/7] md:aspect-[16/6] lg:aspect-[16/5] w-full">
               <Image
                 src={item.image || "/placeholder.svg"}
-                alt={item.title}
+                alt={t(item.titleKey)}
                 fill
                 priority
                 className="object-cover"

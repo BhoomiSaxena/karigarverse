@@ -26,6 +26,7 @@ import { dashboardStats, artisanNotifications, artisanOrders, artisanProducts } 
 import { ArtisanWelcomeGuide } from "@/components/artisan-welcome-guide"
 import Link from "next/link"
 import { motion } from "framer-motion"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -43,6 +44,7 @@ const itemVariants = {
 }
 
 export default function ArtisanDashboard() {
+  const { t } = useLanguage()
   const [unreadNotifications, setUnreadNotifications] = useState(
     artisanNotifications.filter(n => !n.isRead).length
   )
@@ -79,8 +81,8 @@ export default function ArtisanDashboard() {
           >
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
-                <h1 className="text-4xl font-bold text-gray-900">Welcome back, Priya!</h1>
-                <p className="text-gray-600 mt-2">Here's what's happening with your artisan store today.</p>
+                <h1 className="text-4xl font-bold text-gray-900">{t('artisan.welcome_back')}, Priya!</h1>
+                <p className="text-gray-600 mt-2">{t('artisan.whats_happening')}</p>
               </div>
               <div className="flex gap-3">
                 <Button 
@@ -90,7 +92,7 @@ export default function ArtisanDashboard() {
                 >
                   <Link href="/artisan/notifications">
                     <Bell className="h-5 w-5 mr-2" />
-                    Notifications
+                    {t('artisan.notifications')}
                     {unreadNotifications > 0 && (
                       <Badge className="absolute -top-2 -right-2 bg-red-500 text-white text-xs px-1.5 py-0.5">
                         {unreadNotifications}
@@ -104,7 +106,7 @@ export default function ArtisanDashboard() {
                 >
                   <Link href="/artisan/products/new">
                     <Plus className="h-5 w-5 mr-2" />
-                    Add Product
+                    {t('artisan.add_product')}
                   </Link>
                 </Button>
               </div>
@@ -124,13 +126,13 @@ export default function ArtisanDashboard() {
             <motion.div variants={itemVariants}>
               <Card className="border-2 border-black rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Products</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t('artisan.total_products')}</CardTitle>
                   <Package className="h-4 w-4 text-blue-500" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{dashboardStats.totalProducts}</div>
                   <p className="text-xs text-gray-600">
-                    <span className="text-green-600">+2</span> from last month
+                    <span className="text-green-600">+2</span> {t('artisan.from_last_month')}
                   </p>
                 </CardContent>
               </Card>
@@ -139,13 +141,13 @@ export default function ArtisanDashboard() {
             <motion.div variants={itemVariants}>
               <Card className="border-2 border-black rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t('artisan.total_orders')}</CardTitle>
                   <ShoppingBag className="h-4 w-4 text-green-500" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{dashboardStats.totalOrders}</div>
                   <p className="text-xs text-gray-600">
-                    <span className="text-green-600">+12%</span> from last month
+                    <span className="text-green-600">+12%</span> {t('artisan.from_last_month')}
                   </p>
                 </CardContent>
               </Card>
@@ -154,13 +156,13 @@ export default function ArtisanDashboard() {
             <motion.div variants={itemVariants}>
               <Card className="border-2 border-black rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Earnings</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t('artisan.total_earnings')}</CardTitle>
                   <DollarSign className="h-4 w-4 text-purple-500" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">₹{dashboardStats.totalEarnings.toLocaleString()}</div>
                   <p className="text-xs text-gray-600">
-                    <span className="text-green-600">+₹{dashboardStats.monthlyEarnings.toLocaleString()}</span> this month
+                    <span className="text-green-600">+₹{dashboardStats.monthlyEarnings.toLocaleString()}</span> {t('artisan.this_month')}
                   </p>
                 </CardContent>
               </Card>
@@ -169,13 +171,13 @@ export default function ArtisanDashboard() {
             <motion.div variants={itemVariants}>
               <Card className="border-2 border-black rounded-none">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Profile Views</CardTitle>
+                  <CardTitle className="text-sm font-medium">{t('artisan.total_views')}</CardTitle>
                   <Eye className="h-4 w-4 text-orange-500" />
                 </CardHeader>
                 <CardContent>
                   <div className="text-2xl font-bold">{dashboardStats.totalViews.toLocaleString()}</div>
                   <p className="text-xs text-gray-600">
-                    <span className="text-blue-600">{dashboardStats.conversionRate}%</span> conversion rate
+                    <span className="text-blue-600">{dashboardStats.conversionRate}%</span> {t('artisan.conversion_rate')}
                   </p>
                 </CardContent>
               </Card>
@@ -194,14 +196,14 @@ export default function ArtisanDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Package className="h-5 w-5 text-blue-500" />
-                    Manage Products
+                    {t('home.manage_products')}
                   </CardTitle>
-                  <CardDescription>Add, edit, or remove your products</CardDescription>
+                  <CardDescription>{t('home.manage_products_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href="/artisan/products">
                     <Button className="w-full border-2 border-black rounded-none bg-gray-100 hover:bg-gray-200 text-black">
-                      View Products
+                      {t('artisan.view_all_products')}
                       <ArrowUpRight className="h-4 w-4 ml-2" />
                     </Button>
                   </Link>
@@ -214,14 +216,14 @@ export default function ArtisanDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <ShoppingBag className="h-5 w-5 text-green-500" />
-                    Track Orders
+                    {t('home.track_orders')}
                   </CardTitle>
-                  <CardDescription>Monitor and update order status</CardDescription>
+                  <CardDescription>{t('home.track_orders_desc')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href="/artisan/orders">
                     <Button className="w-full border-2 border-black rounded-none bg-gray-100 hover:bg-gray-200 text-black">
-                      View Orders
+                      {t('artisan.view_all_orders')}
                       <ArrowUpRight className="h-4 w-4 ml-2" />
                     </Button>
                   </Link>
@@ -234,14 +236,14 @@ export default function ArtisanDashboard() {
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <Users className="h-5 w-5 text-purple-500" />
-                    Update Profile
+                    {t('profile.update_profile')}
                   </CardTitle>
-                  <CardDescription>Manage your artisan profile and shop details</CardDescription>
+                  <CardDescription>{t('artisan.manage_profile')}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Link href="/artisan/profile">
                     <Button className="w-full border-2 border-black rounded-none bg-gray-100 hover:bg-gray-200 text-black">
-                      Edit Profile
+                      {t('profile.edit_profile')}
                       <ArrowUpRight className="h-4 w-4 ml-2" />
                     </Button>
                   </Link>
@@ -262,9 +264,9 @@ export default function ArtisanDashboard() {
               <Card className="border-2 border-black rounded-none">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Recent Orders</CardTitle>
+                    <CardTitle>{t('artisan.recent_orders')}</CardTitle>
                     <Link href="/artisan/orders" className="text-sm text-blue-600 hover:underline">
-                      View all
+                      {t('home.view_all')}
                     </Link>
                   </div>
                 </CardHeader>
@@ -297,9 +299,9 @@ export default function ArtisanDashboard() {
               <Card className="border-2 border-black rounded-none">
                 <CardHeader>
                   <div className="flex items-center justify-between">
-                    <CardTitle>Top Performing Products</CardTitle>
+                    <CardTitle>{t('artisan.top_products')}</CardTitle>
                     <Link href="/artisan/products" className="text-sm text-blue-600 hover:underline">
-                      View all
+                      {t('home.view_all')}
                     </Link>
                   </div>
                 </CardHeader>
@@ -311,12 +313,12 @@ export default function ArtisanDashboard() {
                           <div className="w-2 h-2 rounded-full bg-green-500"></div>
                           <div>
                             <p className="font-medium">{product.name}</p>
-                            <p className="text-sm text-gray-600">{product.sales} sales</p>
+                            <p className="text-sm text-gray-600">{product.sales} {t('artisan.sales')}</p>
                           </div>
                         </div>
                         <div className="text-right">
                           <p className="font-medium">₹{product.price}</p>
-                          <p className="text-sm text-gray-600">{product.views} views</p>
+                          <p className="text-sm text-gray-600">{product.views} {t('artisan.views')}</p>
                         </div>
                       </div>
                     ))}
