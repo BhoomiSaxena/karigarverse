@@ -1,17 +1,24 @@
 "use client"
 import Link from "next/link"
-import { Palette, Search, ShoppingCart, UserCircle, Package, ChevronDown } from "lucide-react"
+import { Palette, Search, ShoppingCart, UserCircle, Package, ChevronDown, LogOut } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu"
 import { LanguageToggle } from "@/components/language-toggle"
 import { useLanguage } from "@/contexts/LanguageContext"
 import { useEffect, useState } from "react"
 import { cn } from "@/lib/utils"
+import { createClient } from "@/utils/supabase/client"
+import { useRouter } from "next/navigation"
+import type { User } from "@supabase/supabase-js"
 
 export function Header() {
   const [isSticky, setIsSticky] = useState(false)
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
   const { t } = useLanguage()
+  const router = useRouter()
+  const supabase = createClient()
 
   useEffect(() => {
     const handleScroll = () => {
@@ -20,6 +27,31 @@ export function Header() {
     window.addEventListener("scroll", handleScroll)
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  useEffect(() => {
+    // Get initial user
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+      setUser(user)
+      setLoading(false)
+    }
+    
+    getUser()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null)
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase.auth])
+
+  const handleSignOut = async () => {
+    await supabase.auth.signOut()
+    router.push('/')
+    router.refresh()
+  }
 
   return (
     <header
@@ -60,9 +92,48 @@ export function Header() {
             <Link href="/cart" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label={t('navigation.cart')}>
               <ShoppingCart className="h-6 w-6" />
             </Link>
-            <Link href="/login" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label={t('navigation.login')}>
-              <UserCircle className="h-6 w-6" />
-            </Link>
+            
+            {/* Auth-dependent UI */}
+            {loading ? (
+              <div className="h-6 w-6 animate-pulse bg-gray-200 rounded-full" />
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger className="p-1 sm:p-2 hover:bg-gray-100 rounded-full flex items-center gap-1">
+                  <UserCircle className="h-6 w-6" />
+                  <ChevronDown className="h-4 w-4 hidden sm:block" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <div className="px-2 py-1.5 text-sm font-medium">
+                    {user.user_metadata?.full_name || user.email}
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">Profile</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/orders">My Orders</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/artisan/dashboard">Artisan Dashboard</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-red-600">
+                    <LogOut className="h-4 w-4 mr-2" />
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <>
+                <Link href="/login" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label={t('navigation.login')}>
+                  <UserCircle className="h-6 w-6" />
+                </Link>
+                <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex border-2 border-black rounded-none">
+                  <Link href="/signup">Sign Up</Link>
+                </Button>
+              </>
+            )}
+            
             <Link href="/orders" className="p-1 sm:p-2 hover:bg-gray-100 rounded-full" aria-label={t('navigation.orders')}>
               <Package className="h-6 w-6" />
             </Link>
