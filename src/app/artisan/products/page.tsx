@@ -52,6 +52,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { motion } from "framer-motion"
 import type { ArtisanProduct } from "@/lib/types"
+import { useLanguage } from "@/contexts/LanguageContext"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -69,6 +70,7 @@ const itemVariants = {
 }
 
 export default function ProductsManagement() {
+  const { t } = useLanguage()
   const [products, setProducts] = useState<ArtisanProduct[]>(artisanProducts)
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
@@ -224,7 +226,7 @@ export default function ProductsManagement() {
                     <SelectItem value="all">All Categories</SelectItem>
                     {categories.map((category) => (
                       <SelectItem key={category.id} value={category.id}>
-                        {category.name}
+                        {t(`category.${category.id}`)}
                       </SelectItem>
                     ))}
                   </SelectContent>

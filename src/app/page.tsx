@@ -60,7 +60,7 @@ export default function HomePage() {
           </div>
           <div className="text-sm text-gray-500">
             <Link href="/language-support" className="hover:underline">
-              ✨ Experience in English & हिन्दी - Try Language Support Demo
+              ✨ Experience in English & हिन्दी - {t("footer.language_support")}
             </Link>
           </div>
         </div>
@@ -160,17 +160,17 @@ export default function HomePage() {
 
           {/* Newsletter Section */}
           <section className="my-20 p-8 border-2 border-black">
-            <h2 className="text-4xl font-bold mb-4">{t("newsletter.title")}</h2>
-            <p className="text-gray-600 mb-6">{t("newsletter.subtitle")}</p>
+            <h2 className="text-4xl font-bold mb-4">{t("home.newsletter_title")}</h2>
+            <p className="text-gray-600 mb-6">{t("home.newsletter_subtitle")}</p>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <label htmlFor="email" className="text-sm">
-                  {t("newsletter.email_label")}
+                  {t("home.email_label")}
                 </label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder={t("newsletter.email_placeholder")}
+                  placeholder={t("home.email_placeholder")}
                   className="border-2 border-black rounded-none mt-1"
                 />
               </div>
@@ -179,7 +179,7 @@ export default function HomePage() {
                 variant="outline"
                 className="border-2 border-black rounded-none text-lg px-8 py-2 bg-[#f3f3f3] hover:bg-gray-200 self-end"
               >
-                {t("newsletter.subscribe")}
+                {t("home.subscribe")}
               </Button>
             </div>
           </section>
@@ -192,9 +192,9 @@ export default function HomePage() {
               size="lg"
               className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-purple-500"
             >
-              <span className="hidden sm:inline mr-2">🎨 Artisan</span>
+              <span className="hidden sm:inline mr-2">🎨</span>
               <span className="sm:hidden mr-2">🎨</span>
-              Dashboard
+              {t("home.artisan_dashboard")}
             </Button>
           </Link>
         </div>

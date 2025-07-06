@@ -224,13 +224,13 @@ export default function LandingPage() {
                     <div className="absolute inset-0 backface-hidden bg-gray-800 rounded-2xl p-6 flex flex-col items-center justify-center border border-gray-700 shadow-xl">
                       <Image
                         src={category.image || "/placeholder.svg"}
-                        alt={category.name}
+                        alt={t(`category.${category.id}`)}
                         width={100}
                         height={100}
                         className="rounded-full mb-4 border-4 border-orange-500 object-cover"
                       />
                       <h3 className="text-xl font-bold text-white mb-2">
-                        {category.name}
+                        {t(`category.${category.id}`)}
                       </h3>
                       <p className="text-orange-500 font-bold text-lg">
                         {category.price}

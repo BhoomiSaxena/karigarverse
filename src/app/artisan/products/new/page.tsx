@@ -387,7 +387,7 @@ export default function AddEditProduct() {
                         <SelectContent className="font-kalam border-2 border-black rounded-none">
                           {categories.map((category) => (
                             <SelectItem key={category.id} value={category.id}>
-                              {category.name}
+                              {t(`category.${category.id}`)}
                             </SelectItem>
                           ))}
                         </SelectContent>

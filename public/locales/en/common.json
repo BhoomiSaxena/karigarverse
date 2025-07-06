@@ -38,7 +38,24 @@
     "track_orders_desc": "Monitor sales and manage customer orders efficiently",
     "view_analytics": "View Analytics",
     "view_analytics_desc": "Get insights on your sales performance and earnings",
-    "access_dashboard": "🎨 Access Artisan Dashboard"
+    "access_dashboard": "🎨 Access Artisan Dashboard",
+    "explore_by_category": "Explore by Category"
+  },
+  "category": {
+    "pottery": "Pottery",
+    "textiles": "Textiles",
+    "woodwork": "Woodwork",
+    "jewelry": "Jewelry",
+    "painting": "Painting"
+  },
+  "hero_carousel": {
+    "textile_title": "Discover Handwoven Textiles",
+    "textile_description": "Unique pieces crafted with passion by local artisans.",
+    "pottery_title": "Exquisite Pottery Collection",
+    "pottery_description": "Add a touch of artistry to your home.",
+    "jewelry_title": "Artisan Jewelry Showcase",
+    "jewelry_description": "Handmade jewelry that tells a story.",
+    "shop_now": "Shop Now"
   },
   "artisan": {
     "dashboard": "Dashboard",

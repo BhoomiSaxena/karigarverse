@@ -101,7 +101,7 @@ export default function ShopPage() {
                   >
                     <Checkbox id={`cat-${category.id}`} />
                     <Label htmlFor={`cat-${category.id}`} className="text-base">
-                      {category.name}
+                      {t(`category.${category.id}`)}
                     </Label>
                   </div>
                 ))}

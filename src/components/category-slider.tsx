@@ -5,6 +5,7 @@ import { categories } from "@/lib/data"
 import type { Category } from "@/lib/types"
 import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/carousel"
 import { motion } from "framer-motion" // Import motion
+import { useLanguage } from "@/contexts/LanguageContext"
 
 const categoryItemVariants = {
   hidden: { opacity: 0, scale: 0.9 },
@@ -21,9 +22,11 @@ const categoryItemVariants = {
 }
 
 export function CategorySlider() {
+  const { t } = useLanguage()
+  
   return (
     <div className="mb-12">
-      <h2 className="text-3xl font-bold mb-6 text-center">Explore by Category</h2>
+      <h2 className="text-3xl font-bold mb-6 text-center">{t('home.explore_by_category')}</h2>
       <Carousel opts={{ align: "start", dragFree: true }} className="w-full">
         <CarouselContent className="-ml-4">
           {categories.map((category: Category, index: number) => (
@@ -41,7 +44,7 @@ export function CategorySlider() {
                     {category.image ? (
                       <Image
                         src={category.image || "/placeholder.svg"}
-                        alt={category.name}
+                        alt={t(`category.${category.id}`)}
                         width={200}
                         height={200}
                         className="object-cover w-full h-full"
@@ -51,7 +54,7 @@ export function CategorySlider() {
                       <category.icon className="w-1/2 h-1/2 text-gray-500 mx-auto my-auto" />
                     ) : null}
                   </div>
-                  <p className="mt-2 text-center font-semibold text-lg group-hover:underline">{category.name}</p>
+                  <p className="mt-2 text-center font-semibold text-lg group-hover:underline">{t(`category.${category.id}`)}</p>
                 </Link>
               </motion.div>
             </CarouselItem>
