@@ -70,13 +70,14 @@ const itemVariants = {
   visible: { opacity: 1, y: 0 },
 };
 
-export default function EditProduct({ params }: { params: { id: string } }) {
+export default function EditProduct({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [newFeature, setNewFeature] = useState("");
   const [newTag, setNewTag] = useState("");
   const [imagePreview, setImagePreview] = useState<string>("");
   const [isCommandModalOpen, setIsCommandModalOpen] = useState(false);
+  const [paramsData, setParamsData] = useState<{ id: string } | null>(null);
   const [commandModalConfig, setCommandModalConfig] = useState<{
     field: "price" | "stock";
     label: string;
@@ -98,25 +99,47 @@ export default function EditProduct({ params }: { params: { id: string } }) {
     handleInputChange(commandModalConfig.field, value.toString());
   };
 
-  const product = artisanProducts.find((p) => p.id === params.id);
+  // Handle async params
+  useEffect(() => {
+    params.then(setParamsData);
+  }, [params]);
+
+  const product = paramsData ? artisanProducts.find((p) => p.id === paramsData.id) : null;
 
   const [formData, setFormData] = useState<ProductFormData>({
-    name: product?.name || "",
-    description: product?.description || "",
-    price: product?.price.toString() || "",
-    originalPrice: product?.originalPrice?.toString() || "",
-    category: product?.category || "",
-    stock: product?.stock?.toString() || "",
-    images: product?.images || [],
-    features: product?.features || [],
-    tags: product?.tags || [],
+    name: "",
+    description: "",
+    price: "",
+    originalPrice: "",
+    category: "",
+    stock: "",
+    images: [],
+    features: [],
+    tags: [],
   });
 
+  // Update form data when product is loaded
   useEffect(() => {
-    if (!product) {
+    if (product) {
+      setFormData({
+        name: product.name || "",
+        description: product.description || "",
+        price: product.price.toString() || "",
+        originalPrice: product.originalPrice?.toString() || "",
+        category: product.category || "",
+        stock: product.stock?.toString() || "",
+        images: product.images || [],
+        features: product.features || [],
+        tags: product.tags || [],
+      });
+    }
+  }, [product]);
+
+  useEffect(() => {
+    if (paramsData && !product) {
       router.push("/artisan/products");
     }
-  }, [product, router]);
+  }, [paramsData, product, router]);
 
   const handleInputChange = (field: keyof ProductFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }));

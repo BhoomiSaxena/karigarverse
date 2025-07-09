@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "framer-motion"
 import { usePathname } from "next/navigation" // To get current path for key
 import { LanguageProvider } from "@/contexts/LanguageContext"
+import { DatabaseProvider } from "@/contexts/DatabaseContext"
 
 const kalam = Kalam({
   subsets: ["latin"],
@@ -22,19 +23,21 @@ export default function ClientLayout({
 
   return (
     <LanguageProvider>
-      <div className={cn("min-h-screen bg-background font-sans antialiased", kalam.variable)}>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={pathname} // Unique key for each route
-            initial={{ opacity: 0, y: 15 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 15 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            {children}
-          </motion.div>
-        </AnimatePresence>
-      </div>
+      <DatabaseProvider>
+        <div className={cn("min-h-screen bg-background font-sans antialiased", kalam.variable)}>
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={pathname} // Unique key for each route
+              initial={{ opacity: 0, y: 15 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 15 }}
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+            >
+              {children}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </DatabaseProvider>
     </LanguageProvider>
   )
 }

@@ -1,14 +1,9 @@
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/utils/supabase/client';
 import type { Database } from './database.types';
 
-// Server-side database operations ONLY
-// Do not import this in client components!
-
-// Server-side database operations
-export class DatabaseOperations {
-  private async getSupabase() {
-    return await createClient();
-  }
+// Client-side database operations only
+export class ClientDatabaseOperations {
+  private supabase = createClient();
 
   // =============================================
   // USER PROFILE OPERATIONS
@@ -21,8 +16,7 @@ export class DatabaseOperations {
     email: string;
     phone?: string;
   }) {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('profiles')
       .insert([userData])
       .select()
@@ -33,8 +27,7 @@ export class DatabaseOperations {
   }
 
   async getUserProfile(userId: string) {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('profiles')
       .select('*')
       .eq('id', userId)
@@ -45,8 +38,7 @@ export class DatabaseOperations {
   }
 
   async updateUserProfile(userId: string, updates: any) {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('profiles')
       .update(updates)
       .eq('id', userId)
@@ -62,8 +54,7 @@ export class DatabaseOperations {
   // =============================================
 
   async createArtisanProfile(artisanData: any) {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('artisan_profiles')
       .insert([artisanData])
       .select()
@@ -74,8 +65,7 @@ export class DatabaseOperations {
   }
 
   async getArtisanProfile(userId: string) {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('artisan_profiles')
       .select('*')
       .eq('user_id', userId)
@@ -86,8 +76,7 @@ export class DatabaseOperations {
   }
 
   async updateArtisanProfile(userId: string, updates: any) {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('artisan_profiles')
       .update(updates)
       .eq('user_id', userId)
@@ -99,8 +88,7 @@ export class DatabaseOperations {
   }
 
   async getArtisanProducts(artisanId: string) {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('products')
       .select('*')
       .eq('artisan_id', artisanId)
@@ -115,8 +103,7 @@ export class DatabaseOperations {
   // =============================================
 
   async createProduct(productData: any) {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('products')
       .insert([productData])
       .select()
@@ -127,8 +114,7 @@ export class DatabaseOperations {
   }
 
   async getProduct(productId: string) {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('products')
       .select('*')
       .eq('id', productId)
@@ -147,8 +133,7 @@ export class DatabaseOperations {
     offset?: number;
     search?: string;
   } = {}) {
-    const supabase = await this.getSupabase();
-    let query = supabase
+    let query = this.supabase
       .from('products')
       .select('*');
 
@@ -190,8 +175,7 @@ export class DatabaseOperations {
   // =============================================
 
   async getCategories() {
-    const supabase = await this.getSupabase();
-    const { data, error } = await supabase
+    const { data, error } = await this.supabase
       .from('categories')
       .select('*')
       .eq('is_active', true)
@@ -200,7 +184,21 @@ export class DatabaseOperations {
     if (error) throw error;
     return data;
   }
+
+  // =============================================
+  // AUTH OPERATIONS
+  // =============================================
+
+  async getUser() {
+    const { data: { user } } = await this.supabase.auth.getUser();
+    return user;
+  }
+
+  async signOut() {
+    const { error } = await this.supabase.auth.signOut();
+    if (error) throw error;
+  }
 }
 
 // Export singleton instance
-export const db = new DatabaseOperations();
+export const clientDb = new ClientDatabaseOperations();
