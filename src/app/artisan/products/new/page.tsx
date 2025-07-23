@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { Button } from "@/components/ui/button";
@@ -22,6 +23,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Plus,
   X,
@@ -33,6 +35,8 @@ import {
   Save,
   ArrowLeft,
   Mic,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { categories } from "@/lib/data";
 import Link from "next/link";
@@ -41,6 +45,8 @@ import { motion } from "framer-motion";
 import { VoiceInputModal } from "@/components/ui/voice-input-modal";
 import { VoiceCommandModal } from "@/components/ui/voice-command-modal";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { ClientDatabaseOperations } from "@/lib/database-client";
+import { createClient } from "@/utils/supabase/client";
 
 interface ProductFormData {
   name: string;
@@ -68,10 +74,17 @@ const initialFormData: ProductFormData = {
 
 export default function AddEditProduct() {
   const { t } = useLanguage();
+  const router = useRouter();
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
   const [newFeature, setNewFeature] = useState("");
   const [newTag, setNewTag] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: "success" | "error" | null;
+    message: string;
+  }>({ type: null, message: "" });
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const [artisanProfile, setArtisanProfile] = useState<any>(null);
   const [isCommandModalOpen, setIsCommandModalOpen] = useState(false);
   const [commandModalConfig, setCommandModalConfig] = useState<{
     field: "price" | "stock";
@@ -83,6 +96,30 @@ export default function AddEditProduct() {
     currentValue: string;
     label: string;
   } | null>(null);
+
+  const supabase = createClient();
+  const db = new ClientDatabaseOperations();
+
+  // Get current user and artisan profile
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (user) {
+          setCurrentUser(user);
+          // Get artisan profile
+          const profile = await db.getArtisanProfile(user.id);
+          setArtisanProfile(profile);
+        }
+      } catch (error) {
+        console.error("Error getting user:", error);
+      }
+    };
+
+    getCurrentUser();
+  }, []);
 
   const openCommandModal = (field: "price" | "stock", label: string) => {
     setCommandModalConfig({ field, label });
@@ -180,10 +217,62 @@ export default function AddEditProduct() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!artisanProfile?.id) {
+      setSubmitStatus({
+        type: "error",
+        message:
+          "Artisan profile not found. Please complete your artisan registration first.",
+      });
+      return;
+    }
+
     setIsSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    console.log("Product data:", formData);
-    setIsSubmitting(false);
+    setSubmitStatus({ type: null, message: "" });
+
+    try {
+      // Prepare product data for database
+      const productData = {
+        artisan_id: artisanProfile.id,
+        category_id: formData.category,
+        name: formData.name,
+        description: formData.description,
+        price: parseFloat(formData.price),
+        original_price: formData.originalPrice
+          ? parseFloat(formData.originalPrice)
+          : null,
+        images: formData.images,
+        features: formData.features,
+        tags: formData.tags,
+        stock_quantity: parseInt(formData.stock),
+        is_active: true,
+        is_featured: false,
+      };
+
+      // Create the product
+      const newProduct = await db.createProduct(productData);
+
+      setSubmitStatus({
+        type: "success",
+        message: "Product created successfully! Redirecting...",
+      });
+
+      // Reset form
+      setFormData(initialFormData);
+
+      // Redirect to products page after 2 seconds
+      setTimeout(() => {
+        router.push("/artisan/products");
+      }, 2000);
+    } catch (error: any) {
+      console.error("Error creating product:", error);
+      setSubmitStatus({
+        type: "error",
+        message: error.message || "Failed to create product. Please try again.",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const isFormValid =
@@ -223,6 +312,37 @@ export default function AddEditProduct() {
             </h1>
             <p className="text-gray-600 mt-2">{t("products.create_listing")}</p>
           </motion.div>
+
+          {/* Status Alert */}
+          {submitStatus.type && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+            >
+              <Alert
+                className={`border-2 rounded-none ${
+                  submitStatus.type === "success"
+                    ? "border-green-500 bg-green-50"
+                    : "border-red-500 bg-red-50"
+                }`}
+              >
+                {submitStatus.type === "success" ? (
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                ) : (
+                  <AlertCircle className="h-4 w-4 text-red-600" />
+                )}
+                <AlertDescription
+                  className={
+                    submitStatus.type === "success"
+                      ? "text-green-700"
+                      : "text-red-700"
+                  }
+                >
+                  {submitStatus.message}
+                </AlertDescription>
+              </Alert>
+            </motion.div>
+          )}
 
           <form onSubmit={handleSubmit} className="space-y-8">
             <motion.div

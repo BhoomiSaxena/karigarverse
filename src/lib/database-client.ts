@@ -1,5 +1,5 @@
-import { createClient } from '@/utils/supabase/client';
-import type { Database } from './database.types';
+import { createClient } from "@/utils/supabase/client";
+import type { Database } from "./database.types";
 
 // Client-side database operations only
 export class ClientDatabaseOperations {
@@ -17,7 +17,7 @@ export class ClientDatabaseOperations {
     phone?: string;
   }) {
     const { data, error } = await this.supabase
-      .from('profiles')
+      .from("profiles")
       .insert([userData])
       .select()
       .single();
@@ -28,9 +28,9 @@ export class ClientDatabaseOperations {
 
   async getUserProfile(userId: string) {
     const { data, error } = await this.supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', userId)
+      .from("profiles")
+      .select("*")
+      .eq("id", userId)
       .single();
 
     if (error) throw error;
@@ -39,9 +39,9 @@ export class ClientDatabaseOperations {
 
   async updateUserProfile(userId: string, updates: any) {
     const { data, error } = await this.supabase
-      .from('profiles')
+      .from("profiles")
       .update(updates)
-      .eq('id', userId)
+      .eq("id", userId)
       .select()
       .single();
 
@@ -55,7 +55,7 @@ export class ClientDatabaseOperations {
 
   async createArtisanProfile(artisanData: any) {
     const { data, error } = await this.supabase
-      .from('artisan_profiles')
+      .from("artisan_profiles")
       .insert([artisanData])
       .select()
       .single();
@@ -65,21 +65,26 @@ export class ClientDatabaseOperations {
   }
 
   async getArtisanProfile(userId: string) {
-    const { data, error } = await this.supabase
-      .from('artisan_profiles')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    try {
+      const { data, error } = await this.supabase
+        .from("artisan_profiles")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
 
-    if (error) throw error;
-    return data;
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error("Error getting artisan profile:", error);
+      return null;
+    }
   }
 
   async updateArtisanProfile(userId: string, updates: any) {
     const { data, error } = await this.supabase
-      .from('artisan_profiles')
+      .from("artisan_profiles")
       .update(updates)
-      .eq('user_id', userId)
+      .eq("user_id", userId)
       .select()
       .single();
 
@@ -89,10 +94,10 @@ export class ClientDatabaseOperations {
 
   async getArtisanProducts(artisanId: string) {
     const { data, error } = await this.supabase
-      .from('products')
-      .select('*')
-      .eq('artisan_id', artisanId)
-      .order('created_at', { ascending: false });
+      .from("products")
+      .select("*")
+      .eq("artisan_id", artisanId)
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
     return data;
@@ -104,7 +109,7 @@ export class ClientDatabaseOperations {
 
   async createProduct(productData: any) {
     const { data, error } = await this.supabase
-      .from('products')
+      .from("products")
       .insert([productData])
       .select()
       .single();
@@ -115,46 +120,46 @@ export class ClientDatabaseOperations {
 
   async getProduct(productId: string) {
     const { data, error } = await this.supabase
-      .from('products')
-      .select('*')
-      .eq('id', productId)
+      .from("products")
+      .select("*")
+      .eq("id", productId)
       .single();
 
     if (error) throw error;
     return data;
   }
 
-  async getProducts(filters: {
-    category?: string;
-    artisanId?: string;
-    isActive?: boolean;
-    isFeatured?: boolean;
-    limit?: number;
-    offset?: number;
-    search?: string;
-  } = {}) {
-    let query = this.supabase
-      .from('products')
-      .select('*');
+  async getProducts(
+    filters: {
+      category?: string;
+      artisanId?: string;
+      isActive?: boolean;
+      isFeatured?: boolean;
+      limit?: number;
+      offset?: number;
+      search?: string;
+    } = {}
+  ) {
+    let query = this.supabase.from("products").select("*");
 
     if (filters.category) {
-      query = query.eq('category_id', filters.category);
+      query = query.eq("category_id", filters.category);
     }
 
     if (filters.artisanId) {
-      query = query.eq('artisan_id', filters.artisanId);
+      query = query.eq("artisan_id", filters.artisanId);
     }
 
     if (filters.isActive !== undefined) {
-      query = query.eq('is_active', filters.isActive);
+      query = query.eq("is_active", filters.isActive);
     }
 
     if (filters.isFeatured !== undefined) {
-      query = query.eq('is_featured', filters.isFeatured);
+      query = query.eq("is_featured", filters.isFeatured);
     }
 
     if (filters.search) {
-      query = query.ilike('name', `%${filters.search}%`);
+      query = query.ilike("name", `%${filters.search}%`);
     }
 
     const limit = filters.limit || 20;
@@ -162,7 +167,7 @@ export class ClientDatabaseOperations {
 
     query = query
       .range(offset, offset + limit - 1)
-      .order('created_at', { ascending: false });
+      .order("created_at", { ascending: false });
 
     const { data, error } = await query;
 
@@ -176,10 +181,10 @@ export class ClientDatabaseOperations {
 
   async getCategories() {
     const { data, error } = await this.supabase
-      .from('categories')
-      .select('*')
-      .eq('is_active', true)
-      .order('sort_order', { ascending: true });
+      .from("categories")
+      .select("*")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
 
     if (error) throw error;
     return data;
@@ -190,7 +195,9 @@ export class ClientDatabaseOperations {
   // =============================================
 
   async getUser() {
-    const { data: { user } } = await this.supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await this.supabase.auth.getUser();
     return user;
   }
 

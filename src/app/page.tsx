@@ -3,8 +3,8 @@ import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { HeroCarousel } from "@/components/hero-carousel";
 import { CategorySlider } from "@/components/category-slider";
-import { ProductCard } from "@/components/product-card";
-import { products } from "@/lib/data";
+import { DynamicProductGrid } from "@/components/dynamic-product-grid";
+import { ProductsProvider } from "@/contexts/ProductsContext";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
@@ -13,9 +13,18 @@ import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const productSections = [
-  { titleKey: "home.deals_of_day", products: products.slice(0, 4) },
-  { titleKey: "home.top_picks", products: products.slice(1, 5).reverse() },
-  { titleKey: "home.inspired_browsing", products: products.slice(2, 6) },
+  {
+    titleKey: "home.deals_of_day",
+    filters: { limit: 4, isFeatured: true },
+  },
+  {
+    titleKey: "home.top_picks",
+    filters: { limit: 4 },
+  },
+  {
+    titleKey: "home.inspired_browsing",
+    filters: { limit: 6 },
+  },
 ];
 
 const sectionVariants = {
@@ -87,13 +96,11 @@ export default function HomePage() {
                   {t("home.view_all")} <ArrowRight className="h-5 w-5" />
                 </Link>
               </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {section.products.map((product) => (
-                  <motion.div key={product.id} variants={cardItemVariants}>
-                    <ProductCard product={product} />
-                  </motion.div>
-                ))}
-              </div>
+              <DynamicProductGrid
+                filters={section.filters}
+                showHeader={false}
+                gridCols="4"
+              />
             </motion.section>
           ))}
 
@@ -160,8 +167,12 @@ export default function HomePage() {
 
           {/* Newsletter Section */}
           <section className="my-20 p-8 border-2 border-black">
-            <h2 className="text-4xl font-bold mb-4">{t("home.newsletter_title")}</h2>
-            <p className="text-gray-600 mb-6">{t("home.newsletter_subtitle")}</p>
+            <h2 className="text-4xl font-bold mb-4">
+              {t("home.newsletter_title")}
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {t("home.newsletter_subtitle")}
+            </p>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex-1">
                 <label htmlFor="email" className="text-sm">

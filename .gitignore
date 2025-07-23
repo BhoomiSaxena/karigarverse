@@ -42,4 +42,14 @@ next-env.d.ts
 
 
 #others
+.vscode/*
 check.html
+
+# Supabase
+supabase/branches
+supabase/.temp
+
+# dotenvx
+supabase/.env.keys
+supabase/.env.local
+supabase/.env.*.local
