@@ -58,7 +58,9 @@ const itemVariants = {
 
 export default function ArtisanProfile() {
   const [artisan, setArtisan] = useState<Artisan | null>(null);
-  const [bankDetails, setBankDetails] = useState<ArtisanBankDetails | null>(null);
+  const [bankDetails, setBankDetails] = useState<ArtisanBankDetails | null>(
+    null
+  );
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>(null);
   const { t } = useLanguage();
@@ -75,7 +77,8 @@ export default function ArtisanProfile() {
         email: data.profile?.email || "",
         bio: data.profile?.bio || data.artisanProfile?.shop_description || "",
         contactDetails: {
-          phone: data.profile?.phone || data.artisanProfile?.contact_phone || "",
+          phone:
+            data.profile?.phone || data.artisanProfile?.contact_phone || "",
           address: data.artisanProfile?.location_address || "",
           city: data.artisanProfile?.location_city || "",
           state: data.artisanProfile?.location_state || "",
@@ -102,19 +105,15 @@ export default function ArtisanProfile() {
     await artisanService.updateArtisanFullProfile(user.id, {
       profile: {
         email: formData.email,
-        bio: formData.bio,
-        phone: formData.contactDetails?.phone,
         first_name: formData.name.split(" ")[0] || "",
         last_name: formData.name.split(" ").slice(1).join(" ") || "",
+        phone: formData.contactDetails?.phone,
       },
       artisanProfile: {
         shop_name: formData.shopName,
-        shop_description: formData.shopDescription,
-        shop_logo_url: formData.shopLogoUrl,
-        contact_phone: formData.contactDetails?.phone,
-        location_address: formData.contactDetails?.address,
-        location_city: formData.contactDetails?.city,
-        location_state: formData.contactDetails?.state,
+        description: formData.shopDescription,
+        shop_logo: formData.shopLogoUrl,
+        location: `${formData.contactDetails?.address}, ${formData.contactDetails?.city}, ${formData.contactDetails?.state}`,
       },
       bankDetails: {
         bankName: formData.bankDetails.bankName,

@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import { ArtisanOrder, ArtisanProduct } from "@/lib/types";
+import { artisanService, type DashboardData } from "@/lib/artisan-service";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -34,7 +35,6 @@ import { ArtisanWelcomeGuide } from "@/components/artisan-welcome-guide";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { artisanService } from "@/lib/artisan-service";
 import { clientDb } from "@/lib/database-client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -52,23 +52,6 @@ const itemVariants = {
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0 },
 };
-
-interface DashboardData {
-  stats: {
-    totalProducts: number;
-    totalOrders: number;
-    totalEarnings: number;
-    monthlyEarnings: number;
-    pendingOrders: number;
-    completedOrders: number;
-    totalViews: number;
-    conversionRate: number;
-  };
-  recentOrders: ArtisanOrder[];
-  topProducts: ArtisanProduct[];
-  notifications: any[];
-  unreadNotificationCount: number;
-}
 
 export default function ArtisanDashboard() {
   const { t } = useLanguage();
@@ -113,7 +96,6 @@ export default function ArtisanDashboard() {
       setLoading(false);
     }
   };
-
 
   if (loading) {
     return (
