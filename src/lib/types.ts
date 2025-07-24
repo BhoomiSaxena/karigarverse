@@ -142,3 +142,14 @@ export interface Notification {
   createdAt: string;
   actionUrl?: string;
 }
+
+export interface ArtisanBankDetails {
+  id: string;
+  bankName: string;
+  accountHolderName: string;
+  accountNumber: string;
+  ifscCode: string;
+  panNumber: string;
+  createdAt?: string;
+  updatedAt?: string;
+}

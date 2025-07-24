@@ -1,5 +1,6 @@
 import { createClient } from "@/utils/supabase/client";
 import type { Database } from "./database.types";
+import type { ArtisanBankDetails } from "./types";
 
 // Client-side database operations only
 export class ClientDatabaseOperations {
@@ -205,7 +206,29 @@ export class ClientDatabaseOperations {
     const { error } = await this.supabase.auth.signOut();
     if (error) throw error;
   }
-}
 
-// Export singleton instance
+  // =============================================
+  // ARTISAN BANK DETAILS OPERATIONS
+  // =============================================
+
+  async getArtisanBankDetails(userId: string) {
+    const { data, error } = await this.supabase
+      .from("artisan_bank_details")
+      .select("*")
+      .eq("id", userId)
+      .single();
+    if (error && error.code !== "PGRST116") throw error;
+    return data;
+  }
+
+  async upsertArtisanBankDetails(userId: string, details: Partial<ArtisanBankDetails>) {
+    const { data, error } = await this.supabase
+      .from("artisan_bank_details")
+      .upsert([{ id: userId, ...details }])
+      .select()
+      .single();
+    if (error) throw error;
+    return data;
+  }
+}
 export const clientDb = new ClientDatabaseOperations();
