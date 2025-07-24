@@ -1,13 +1,15 @@
 # Supabase Database Setup Instructions
 
 ## Prerequisites
+
 1. Your Supabase project is already created and configured
 2. Environment variables are set in `.env.local`
 
 ## Step 1: Set up the Database Schema
 
 ### Option A: Using Supabase Dashboard (Recommended)
-1. Go to your Supabase Dashboard: https://supabase.com/dashboard
+
+1. Go to your Supabase Dashboard: <https://supabase.com/dashboard>
 2. Select your project: `pwbegatqguevtcjhvhue`
 3. Navigate to the **SQL Editor** (left sidebar)
 4. Click **New Query**
@@ -15,6 +17,7 @@
 6. Click **Run** to execute the schema
 
 ### Option B: Using Supabase CLI
+
 ```bash
 # Install Supabase CLI if not already installed
 npm install -g supabase
@@ -23,7 +26,7 @@ npm install -g supabase
 supabase login
 
 # Link your project
-supabase link --project-ref pwbegatqguevtcjhvhue
+supabase link --project-ref aqijqvqvsjjsyxdnmmfj 
 
 # Run the schema
 supabase db push
@@ -33,7 +36,8 @@ supabase db push
 
 After running the schema, verify these tables were created:
 
-### Core Tables:
+### Core Tables
+
 - ✅ `profiles` - User profile information
 - ✅ `categories` - Product categories
 - ✅ `artisan_profiles` - Artisan shop information
@@ -44,11 +48,13 @@ After running the schema, verify these tables were created:
 - ✅ `reviews` - Product reviews and ratings
 - ✅ `notifications` - User notifications
 
-### Views:
+### Views
+
 - ✅ `product_details` - Enhanced product information with aggregated data
 - ✅ `order_details` - Enhanced order information with customer details
 
-### Functions and Triggers:
+### Functions and Triggers
+
 - ✅ `handle_new_user()` - Automatically creates profile when user signs up
 - ✅ `handle_updated_at()` - Updates timestamp fields automatically
 - ✅ Row Level Security (RLS) policies for data protection
@@ -56,17 +62,20 @@ After running the schema, verify these tables were created:
 ## Step 3: Test the Database
 
 ### 3.1 Test User Registration
+
 1. Go to your app's signup page
 2. Create a new account
 3. Check the `profiles` table in Supabase dashboard
 4. Verify a profile was automatically created
 
 ### 3.2 Test Authentication
+
 1. Sign up and sign in with your test account
 2. Check that the header shows your user information
 3. Verify you can access protected routes
 
 ### 3.3 Test Database Operations
+
 ```typescript
 // Test in your app or in the Supabase dashboard
 import { db } from '@/lib/database'
@@ -96,20 +105,23 @@ const product = await db.createProduct({
 
 The schema includes comprehensive RLS policies, but you can customize them:
 
-### Key Security Features:
+### Key Security Features
+
 - Users can only access their own data
 - Public data (products, categories) is accessible to everyone
 - Artisans can only manage their own products and orders
 - Customers can only view their own orders and cart items
 
-### To modify RLS policies:
+### To modify RLS policies
+
 1. Go to Authentication → Policies in Supabase Dashboard
 2. Select the table you want to modify
 3. Edit or add new policies as needed
 
 ## Step 5: Populate Initial Data
 
-### Add Categories (if not already done):
+### Add Categories (if not already done)
+
 ```sql
 INSERT INTO public.categories (name, slug, description, sort_order) VALUES
 ('Pottery', 'pottery', 'Handcrafted pottery and ceramics', 1),
@@ -136,6 +148,7 @@ For authentication emails:
 
 1. Go to Authentication → Email Templates
 2. Update the confirmation email template to:
+
    ```
    Confirm your signup for KarigarVerse
    
@@ -144,7 +157,7 @@ For authentication emails:
 
 ## Troubleshooting
 
-### Common Issues:
+### Common Issues
 
 1. **Permission Denied Errors**
    - Check RLS policies are correctly configured
@@ -158,7 +171,7 @@ For authentication emails:
    - Verify the `handle_new_user()` function is created
    - Check the trigger is properly attached to `auth.users`
 
-### Useful SQL Queries for Testing:
+### Useful SQL Queries for Testing
 
 ```sql
 -- Check if profile was created for user
