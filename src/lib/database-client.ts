@@ -82,15 +82,31 @@ export class ClientDatabaseOperations {
   }
 
   async updateArtisanProfile(userId: string, updates: any) {
-    const { data, error } = await this.supabase
-      .from("artisan_profiles")
-      .update(updates)
-      .eq("user_id", userId)
-      .select()
-      .single();
+    // First check if artisan profile exists
+    const existingProfile = await this.getArtisanProfile(userId);
 
-    if (error) throw error;
-    return data;
+    if (existingProfile) {
+      // Update existing profile
+      const { data, error } = await this.supabase
+        .from("artisan_profiles")
+        .update(updates)
+        .eq("user_id", userId)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } else {
+      // Create new profile if it doesn't exist
+      const { data, error } = await this.supabase
+        .from("artisan_profiles")
+        .insert([{ user_id: userId, ...updates }])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
   }
 
   async getArtisanProducts(artisanId: string) {
@@ -221,7 +237,10 @@ export class ClientDatabaseOperations {
     return data;
   }
 
-  async upsertArtisanBankDetails(userId: string, details: Partial<ArtisanBankDetails>) {
+  async upsertArtisanBankDetails(
+    userId: string,
+    details: Partial<ArtisanBankDetails>
+  ) {
     const { data, error } = await this.supabase
       .from("artisan_bank_details")
       .upsert([{ id: userId, ...details }])
