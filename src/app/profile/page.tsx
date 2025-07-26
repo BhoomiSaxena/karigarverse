@@ -84,6 +84,7 @@ import {
   Smartphone,
   Lock,
   Trash2,
+  Hash,
 } from "lucide-react";
 
 type ProfileData = {
@@ -295,42 +296,77 @@ export default function ProfilePage() {
     const file = event.target.files?.[0];
     if (!file || !user) return;
 
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast({
+        title: "Invalid file type",
+        description: "Please select an image file.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File too large",
+        description: "Please select an image smaller than 5MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsUploadingPhoto(true);
 
     try {
-      // Upload file to Supabase storage
-      const fileExt = file.name.split(".").pop();
-      const fileName = `profile-${user.id}-${Date.now()}.${fileExt}`;
-      const filePath = `avatars/${fileName}`;
+      // For now, convert to base64 for demo purposes
+      // In production, this would use Supabase storage
+      const reader = new FileReader();
 
-      const { error: uploadError } = await supabase.storage
-        .from("avatars")
-        .upload(filePath, file);
+      reader.onloadend = async () => {
+        try {
+          const base64String = reader.result as string;
 
-      if (
-        uploadError &&
-        uploadError.message !== "The resource already exists"
-      ) {
-        throw uploadError;
-      }
+          // Update profile data state
+          setProfileData((prev) => ({
+            ...prev,
+            avatar_url: base64String,
+          }));
 
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("avatars").getPublicUrl(filePath);
+          // Update in database
+          await clientDb.updateUserProfile(user.id, {
+            avatar_url: base64String,
+          });
 
-      // Update profile with new avatar URL
-      await clientDb.updateUserProfile(user.id, {
-        avatar_url: publicUrl,
-      });
+          // Refresh profile data
+          await refreshProfile();
 
-      // Refresh profile data
-      await refreshProfile();
+          toast({
+            title: "Success",
+            description: "Profile photo updated successfully!",
+          });
+        } catch (error) {
+          console.error("Error saving photo:", error);
+          toast({
+            title: "Error",
+            description: "Failed to save profile photo. Please try again.",
+            variant: "destructive",
+          });
+        } finally {
+          setIsUploadingPhoto(false);
+        }
+      };
 
-      toast({
-        title: "Success",
-        description: "Profile photo updated successfully!",
-      });
+      reader.onerror = () => {
+        toast({
+          title: "Error",
+          description: "Failed to read the image file.",
+          variant: "destructive",
+        });
+        setIsUploadingPhoto(false);
+      };
+
+      reader.readAsDataURL(file);
     } catch (error) {
       console.error("Error uploading photo:", error);
       toast({
@@ -338,7 +374,6 @@ export default function ProfilePage() {
         description: "Failed to upload profile photo. Please try again.",
         variant: "destructive",
       });
-    } finally {
       setIsUploadingPhoto(false);
     }
   };
@@ -429,39 +464,42 @@ export default function ProfilePage() {
       <Header />
 
       <main className="flex-grow py-8">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto px-6 lg:px-8">
           {/* Profile Header */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-gradient-to-r from-purple-50 to-pink-50 p-8 rounded-lg border-2 border-black mb-8"
+            className="bg-gradient-to-r from-purple-50 to-pink-50 p-12 rounded-2xl border-2 border-black mb-10 shadow-xl"
           >
-            <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex flex-col lg:flex-row items-start gap-10 w-full">
               {/* Profile Photo Section */}
-              <div className="flex flex-col items-center">
+              <div className="flex flex-col items-center flex-shrink-0">
                 <div className="relative">
-                  <Avatar className="h-32 w-32 border-4 border-black shadow-lg">
-                    <AvatarImage
-                      src={profileData.avatar_url || profile.avatar_url || ""}
-                      alt="Profile photo"
-                      className="object-cover"
-                    />
-                    <AvatarFallback className="text-2xl font-bold bg-gradient-to-br from-purple-100 to-pink-100">
-                      {profileData.first_name[0]}
-                      {profileData.last_name[0]}
-                    </AvatarFallback>
-                  </Avatar>
+                  <div className="w-40 h-40 rounded-full border-4 border-black shadow-xl overflow-hidden bg-gradient-to-br from-purple-100 to-pink-100">
+                    {profileData.avatar_url || profile.avatar_url ? (
+                      <img
+                        src={profileData.avatar_url || profile.avatar_url || ""}
+                        alt="Profile photo"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-gray-700">
+                        {profileData.first_name[0]}
+                        {profileData.last_name[0]}
+                      </div>
+                    )}
+                  </div>
 
                   {/* Photo Upload Button */}
                   <button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingPhoto}
-                    className="absolute -bottom-2 -right-2 p-2 bg-black text-white rounded-full hover:bg-gray-800 transition-colors disabled:opacity-50"
+                    className="absolute -bottom-3 -right-3 p-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors disabled:opacity-50 shadow-lg"
                   >
                     {isUploadingPhoto ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <Loader2 className="h-5 w-5 animate-spin" />
                     ) : (
-                      <Camera className="h-4 w-4" />
+                      <Camera className="h-5 w-5" />
                     )}
                   </button>
 
@@ -480,149 +518,164 @@ export default function ProfilePage() {
               </div>
 
               {/* Profile Info */}
-              <div className="flex-1 text-center md:text-left">
-                <h1 className="text-4xl font-bold mb-2">
-                  {profileData.first_name} {profileData.last_name}
-                </h1>
-                <p className="text-xl text-gray-600 mb-4">
-                  {profileData.email}
-                </p>
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-6">
+                  <div className="flex-1 min-w-0">
+                    <h1 className="text-5xl font-bold mb-4 text-gray-900">
+                      {profileData.first_name} {profileData.last_name}
+                    </h1>
+                    <p className="text-xl text-gray-600 mb-6">
+                      {profileData.email}
+                    </p>
 
-                {profileData.bio && (
-                  <p className="text-gray-700 mb-4 max-w-2xl">
-                    {profileData.bio}
-                  </p>
-                )}
-
-                <div className="flex flex-wrap gap-2 justify-center md:justify-start">
-                  {profileData.occupation && (
-                    <Badge
-                      variant="secondary"
-                      className="flex items-center gap-1"
-                    >
-                      <Briefcase className="h-3 w-3" />
-                      {profileData.occupation}
-                    </Badge>
-                  )}
-                  {profileData.address.city && (
-                    <Badge
-                      variant="outline"
-                      className="flex items-center gap-1"
-                    >
-                      <MapPin className="h-3 w-3" />
-                      {profileData.address.city}
-                    </Badge>
-                  )}
-                  <Badge variant="outline" className="flex items-center gap-1">
-                    <Calendar className="h-3 w-3" />
-                    Member since {new Date(profile.created_at).getFullYear()}
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Edit Button */}
-              <div className="flex flex-col gap-2">
-                <Button
-                  onClick={() => setIsEditing(!isEditing)}
-                  variant={isEditing ? "destructive" : "default"}
-                  className="flex items-center gap-2"
-                >
-                  {isEditing ? (
-                    <>
-                      <X className="h-4 w-4" />
-                      Cancel
-                    </>
-                  ) : (
-                    <>
-                      <Edit2 className="h-4 w-4" />
-                      Edit Profile
-                    </>
-                  )}
-                </Button>
-
-                {isEditing && (
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="flex items-center gap-2"
-                  >
-                    {isSaving ? (
-                      <>
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                        Saving...
-                      </>
-                    ) : (
-                      <>
-                        <Save className="h-4 w-4" />
-                        Save Changes
-                      </>
+                    {profileData.bio && (
+                      <div className="bg-white/70 rounded-xl p-5 mb-6 border border-gray-200 shadow-sm">
+                        <h3 className="text-lg font-semibold mb-3 text-gray-800">
+                          About
+                        </h3>
+                        <p className="text-gray-700 leading-relaxed text-base break-words">
+                          {profileData.bio}
+                        </p>
+                      </div>
                     )}
-                  </Button>
-                )}
+
+                    <div className="flex flex-wrap gap-4">
+                      {profileData.occupation && (
+                        <div className="flex items-center gap-3 bg-blue-100 px-4 py-3 rounded-full border border-blue-200">
+                          <Briefcase className="h-5 w-5 text-blue-600 flex-shrink-0" />
+                          <span className="text-sm font-medium text-blue-800">
+                            {profileData.occupation}
+                          </span>
+                        </div>
+                      )}
+                      {profileData.address.city && (
+                        <div className="flex items-center gap-3 bg-green-100 px-4 py-3 rounded-full border border-green-200">
+                          <MapPin className="h-5 w-5 text-green-600 flex-shrink-0" />
+                          <span className="text-sm font-medium text-green-800">
+                            {profileData.address.city}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex items-center gap-3 bg-purple-100 px-4 py-3 rounded-full border border-purple-200">
+                        <Calendar className="h-5 w-5 text-purple-600 flex-shrink-0" />
+                        <span className="text-sm font-medium text-purple-800">
+                          Member since{" "}
+                          {new Date(profile.created_at).getFullYear()}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Edit Button */}
+                  <div className="flex flex-col gap-4 flex-shrink-0">
+                    <Button
+                      onClick={() => setIsEditing(!isEditing)}
+                      variant={isEditing ? "destructive" : "default"}
+                      className="flex items-center gap-3 px-6 py-3 text-base font-medium rounded-full shadow-lg"
+                    >
+                      {isEditing ? (
+                        <>
+                          <X className="h-5 w-5" />
+                          Cancel
+                        </>
+                      ) : (
+                        <>
+                          <Edit2 className="h-5 w-5" />
+                          Edit Profile
+                        </>
+                      )}
+                    </Button>
+
+                    {isEditing && (
+                      <Button
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="flex items-center gap-3 px-6 py-3 text-base font-medium rounded-full shadow-lg"
+                      >
+                        {isSaving ? (
+                          <>
+                            <Loader2 className="h-5 w-5 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="h-5 w-5" />
+                            Save Changes
+                          </>
+                        )}
+                      </Button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
 
           {/* Profile Tabs */}
-          <Tabs defaultValue="personal" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 bg-gray-100 border-2 border-black">
-              <TabsTrigger value="personal" className="flex items-center gap-2">
+          <Tabs defaultValue="personal" className="space-y-8">
+            <TabsList className="grid w-full grid-cols-2 lg:grid-cols-5 bg-white border-2 border-black rounded-2xl p-2 gap-1 shadow-lg">
+              <TabsTrigger
+                value="personal"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
+              >
                 <User className="h-4 w-4" />
-                Personal
+                <span className="hidden sm:inline">Personal</span>
               </TabsTrigger>
               <TabsTrigger
                 value="interests"
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
                 <Heart className="h-4 w-4" />
-                Interests
+                <span className="hidden sm:inline">Interests</span>
               </TabsTrigger>
-              <TabsTrigger value="social" className="flex items-center gap-2">
+              <TabsTrigger
+                value="social"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
+              >
                 <Users className="h-4 w-4" />
-                Social
+                <span className="hidden sm:inline">Social</span>
               </TabsTrigger>
               <TabsTrigger
                 value="preferences"
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
                 <Settings className="h-4 w-4" />
-                Preferences
+                <span className="hidden sm:inline">Preferences</span>
               </TabsTrigger>
               <TabsTrigger
                 value="notifications"
-                className="flex items-center gap-2"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
                 <Bell className="h-4 w-4" />
-                Notifications
+                <span className="hidden sm:inline">Notifications</span>
               </TabsTrigger>
-            </TabsList>
-
+            </TabsList>{" "}
             {/* Personal Information Tab */}
-            <TabsContent value="personal" className="space-y-6">
+            <TabsContent value="personal" className="space-y-8">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
               >
-                <Card className="border-2 border-black">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2">
-                      <User className="h-5 w-5" />
+                <Card className="border-2 border-black rounded-2xl shadow-xl">
+                  <CardHeader className="pb-6">
+                    <CardTitle className="flex items-center gap-3 text-2xl">
+                      <User className="h-6 w-6" />
                       Personal Information
                     </CardTitle>
-                    <CardDescription>
+                    <CardDescription className="text-base">
                       Manage your personal details and contact information
                     </CardDescription>
                   </CardHeader>
-                  <CardContent className="space-y-6">
+                  <CardContent className="space-y-8 px-8 pb-8">
                     {/* Basic Info Grid */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div className="space-y-2">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                      <div className="space-y-3">
                         <Label
                           htmlFor="first_name"
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-3 text-base font-medium"
                         >
-                          <User className="h-4 w-4" />
+                          <User className="h-5 w-5" />
                           First Name
                         </Label>
                         <Input
@@ -635,16 +688,16 @@ export default function ProfilePage() {
                             }))
                           }
                           disabled={!isEditing}
-                          className="border-2 border-black/20"
+                          className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                         />
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <Label
                           htmlFor="last_name"
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-3 text-base font-medium"
                         >
-                          <User className="h-4 w-4" />
+                          <User className="h-5 w-5" />
                           Last Name
                         </Label>
                         <Input
@@ -657,16 +710,16 @@ export default function ProfilePage() {
                             }))
                           }
                           disabled={!isEditing}
-                          className="border-2 border-black/20"
+                          className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                         />
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <Label
                           htmlFor="email"
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-3 text-base font-medium"
                         >
-                          <Mail className="h-4 w-4" />
+                          <Mail className="h-5 w-5" />
                           Email
                         </Label>
                         <Input
@@ -674,16 +727,16 @@ export default function ProfilePage() {
                           type="email"
                           value={profileData.email}
                           disabled={true} // Email should be read-only
-                          className="border-2 border-black/20 bg-gray-50"
+                          className="border-2 border-gray-200 bg-gray-50 rounded-xl py-3 px-4 text-base"
                         />
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <Label
                           htmlFor="phone"
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-3 text-base font-medium"
                         >
-                          <Phone className="h-4 w-4" />
+                          <Phone className="h-5 w-5" />
                           Phone
                         </Label>
                         <Input
@@ -696,16 +749,16 @@ export default function ProfilePage() {
                             }))
                           }
                           disabled={!isEditing}
-                          className="border-2 border-black/20"
+                          className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                         />
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <Label
                           htmlFor="date_of_birth"
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-3 text-base font-medium"
                         >
-                          <Calendar className="h-4 w-4" />
+                          <Calendar className="h-5 w-5" />
                           Date of Birth
                         </Label>
                         <Input
@@ -719,16 +772,16 @@ export default function ProfilePage() {
                             }))
                           }
                           disabled={!isEditing}
-                          className="border-2 border-black/20"
+                          className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                         />
                       </div>
 
-                      <div className="space-y-2">
+                      <div className="space-y-3">
                         <Label
                           htmlFor="gender"
-                          className="flex items-center gap-2"
+                          className="flex items-center gap-3 text-base font-medium"
                         >
-                          <Users className="h-4 w-4" />
+                          <Users className="h-5 w-5" />
                           Gender
                         </Label>
                         <Select
@@ -741,7 +794,7 @@ export default function ProfilePage() {
                           }
                           disabled={!isEditing}
                         >
-                          <SelectTrigger className="border-2 border-black/20">
+                          <SelectTrigger className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors">
                             <SelectValue placeholder="Select gender" />
                           </SelectTrigger>
                           <SelectContent>
@@ -756,10 +809,13 @@ export default function ProfilePage() {
                       </div>
                     </div>
 
-                    {/* Bio */}
-                    <div className="space-y-2">
-                      <Label htmlFor="bio" className="flex items-center gap-2">
-                        <FileText className="h-4 w-4" />
+                    {/* Bio - Full Width Section */}
+                    <div className="space-y-3 col-span-full">
+                      <Label
+                        htmlFor="bio"
+                        className="flex items-center gap-3 text-base font-medium"
+                      >
+                        <FileText className="h-5 w-5" />
                         Bio
                       </Label>
                       <Textarea
@@ -772,18 +828,18 @@ export default function ProfilePage() {
                           }))
                         }
                         disabled={!isEditing}
-                        className="border-2 border-black/20 min-h-[100px]"
+                        className="border-2 border-gray-200 rounded-xl py-4 px-4 text-base focus:border-black transition-colors min-h-[120px] resize-none"
                         placeholder="Tell us about yourself..."
                       />
                     </div>
 
                     {/* Occupation */}
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       <Label
                         htmlFor="occupation"
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-3 text-base font-medium"
                       >
-                        <Briefcase className="h-4 w-4" />
+                        <Briefcase className="h-5 w-5" />
                         Occupation
                       </Label>
                       <Input
@@ -796,27 +852,27 @@ export default function ProfilePage() {
                           }))
                         }
                         disabled={!isEditing}
-                        className="border-2 border-black/20"
+                        className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                         placeholder="Your profession or role"
                       />
                     </div>
 
-                    <Separator className="border-black/10" />
+                    <Separator className="border-gray-200 my-8" />
 
                     {/* Address Section */}
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold flex items-center gap-2">
-                        <MapPin className="h-5 w-5" />
+                    <div className="space-y-6 col-span-full">
+                      <h3 className="text-xl font-semibold flex items-center gap-3">
+                        <MapPin className="h-6 w-6" />
                         Address
                       </h3>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="md:col-span-2 space-y-2">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div className="md:col-span-2 space-y-3">
                           <Label
                             htmlFor="street"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-3 text-base font-medium"
                           >
-                            <Home className="h-4 w-4" />
+                            <Home className="h-5 w-5" />
                             Street Address
                           </Label>
                           <Input
@@ -830,16 +886,16 @@ export default function ProfilePage() {
                               )
                             }
                             disabled={!isEditing}
-                            className="border-2 border-black/20"
+                            className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                           />
                         </div>
 
-                        <div className="space-y-2">
+                        <div className="space-y-3">
                           <Label
                             htmlFor="city"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-3 text-base font-medium"
                           >
-                            <Building className="h-4 w-4" />
+                            <Building className="h-5 w-5" />
                             City
                           </Label>
                           <Input
@@ -853,12 +909,18 @@ export default function ProfilePage() {
                               )
                             }
                             disabled={!isEditing}
-                            className="border-2 border-black/20"
+                            className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="state">State</Label>
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="state"
+                            className="flex items-center gap-3 text-base font-medium"
+                          >
+                            <MapPin className="h-5 w-5" />
+                            State
+                          </Label>
                           <Input
                             id="state"
                             value={profileData.address.state || ""}
@@ -870,12 +932,18 @@ export default function ProfilePage() {
                               )
                             }
                             disabled={!isEditing}
-                            className="border-2 border-black/20"
+                            className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="zip">PIN Code</Label>
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="zip"
+                            className="flex items-center gap-3 text-base font-medium"
+                          >
+                            <Hash className="h-5 w-5" />
+                            PIN Code
+                          </Label>
                           <Input
                             id="zip"
                             value={profileData.address.zip || ""}
@@ -887,12 +955,18 @@ export default function ProfilePage() {
                               )
                             }
                             disabled={!isEditing}
-                            className="border-2 border-black/20"
+                            className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                           />
                         </div>
 
-                        <div className="space-y-2">
-                          <Label htmlFor="country">Country</Label>
+                        <div className="space-y-3">
+                          <Label
+                            htmlFor="country"
+                            className="flex items-center gap-3 text-base font-medium"
+                          >
+                            <Globe className="h-5 w-5" />
+                            Country
+                          </Label>
                           <Input
                             id="country"
                             value={profileData.address.country || ""}
@@ -904,7 +978,7 @@ export default function ProfilePage() {
                               )
                             }
                             disabled={!isEditing}
-                            className="border-2 border-black/20"
+                            className="border-2 border-gray-200 rounded-xl py-3 px-4 text-base focus:border-black transition-colors"
                           />
                         </div>
                       </div>
@@ -913,7 +987,6 @@ export default function ProfilePage() {
                 </Card>
               </motion.div>
             </TabsContent>
-
             {/* Interests Tab */}
             <TabsContent value="interests" className="space-y-6">
               <motion.div
@@ -994,7 +1067,6 @@ export default function ProfilePage() {
                 </Card>
               </motion.div>
             </TabsContent>
-
             {/* Social Media Tab */}
             <TabsContent value="social" className="space-y-6">
               <motion.div
@@ -1162,7 +1234,6 @@ export default function ProfilePage() {
                 </Card>
               </motion.div>
             </TabsContent>
-
             {/* Preferences Tab */}
             <TabsContent value="preferences" className="space-y-6">
               <motion.div
@@ -1271,7 +1342,6 @@ export default function ProfilePage() {
                 </Card>
               </motion.div>
             </TabsContent>
-
             {/* Notifications Tab */}
             <TabsContent value="notifications" className="space-y-6">
               <motion.div
