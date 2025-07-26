@@ -27,149 +27,86 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { motion } from "framer-motion";
+import Image from "next/image";
 import {
-  User,
-  MapPin,
-  Phone,
-  Mail,
+  AlertCircle,
+  Award,
+  Briefcase,
+  Building,
   Calendar,
   Camera,
-  Store,
-  CreditCard,
-  Shield,
-  Star,
-  Package,
-  DollarSign,
-  CheckCircle,
-  AlertCircle,
-  Edit2,
-  Save,
-  X,
-  Upload,
-  Loader2,
-  Globe,
-  Briefcase,
-  Heart,
-  Instagram,
-  Facebook,
-  Twitter,
-  Linkedin,
-  Youtube,
-  Languages,
   Clock,
+  CreditCard,
+  Edit2,
   Eye,
   FileText,
+  Globe,
   Home,
-  Building,
-  Award,
-  ShoppingBag,
-  Truck,
+  Loader2,
+  Mail,
+  MapPin,
   Palette,
-  Music,
-  BookOpen,
-  Mountain,
-  Plane,
-  Camera as CameraIcon,
+  Phone,
+  Save,
+  Shield,
+  ShieldCheck,
+  ShoppingBag,
+  Star,
+  Store,
+  Upload,
+  User,
   Utensils,
-  Dumbbell,
-  Smartphone,
-  Gamepad2,
-  MapPinIcon,
-  PhoneIcon,
-  MailIcon,
-  GlobeIcon,
+  X,
 } from "lucide-react";
 import { artisanService } from "@/lib/artisan-service";
-import Image from "next/image";
-import { motion } from "framer-motion";
-import type { Artisan, ArtisanBankDetails } from "@/lib/types";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useDatabase } from "@/contexts/DatabaseContext";
 import { clientDb } from "@/lib/database-client";
-import { createClient } from "@/utils/supabase/client";
+import { Database, ArtisanProfileData } from "@/lib/database.types";
+import { useDatabase } from "@/contexts/DatabaseContext";
 
-type ArtisanProfileData = {
-  // Personal Information
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  date_of_birth: string;
-  bio: string;
-  avatar_url?: string;
-
-  // Shop Information
-  shop_name: string;
-  description: string;
-  shop_logo?: string;
-  banner_image?: string;
-  specialties: string[];
-  location: string;
-  contact_phone: string;
-  contact_email: string;
-  website_url: string;
-  established_year: number | null;
-  experience_years: number | null;
-
-  // Address
-  address: {
-    street?: string;
-    city?: string;
-    state?: string;
-    zip?: string;
-    country?: string;
+type BusinessHours = {
+  [day: string]: {
+    open: string;
+    close: string;
+    closed: boolean;
   };
+};
 
-  // Social Media
-  social_media: {
-    website?: string;
-    instagram?: string;
-    facebook?: string;
-    twitter?: string;
-    linkedin?: string;
-    youtube?: string;
-  };
+type ArtisanProfileUpdate = Partial<ArtisanProfileData>;
 
-  // Business Information
-  business_license: string;
+const initialProfileData: Partial<ArtisanProfileData> = {
+  shop_name: "My Shop", // Default shop name to avoid NOT NULL constraint
+  description: null,
+  shop_logo: null,
+  banner_image: null,
+  specialties: [],
+  location: null,
+  contact_phone: null,
+  contact_email: null,
+  website_url: null,
+  established_year: null,
+  experience_years: null,
+  social_media: null,
+  business_license: null,
   business_hours: {
-    [key: string]: { open: string; close: string; closed?: boolean };
-  };
-
-  // Portfolio & Certifications
-  portfolio_images: string[];
-  certificates: string[];
-  awards: string[];
-
-  // Delivery & Payment
-  delivery_info: {
-    delivery_time?: string;
-    shipping_charges?: string;
-    free_shipping_above?: number;
-    delivery_areas?: string[];
-  };
-  payment_methods: string[];
-  return_policy: string;
-  shipping_policy: string;
-
-  // Preferences
-  preferred_language: string;
-  notification_preferences: {
-    order_notifications?: boolean;
-    review_notifications?: boolean;
-    marketing_emails?: boolean;
-    sms_notifications?: boolean;
-  };
-
-  // Bank Details
-  bank_details: {
-    bank_name: string;
-    account_holder_name: string;
-    account_number: string;
-    ifsc_code: string;
-    pan_number: string;
-  };
+    monday: { open: "09:00", close: "17:00", closed: false },
+    tuesday: { open: "09:00", close: "17:00", closed: false },
+    wednesday: { open: "09:00", close: "17:00", closed: false },
+    thursday: { open: "09:00", close: "17:00", closed: false },
+    friday: { open: "09:00", close: "17:00", closed: false },
+    saturday: { open: "10:00", close: "14:00", closed: false },
+    sunday: { open: "09:00", close: "17:00", closed: true },
+  },
+  portfolio_images: [],
+  certificates: [],
+  awards: [],
+  delivery_info: null,
+  payment_methods: [],
+  return_policy: null,
+  shipping_policy: null,
+  preferred_language: null,
+  notification_preferences: null,
 };
 
 // Specialty categories with icons
@@ -181,7 +118,7 @@ const specialtyCategories = [
   { id: "metalwork", name: "Metalwork", icon: Shield },
   { id: "painting", name: "Painting", icon: Palette },
   { id: "sculpture", name: "Sculpture", icon: Award },
-  { id: "ceramics", name: "Ceramics", icon: CameraIcon },
+  { id: "ceramics", name: "Ceramics", icon: Camera },
   { id: "glasswork", name: "Glasswork", icon: Eye },
   { id: "leatherwork", name: "Leatherwork", icon: ShoppingBag },
 ];
@@ -234,285 +171,85 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+    },
+  },
 };
 
 export default function ArtisanProfilePage() {
-  const { user, profile, loading, refreshProfile } = useDatabase();
-  const { t } = useLanguage();
+  const { user, profile, artisanProfile, loading, refreshProfile } =
+    useDatabase();
   const router = useRouter();
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const supabase = createClient();
 
-  // State management
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setSaving] = useState(false);
-  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [artisanProfile, setArtisanProfile] = useState<any>(null);
+  const [isUploadingPhoto, setUploadingPhoto] = useState(false);
   const [profileData, setProfileData] = useState<ArtisanProfileData>({
-    // Personal Information
-    first_name: "",
-    last_name: "",
-    email: "",
-    phone: "",
-    date_of_birth: "",
-    bio: "",
-    avatar_url: "",
+    id: "",
+    user_id: "",
+    shop_name: initialProfileData.shop_name || "My Shop",
+    description: initialProfileData.description,
+    specialties: initialProfileData.specialties || [],
+    location: initialProfileData.location,
+    business_license: initialProfileData.business_license,
+    verification_status: "pending",
+    status: "active",
+    commission_rate: 10.0,
+    total_sales: 0.0,
+    total_orders: 0,
+    rating: null,
+    banner_image: initialProfileData.banner_image,
+    shop_logo: initialProfileData.shop_logo,
+    created_at: "",
+    updated_at: "",
+    contact_phone: initialProfileData.contact_phone,
+    contact_email: initialProfileData.contact_email,
+    website_url: initialProfileData.website_url,
+    established_year: initialProfileData.established_year,
+    experience_years: initialProfileData.experience_years,
+    social_media: initialProfileData.social_media,
+    business_hours: initialProfileData.business_hours,
+    portfolio_images: initialProfileData.portfolio_images || [],
+    certificates: initialProfileData.certificates || [],
+    awards: initialProfileData.awards || [],
+    delivery_info: initialProfileData.delivery_info,
+    payment_methods: initialProfileData.payment_methods || [],
+    return_policy: initialProfileData.return_policy,
+    shipping_policy: initialProfileData.shipping_policy,
+    preferred_language: initialProfileData.preferred_language,
+    notification_preferences: initialProfileData.notification_preferences,
+  } as ArtisanProfileData);
 
-    // Shop Information
-    shop_name: "",
-    description: "",
-    shop_logo: "",
-    banner_image: "",
-    specialties: [],
-    location: "",
-    contact_phone: "",
-    contact_email: "",
-    website_url: "",
-    established_year: null,
-    experience_years: null,
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-    // Address
-    address: {
-      street: "",
-      city: "",
-      state: "",
-      zip: "",
-      country: "",
-    },
-
-    // Social Media
-    social_media: {
-      website: "",
-      instagram: "",
-      facebook: "",
-      twitter: "",
-      linkedin: "",
-      youtube: "",
-    },
-
-    // Business Information
-    business_license: "",
-    business_hours: {
-      monday: { open: "09:00", close: "17:00", closed: false },
-      tuesday: { open: "09:00", close: "17:00", closed: false },
-      wednesday: { open: "09:00", close: "17:00", closed: false },
-      thursday: { open: "09:00", close: "17:00", closed: false },
-      friday: { open: "09:00", close: "17:00", closed: false },
-      saturday: { open: "09:00", close: "17:00", closed: false },
-      sunday: { open: "09:00", close: "17:00", closed: true },
-    },
-
-    // Portfolio & Certifications
-    portfolio_images: [],
-    certificates: [],
-    awards: [],
-
-    // Delivery & Payment
-    delivery_info: {
-      delivery_time: "3-5 business days",
-      shipping_charges: "Free shipping above ₹500",
-      free_shipping_above: 500,
-      delivery_areas: [],
-    },
-    payment_methods: ["Cash on Delivery", "UPI"],
-    return_policy: "",
-    shipping_policy: "",
-
-    // Preferences
-    preferred_language: "en",
-    notification_preferences: {
-      order_notifications: true,
-      review_notifications: true,
-      marketing_emails: false,
-      sms_notifications: false,
-    },
-
-    // Bank Details
-    bank_details: {
-      bank_name: "",
-      account_holder_name: "",
-      account_number: "",
-      ifsc_code: "",
-      pan_number: "",
-    },
-  });
-
-  // Redirect if not authenticated
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login");
-      return;
+    if (artisanProfile) {
+      setProfileData(artisanProfile as ArtisanProfileData);
     }
-  }, [user, loading, router]);
+  }, [artisanProfile]);
 
-  // Load artisan profile data when user changes
-  useEffect(() => {
-    if (user && profile) {
-      loadArtisanProfile();
-    }
-  }, [user, profile]);
-
-  const loadArtisanProfile = async () => {
-    try {
-      if (!user) return;
-
-      // Get artisan profile
-      const artisan = await clientDb.getArtisanProfile(user.id);
-      setArtisanProfile(artisan);
-
-      // Get bank details
-      const bankDetails = await clientDb.getArtisanBankDetails(user.id);
-
-      // Map data to state
-      setProfileData({
-        // Personal Information from profile
-        first_name: profile?.first_name || "",
-        last_name: profile?.last_name || "",
-        email: profile?.email || "",
-        phone: profile?.phone || "",
-        date_of_birth: profile?.date_of_birth || "",
-        bio: (profile as any)?.bio || "",
-        avatar_url: profile?.avatar_url || "",
-
-        // Shop Information from artisan profile
-        shop_name: artisan?.shop_name || "",
-        description: artisan?.description || "",
-        shop_logo: artisan?.shop_logo || "",
-        banner_image: artisan?.banner_image || "",
-        specialties: artisan?.specialties || [],
-        location: artisan?.location || "",
-        contact_phone: artisan?.contact_phone || "",
-        contact_email: artisan?.contact_email || "",
-        website_url: artisan?.website_url || "",
-        established_year: artisan?.established_year || null,
-        experience_years: artisan?.experience_years || null,
-
-        // Address
-        address:
-          typeof (profile as any)?.address === "object" &&
-          (profile as any)?.address !== null
-            ? (profile as any).address
-            : {
-                street: "",
-                city: "",
-                state: "",
-                zip: "",
-                country: "",
-              },
-
-        // Social Media
-        social_media:
-          typeof artisan?.social_media === "object" &&
-          artisan?.social_media !== null
-            ? artisan.social_media
-            : {
-                website: "",
-                instagram: "",
-                facebook: "",
-                twitter: "",
-                linkedin: "",
-                youtube: "",
-              },
-
-        // Business Information
-        business_license: artisan?.business_license || "",
-        business_hours:
-          typeof artisan?.business_hours === "object" &&
-          artisan?.business_hours !== null
-            ? artisan.business_hours
-            : {
-                monday: { open: "09:00", close: "17:00", closed: false },
-                tuesday: { open: "09:00", close: "17:00", closed: false },
-                wednesday: { open: "09:00", close: "17:00", closed: false },
-                thursday: { open: "09:00", close: "17:00", closed: false },
-                friday: { open: "09:00", close: "17:00", closed: false },
-                saturday: { open: "09:00", close: "17:00", closed: false },
-                sunday: { open: "09:00", close: "17:00", closed: true },
-              },
-
-        // Portfolio & Certifications
-        portfolio_images: artisan?.portfolio_images || [],
-        certificates: artisan?.certificates || [],
-        awards: artisan?.awards || [],
-
-        // Delivery & Payment
-        delivery_info:
-          typeof artisan?.delivery_info === "object" &&
-          artisan?.delivery_info !== null
-            ? artisan.delivery_info
-            : {
-                delivery_time: "3-5 business days",
-                shipping_charges: "Free shipping above ₹500",
-                free_shipping_above: 500,
-                delivery_areas: [],
-              },
-        payment_methods: artisan?.payment_methods || [
-          "Cash on Delivery",
-          "UPI",
-        ],
-        return_policy: artisan?.return_policy || "",
-        shipping_policy: artisan?.shipping_policy || "",
-
-        // Preferences
-        preferred_language: artisan?.preferred_language || "en",
-        notification_preferences:
-          typeof artisan?.notification_preferences === "object" &&
-          artisan?.notification_preferences !== null
-            ? artisan.notification_preferences
-            : {
-                order_notifications: true,
-                review_notifications: true,
-                marketing_emails: false,
-                sms_notifications: false,
-              },
-
-        // Bank Details
-        bank_details: bankDetails
-          ? {
-              bank_name: bankDetails.bankName || "",
-              account_holder_name: bankDetails.accountHolderName || "",
-              account_number: bankDetails.accountNumber || "",
-              ifsc_code: bankDetails.ifscCode || "",
-              pan_number: bankDetails.panNumber || "",
-            }
-          : {
-              bank_name: "",
-              account_holder_name: "",
-              account_number: "",
-              ifsc_code: "",
-              pan_number: "",
-            },
-      });
-    } catch (error) {
-      console.error("Error loading artisan profile:", error);
-      toast({
-        title: "Error",
-        description: "Failed to load profile data. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  // Handle profile photo upload
+  // Handle photo upload
   const handlePhotoUpload = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    e: React.ChangeEvent<HTMLInputElement>,
+    fieldName: "shop_logo" | "banner_image"
   ) => {
-    const file = event.target.files?.[0];
+    const file = e.target.files?.[0];
     if (!file || !user) return;
 
-    // Validate file type
+    // Validate file type and size
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Invalid file",
+        title: "Invalid file type",
         description: "Please select an image file.",
         variant: "destructive",
       });
       return;
     }
-
-    // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       toast({
         title: "File too large",
@@ -522,142 +259,80 @@ export default function ArtisanProfilePage() {
       return;
     }
 
-    setIsUploadingPhoto(true);
+    setUploadingPhoto(true);
 
     try {
-      // Convert to base64 for demo (in production, use Supabase storage)
       const reader = new FileReader();
       reader.onloadend = async () => {
-        const base64String = reader.result as string;
+        try {
+          const base64String = reader.result as string;
 
-        // Update profile data
-        setProfileData((prev) => ({
-          ...prev,
-          avatar_url: base64String,
-        }));
+          // Update state
+          setProfileData((prev) => ({ ...prev, [fieldName]: base64String }));
 
-        // Save to database
-        await clientDb.updateUserProfile(user.id, {
-          avatar_url: base64String,
-        });
+          // Update database
+          await clientDb.updateArtisanProfile(user.id, {
+            [fieldName]: base64String,
+          });
 
-        await refreshProfile();
-
-        toast({
-          title: "Photo updated",
-          description: "Your profile photo has been updated successfully.",
-        });
+          await refreshProfile();
+          toast({
+            title: "Success",
+            description: `${
+              fieldName.charAt(0).toUpperCase() + fieldName.slice(1)
+            } updated.`,
+          });
+        } catch (error) {
+          console.error("Error saving photo:", error);
+          toast({
+            title: "Error",
+            description: "Failed to save photo.",
+            variant: "destructive",
+          });
+        } finally {
+          setUploadingPhoto(false);
+        }
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error("Error uploading photo:", error);
       toast({
-        title: "Upload failed",
-        description: "Failed to upload photo. Please try again.",
+        title: "Error",
+        description: "Failed to upload photo.",
         variant: "destructive",
       });
-    } finally {
-      setIsUploadingPhoto(false);
+      setUploadingPhoto(false);
     }
   };
 
-  // Handle saving profile data
+  // Handle form save
   const handleSave = async () => {
     if (!user) return;
 
     setSaving(true);
-
     try {
-      // Update user profile
-      await clientDb.updateUserProfile(user.id, {
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
-        email: profileData.email,
-        phone: profileData.phone,
-        date_of_birth: profileData.date_of_birth,
-        bio: profileData.bio,
-        avatar_url: profileData.avatar_url,
-        address: profileData.address,
-      });
+      // Extract only the fields relevant to artisan_profiles table
+      const artisanProfileUpdates = { ...profileData };
+      console.log(
+        "Attempting to save profile with data:",
+        artisanProfileUpdates
+      );
 
-      // Update artisan profile
-      if (artisanProfile) {
-        await clientDb.updateArtisanProfile(user.id, {
-          shop_name: profileData.shop_name,
-          description: profileData.description,
-          shop_logo: profileData.shop_logo,
-          banner_image: profileData.banner_image,
-          specialties: profileData.specialties,
-          location: profileData.location,
-          contact_phone: profileData.contact_phone,
-          contact_email: profileData.contact_email,
-          website_url: profileData.website_url,
-          established_year: profileData.established_year,
-          experience_years: profileData.experience_years,
-          social_media: profileData.social_media,
-          business_license: profileData.business_license,
-          business_hours: profileData.business_hours,
-          portfolio_images: profileData.portfolio_images,
-          certificates: profileData.certificates,
-          awards: profileData.awards,
-          delivery_info: profileData.delivery_info,
-          payment_methods: profileData.payment_methods,
-          return_policy: profileData.return_policy,
-          shipping_policy: profileData.shipping_policy,
-          preferred_language: profileData.preferred_language,
-          notification_preferences: profileData.notification_preferences,
-        });
-      } else {
-        // Create artisan profile if it doesn't exist
-        await clientDb.createArtisanProfile({
-          user_id: user.id,
-          shop_name: profileData.shop_name,
-          description: profileData.description,
-          shop_logo: profileData.shop_logo,
-          banner_image: profileData.banner_image,
-          specialties: profileData.specialties,
-          location: profileData.location,
-          contact_phone: profileData.contact_phone,
-          contact_email: profileData.contact_email,
-          website_url: profileData.website_url,
-          established_year: profileData.established_year,
-          experience_years: profileData.experience_years,
-          social_media: profileData.social_media,
-          business_license: profileData.business_license,
-          business_hours: profileData.business_hours,
-          portfolio_images: profileData.portfolio_images,
-          certificates: profileData.certificates,
-          awards: profileData.awards,
-          delivery_info: profileData.delivery_info,
-          payment_methods: profileData.payment_methods,
-          return_policy: profileData.return_policy,
-          shipping_policy: profileData.shipping_policy,
-          preferred_language: profileData.preferred_language,
-          notification_preferences: profileData.notification_preferences,
-        });
-      }
-
-      // Update bank details
-      await clientDb.upsertArtisanBankDetails(user.id, {
-        bankName: profileData.bank_details.bank_name,
-        accountHolderName: profileData.bank_details.account_holder_name,
-        accountNumber: profileData.bank_details.account_number,
-        ifscCode: profileData.bank_details.ifsc_code,
-        panNumber: profileData.bank_details.pan_number,
-      });
+      await clientDb.updateArtisanProfile(user.id, artisanProfileUpdates);
 
       await refreshProfile();
       setIsEditing(false);
-
       toast({
-        title: "Profile saved",
-        description: "Your artisan profile has been updated successfully.",
+        title: "Success",
+        description: "Artisan profile updated successfully!",
       });
     } catch (error) {
-      console.error("Error saving profile:", error);
+      console.error("Error updating artisan profile:", error);
       toast({
-        title: "Save failed",
-        description: "Failed to save profile changes. Please try again.",
+        title: "Error",
+        description: `Failed to update artisan profile: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
         variant: "destructive",
       });
     } finally {
@@ -665,40 +340,121 @@ export default function ArtisanProfilePage() {
     }
   };
 
-  // Handle input changes with nested field support
-  const updateNestedField = (section: string, field: string, value: any) => {
-    setProfileData((prev) => {
-      const sectionData = prev[section as keyof ArtisanProfileData];
-      if (typeof sectionData === "object" && sectionData !== null) {
-        return {
-          ...prev,
-          [section]: {
-            ...sectionData,
-            [field]: value,
-          },
-        };
-      }
-      return prev;
-    });
-  };
-
-  // Handle specialty toggle
-  const toggleSpecialty = (specialtyId: string) => {
+  // Handle nested field updates
+  const updateNestedField = (
+    section: keyof typeof profileData,
+    field: string,
+    value: any
+  ) => {
     setProfileData((prev) => ({
       ...prev,
-      specialties: prev.specialties.includes(specialtyId)
-        ? prev.specialties.filter((s) => s !== specialtyId)
-        : [...prev.specialties, specialtyId],
+      [section]: {
+        ...(prev[section] as Record<string, any>),
+        [field]: value,
+      },
     }));
   };
 
-  // Handle payment method toggle
-  const togglePaymentMethod = (method: string) => {
+  // Handle array field updates (add/remove)
+  const handleArrayChange = (
+    field: "specialties" | "payment_methods",
+    value: string
+  ) => {
+    setProfileData((prev) => {
+      const currentValues = (prev[field] as string[] | null) || [];
+      const newValues = currentValues.includes(value)
+        ? currentValues.filter((item) => item !== value)
+        : [...currentValues, value];
+      return { ...prev, [field]: newValues };
+    });
+  };
+
+  // Toggle specialty selection
+  const toggleSpecialty = (specialtyId: string) => {
+    handleArrayChange("specialties", specialtyId);
+  };
+
+  // Handle portfolio image changes
+  const handlePortfolioImageChange = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+    index: number
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64String = reader.result as string;
+        setProfileData((prev) => {
+          const newImages = [...(prev.portfolio_images || [])];
+          newImages[index] = base64String;
+          return { ...prev, portfolio_images: newImages };
+        });
+      };
+      reader.readAsDataURL(file);
+    } catch (error) {
+      console.error("Error uploading portfolio image:", error);
+      toast({
+        title: "Error",
+        description: "Failed to upload image.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Add new portfolio image
+  const handleAddPortfolioImage = () => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64String = reader.result as string;
+          setProfileData((prev) => ({
+            ...prev,
+            portfolio_images: [...(prev.portfolio_images || []), base64String],
+          }));
+        };
+        reader.readAsDataURL(file);
+      } catch (error) {
+        console.error("Error adding portfolio image:", error);
+        toast({
+          title: "Error",
+          description: "Failed to add image.",
+          variant: "destructive",
+        });
+      }
+    };
+    input.click();
+  };
+
+  // Handle photo upload for shop logo
+  const handleShopLogoUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    await handlePhotoUpload(e, "shop_logo");
+  };
+
+  // Handle photo upload for banner image
+  const handleBannerImageUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    await handlePhotoUpload(e, "banner_image");
+  };
+
+  // Remove portfolio image
+  const handleImageRemove = (index: number) => {
     setProfileData((prev) => ({
       ...prev,
-      payment_methods: prev.payment_methods.includes(method)
-        ? prev.payment_methods.filter((m) => m !== method)
-        : [...prev.payment_methods, method],
+      portfolio_images: (prev.portfolio_images || []).filter(
+        (_, i) => i !== index
+      ),
     }));
   };
 
@@ -708,8 +464,12 @@ export default function ArtisanProfilePage() {
         <Header />
         <main className="flex-grow flex items-center justify-center">
           <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-            <p className="text-lg">Loading your profile...</p>
+            <AlertCircle className="h-16 w-16 mx-auto mb-4 text-red-500" />
+            <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+            <p className="text-gray-600 mb-4">
+              Please log in to view your artisan profile.
+            </p>
+            <Button onClick={() => router.push("/login")}>Go to Login</Button>
           </div>
         </main>
         <Footer />
@@ -725,7 +485,7 @@ export default function ArtisanProfilePage() {
       <input
         type="file"
         ref={fileInputRef}
-        onChange={handlePhotoUpload}
+        onChange={handleShopLogoUpload}
         accept="image/*"
         className="hidden"
       />
@@ -784,361 +544,241 @@ export default function ArtisanProfilePage() {
             </div>
           </motion.div>
 
-          <Tabs defaultValue="personal" className="space-y-6">
-            <TabsList className="grid w-full grid-cols-2 md:grid-cols-6 border-2 border-black rounded-none bg-gray-50">
-              <TabsTrigger
-                value="personal"
-                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white rounded-none text-xs md:text-sm"
-              >
-                <User className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Personal</span>
-              </TabsTrigger>
+          {/* Profile Header */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-gradient-to-r from-blue-50 to-green-50 p-12 rounded-2xl border-2 border-black mb-10 shadow-xl"
+          >
+            <div className="flex flex-col lg:flex-row items-start gap-10 w-full">
+              {/* Profile Photo Section */}
+              <div className="flex flex-col items-center flex-shrink-0">
+                <div className="relative">
+                  <div className="w-40 h-40 rounded-full border-4 border-black shadow-xl overflow-hidden bg-gradient-to-br from-blue-100 to-green-100">
+                    {profile?.avatar_url ? (
+                      <img
+                        src={profile.avatar_url}
+                        alt="Profile photo"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-4xl font-bold text-gray-700">
+                        {profile?.first_name?.[0]}
+                        {profile?.last_name?.[0]}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Photo Upload Button */}
+                  <button
+                    onClick={() => router.push("/profile")}
+                    className="absolute -bottom-3 -right-3 p-3 bg-black text-white rounded-full hover:bg-gray-800 transition-colors disabled:opacity-50 shadow-lg"
+                  >
+                    <Edit2 className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <p className="text-sm text-gray-600 mt-2 text-center">
+                  Edit Personal Photo
+                </p>
+              </div>
+
+              {/* Profile Info */}
+              <div className="flex-1 min-w-0">
+                <div className="mb-4">
+                  <h1 className="text-5xl font-bold mb-4 text-gray-900">
+                    {profileData.shop_name || "Your Shop"}
+                  </h1>
+                  <p className="text-xl text-gray-600 mb-6">
+                    Managed by {profile?.first_name} {profile?.last_name}
+                  </p>
+
+                  {profileData.description && (
+                    <div className="mb-4">
+                      <h2 className="text-lg font-semibold text-gray-800 mb-2">
+                        About the Shop
+                      </h2>
+                      <p className="text-gray-700">{profileData.description}</p>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-3">
+                    {profileData.specialties?.map((specialty) => {
+                      const specialtyData = specialtyCategories.find(
+                        (s) => s.id === specialty
+                      );
+                      return specialtyData ? (
+                        <Badge
+                          key={specialty}
+                          variant="outline"
+                          className="border-2 border-gray-300 text-gray-700"
+                        >
+                          {specialtyData.name}
+                        </Badge>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <Label
+                      htmlFor="email"
+                      className="flex items-center gap-2 font-medium"
+                    >
+                      <Mail className="h-5 w-5" />
+                      Email Address
+                    </Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profileData.contact_email || ""}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          contact_email: e.target.value,
+                        }))
+                      }
+                      disabled={!isEditing}
+                      className="border-2 border-gray-300 rounded-none"
+                    />
+                  </div>
+                  <div>
+                    <Label
+                      htmlFor="phone"
+                      className="flex items-center gap-2 font-medium"
+                    >
+                      <Phone className="h-5 w-5" />
+                      Phone Number
+                    </Label>
+                    <Input
+                      id="phone"
+                      value={profileData.contact_phone || ""}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          contact_phone: e.target.value,
+                        }))
+                      }
+                      disabled={!isEditing}
+                      className="border-2 border-gray-300 rounded-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="location"
+                      className="flex items-center gap-2 font-medium"
+                    >
+                      <MapPin className="h-5 w-5" />
+                      Location / City
+                    </Label>
+                    <Input
+                      id="location"
+                      placeholder="e.g., Jaipur, Rajasthan"
+                      value={profileData.location || ""}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          location: e.target.value,
+                        }))
+                      }
+                      disabled={!isEditing}
+                      className="border-2 border-gray-300 rounded-none"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <Label
+                      htmlFor="established_year"
+                      className="flex items-center gap-2 font-medium"
+                    >
+                      <Calendar className="h-5 w-5" />
+                      Established Year
+                    </Label>
+                    <Input
+                      id="established_year"
+                      type="number"
+                      placeholder="e.g., 2010"
+                      value={profileData.established_year || ""}
+                      onChange={(e) =>
+                        setProfileData((prev) => ({
+                          ...prev,
+                          established_year: e.target.value
+                            ? parseInt(e.target.value)
+                            : null,
+                        }))
+                      }
+                      disabled={!isEditing}
+                      className="border-2 border-gray-300 rounded-none"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Profile Tabs */}
+          <Tabs defaultValue="shop" className="space-y-8">
+            <TabsList className="grid w-full grid-cols-1 md:grid-cols-2 lg:grid-cols-4 bg-white border-2 border-black rounded-2xl p-2 gap-1 shadow-lg">
               <TabsTrigger
                 value="shop"
-                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white rounded-none text-xs md:text-sm"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
-                <Store className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Shop</span>
+                <Store className="h-4 w-4" />
+                <span className="hidden sm:inline">Shop Info</span>
               </TabsTrigger>
               <TabsTrigger
-                value="social"
-                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white rounded-none text-xs md:text-sm"
+                value="portfolio"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
-                <Globe className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Social</span>
+                <Palette className="h-4 w-4" />
+                <span className="hidden sm:inline">Portfolio</span>
               </TabsTrigger>
               <TabsTrigger
                 value="business"
-                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white rounded-none text-xs md:text-sm"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
-                <Briefcase className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Business</span>
+                <Briefcase className="h-4 w-4" />
+                <span className="hidden sm:inline">Business</span>
               </TabsTrigger>
               <TabsTrigger
-                value="delivery"
-                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white rounded-none text-xs md:text-sm"
+                value="policies"
+                className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
-                <Truck className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Delivery</span>
-              </TabsTrigger>
-              <TabsTrigger
-                value="banking"
-                className="data-[state=active]:bg-orange-500 data-[state=active]:text-white rounded-none text-xs md:text-sm"
-              >
-                <CreditCard className="h-4 w-4 md:mr-2" />
-                <span className="hidden md:inline">Banking</span>
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Policies</span>
               </TabsTrigger>
             </TabsList>
 
-            {/* Personal Information Tab */}
-            <TabsContent value="personal">
+            {/* Shop Information Tab */}
+            <TabsContent value="shop" className="space-y-8">
               <motion.div
-                className="space-y-6"
-                variants={containerVariants}
+                className="grid grid-cols-1 lg:grid-cols-3 gap-6"
                 initial="hidden"
                 animate="visible"
+                variants={containerVariants}
               >
-                {/* Profile Photo Section */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Camera className="h-5 w-5" />
-                        Profile Photo
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center gap-6">
-                        <div className="relative">
-                          <Avatar className="h-24 w-24 border-2 border-black rounded-none">
-                            <AvatarImage src={profileData.avatar_url} />
-                            <AvatarFallback className="text-lg bg-orange-100">
-                              {profileData.first_name.charAt(0)}
-                              {profileData.last_name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          {isUploadingPhoto && (
-                            <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center rounded-none">
-                              <Loader2 className="h-6 w-6 text-white animate-spin" />
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex-1">
-                          <p className="text-sm text-gray-600 mb-3">
-                            Upload a professional photo for your artisan
-                            profile. This will be displayed on your shop page
-                            and products.
-                          </p>
-                          <Button
-                            variant="outline"
-                            className="border-2 border-black rounded-none"
-                            onClick={() => fileInputRef.current?.click()}
-                            disabled={isUploadingPhoto}
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            {isUploadingPhoto ? "Uploading..." : "Change Photo"}
-                          </Button>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-
-                {/* Basic Information */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <User className="h-5 w-5" />
-                        Basic Information
+                <div className="lg:col-span-2 space-y-8">
+                  <Card className="border-2 border-black rounded-2xl shadow-xl">
+                    <CardHeader className="pb-6">
+                      <CardTitle className="flex items-center gap-3 text-2xl">
+                        <Store className="h-6 w-6" />
+                        Shop Details
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="first_name">First Name</Label>
-                          <Input
-                            id="first_name"
-                            value={profileData.first_name}
-                            onChange={(e) =>
-                              setProfileData((prev) => ({
-                                ...prev,
-                                first_name: e.target.value,
-                              }))
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="last_name">Last Name</Label>
-                          <Input
-                            id="last_name"
-                            value={profileData.last_name}
-                            onChange={(e) =>
-                              setProfileData((prev) => ({
-                                ...prev,
-                                last_name: e.target.value,
-                              }))
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label
-                            htmlFor="email"
-                            className="flex items-center gap-2"
-                          >
-                            <MailIcon className="h-4 w-4" />
-                            Email Address
-                          </Label>
-                          <Input
-                            id="email"
-                            type="email"
-                            value={profileData.email}
-                            onChange={(e) =>
-                              setProfileData((prev) => ({
-                                ...prev,
-                                email: e.target.value,
-                              }))
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                        <div>
-                          <Label
-                            htmlFor="phone"
-                            className="flex items-center gap-2"
-                          >
-                            <PhoneIcon className="h-4 w-4" />
-                            Phone Number
-                          </Label>
-                          <Input
-                            id="phone"
-                            value={profileData.phone}
-                            onChange={(e) =>
-                              setProfileData((prev) => ({
-                                ...prev,
-                                phone: e.target.value,
-                              }))
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                      </div>
-
                       <div>
                         <Label
-                          htmlFor="date_of_birth"
-                          className="flex items-center gap-2"
+                          htmlFor="shop_name"
+                          className="flex items-center gap-3 text-base font-medium"
                         >
-                          <Calendar className="h-4 w-4" />
-                          Date of Birth
+                          <Store className="h-5 w-5" />
+                          Shop Name
                         </Label>
                         <Input
-                          id="date_of_birth"
-                          type="date"
-                          value={profileData.date_of_birth}
-                          onChange={(e) =>
-                            setProfileData((prev) => ({
-                              ...prev,
-                              date_of_birth: e.target.value,
-                            }))
-                          }
-                          disabled={!isEditing}
-                          className="border-2 border-gray-300 rounded-none"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="bio">Bio / About Me</Label>
-                        <Textarea
-                          id="bio"
-                          value={profileData.bio}
-                          onChange={(e) =>
-                            setProfileData((prev) => ({
-                              ...prev,
-                              bio: e.target.value,
-                            }))
-                          }
-                          disabled={!isEditing}
-                          placeholder="Tell customers about yourself and your craft..."
-                          className="border-2 border-gray-300 rounded-none min-h-[100px]"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-
-                {/* Address Information */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <MapPinIcon className="h-5 w-5" />
-                        Address Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label htmlFor="street">Street Address</Label>
-                        <Input
-                          id="street"
-                          value={profileData.address.street}
-                          onChange={(e) =>
-                            updateNestedField(
-                              "address",
-                              "street",
-                              e.target.value
-                            )
-                          }
-                          disabled={!isEditing}
-                          className="border-2 border-gray-300 rounded-none"
-                        />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div>
-                          <Label htmlFor="city">City</Label>
-                          <Input
-                            id="city"
-                            value={profileData.address.city}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "address",
-                                "city",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="state">State</Label>
-                          <Input
-                            id="state"
-                            value={profileData.address.state}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "address",
-                                "state",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="zip">ZIP Code</Label>
-                          <Input
-                            id="zip"
-                            value={profileData.address.zip}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "address",
-                                "zip",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="country">Country</Label>
-                        <Input
-                          id="country"
-                          value={profileData.address.country}
-                          onChange={(e) =>
-                            updateNestedField(
-                              "address",
-                              "country",
-                              e.target.value
-                            )
-                          }
-                          disabled={!isEditing}
-                          className="border-2 border-gray-300 rounded-none"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-              </motion.div>
-            </TabsContent>
-
-            {/* Shop Details Tab */}
-            <TabsContent value="shop">
-              <motion.div
-                className="space-y-6"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                {/* Shop Information */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Store className="h-5 w-5" />
-                        Shop Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label htmlFor="shop_name">Shop Name *</Label>
-                        <Input
                           id="shop_name"
-                          value={profileData.shop_name}
+                          value={profileData.shop_name || ""}
                           onChange={(e) =>
                             setProfileData((prev) => ({
                               ...prev,
@@ -1153,10 +793,16 @@ export default function ArtisanProfilePage() {
                       </div>
 
                       <div>
-                        <Label htmlFor="description">Shop Description</Label>
+                        <Label
+                          htmlFor="description"
+                          className="flex items-center gap-3 text-base font-medium"
+                        >
+                          <FileText className="h-5 w-5" />
+                          Shop Description
+                        </Label>
                         <Textarea
                           id="description"
-                          value={profileData.description}
+                          value={profileData.description || ""}
                           onChange={(e) =>
                             setProfileData((prev) => ({
                               ...prev,
@@ -1173,14 +819,14 @@ export default function ArtisanProfilePage() {
                         <div>
                           <Label
                             htmlFor="contact_phone"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-3 text-base font-medium"
                           >
-                            <PhoneIcon className="h-4 w-4" />
-                            Shop Contact Phone
+                            <Phone className="h-5 w-5" />
+                            Contact Phone
                           </Label>
                           <Input
                             id="contact_phone"
-                            value={profileData.contact_phone}
+                            value={profileData.contact_phone || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
                                 ...prev,
@@ -1194,15 +840,15 @@ export default function ArtisanProfilePage() {
                         <div>
                           <Label
                             htmlFor="contact_email"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-3 text-base font-medium"
                           >
-                            <MailIcon className="h-4 w-4" />
-                            Shop Contact Email
+                            <Mail className="h-5 w-5" />
+                            Contact Email
                           </Label>
                           <Input
                             id="contact_email"
                             type="email"
-                            value={profileData.contact_email}
+                            value={profileData.contact_email || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
                                 ...prev,
@@ -1219,15 +865,15 @@ export default function ArtisanProfilePage() {
                         <div>
                           <Label
                             htmlFor="website_url"
-                            className="flex items-center gap-2"
+                            className="flex items-center gap-3 text-base font-medium"
                           >
-                            <GlobeIcon className="h-4 w-4" />
+                            <Globe className="h-5 w-5" />
                             Website URL
                           </Label>
                           <Input
                             id="website_url"
                             type="url"
-                            value={profileData.website_url}
+                            value={profileData.website_url || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
                                 ...prev,
@@ -1240,10 +886,17 @@ export default function ArtisanProfilePage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="location">Location</Label>
+                          <Label
+                            htmlFor="location"
+                            className="flex items-center gap-3 text-base font-medium"
+                          >
+                            <MapPin className="h-5 w-5" />
+                            Location / City
+                          </Label>
                           <Input
                             id="location"
-                            value={profileData.location}
+                            placeholder="e.g., Jaipur, Rajasthan"
+                            value={profileData.location || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
                                 ...prev,
@@ -1251,7 +904,6 @@ export default function ArtisanProfilePage() {
                               }))
                             }
                             disabled={!isEditing}
-                            placeholder="City, State, Country"
                             className="border-2 border-gray-300 rounded-none"
                           />
                         </div>
@@ -1259,14 +911,17 @@ export default function ArtisanProfilePage() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="established_year">
+                          <Label
+                            htmlFor="established_year"
+                            className="flex items-center gap-3 text-base font-medium"
+                          >
+                            <Calendar className="h-5 w-5" />
                             Established Year
                           </Label>
                           <Input
                             id="established_year"
                             type="number"
-                            min="1900"
-                            max={new Date().getFullYear()}
+                            placeholder="e.g., 2010"
                             value={profileData.established_year || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
@@ -1281,14 +936,17 @@ export default function ArtisanProfilePage() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="experience_years">
+                          <Label
+                            htmlFor="experience_years"
+                            className="flex items-center gap-3 text-base font-medium"
+                          >
+                            <Star className="h-5 w-5" />
                             Years of Experience
                           </Label>
                           <Input
                             id="experience_years"
                             type="number"
-                            min="0"
-                            max="80"
+                            placeholder="e.g., 5"
                             value={profileData.experience_years || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
@@ -1305,14 +963,12 @@ export default function ArtisanProfilePage() {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
 
-                {/* Specialties */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
+                  {/* Specialties */}
+                  <Card className="border-2 border-black rounded-2xl shadow-xl">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Palette className="h-5 w-5" />
+                        <Star className="h-5 w-5" />
                         Specialties & Crafts
                       </CardTitle>
                       <CardDescription>
@@ -1324,9 +980,9 @@ export default function ArtisanProfilePage() {
                       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
                         {specialtyCategories.map((specialty) => {
                           const IconComponent = specialty.icon;
-                          const isSelected = profileData.specialties.includes(
-                            specialty.id
-                          );
+                          const isSelected = (
+                            profileData.specialties || []
+                          ).includes(specialty.id);
 
                           return (
                             <button
@@ -1353,36 +1009,36 @@ export default function ArtisanProfilePage() {
                         })}
                       </div>
 
-                      {profileData.specialties.length > 0 && (
+                      {(profileData.specialties || []).length > 0 && (
                         <div className="mt-4">
                           <p className="text-sm text-gray-600 mb-2">
                             Selected specialties:
                           </p>
                           <div className="flex flex-wrap gap-2">
-                            {profileData.specialties.map((specialtyId) => {
-                              const specialty = specialtyCategories.find(
-                                (s) => s.id === specialtyId
-                              );
-                              return specialty ? (
-                                <Badge
-                                  key={specialtyId}
-                                  variant="secondary"
-                                  className="border-2 border-orange-300 bg-orange-100 text-orange-700"
-                                >
-                                  {specialty.name}
-                                </Badge>
-                              ) : null;
-                            })}
+                            {(profileData.specialties || []).map(
+                              (specialtyId) => {
+                                const specialty = specialtyCategories.find(
+                                  (s) => s.id === specialtyId
+                                );
+                                return specialty ? (
+                                  <Badge
+                                    key={specialtyId}
+                                    variant="secondary"
+                                    className="border-2 border-orange-300 bg-orange-100 text-orange-700"
+                                  >
+                                    {specialty.name}
+                                  </Badge>
+                                ) : null;
+                              }
+                            )}
                           </div>
                         </div>
                       )}
                     </CardContent>
                   </Card>
-                </motion.div>
 
-                {/* Shop Images */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
+                  {/* Shop Images */}
+                  <Card className="border-2 border-black rounded-2xl shadow-xl">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Camera className="h-5 w-5" />
@@ -1395,264 +1051,278 @@ export default function ArtisanProfilePage() {
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
-                          <Label>Shop Logo</Label>
-                          <div className="mt-2 p-4 border-2 border-dashed border-gray-300 rounded-none text-center">
-                            {profileData.shop_logo ? (
-                              <img
-                                src={profileData.shop_logo}
+                          <Label className="text-lg font-semibold mb-4 block">
+                            Shop Logo
+                          </Label>
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-20 w-20 border-2 border-black">
+                              <AvatarImage
+                                src={profileData.shop_logo || undefined}
                                 alt="Shop Logo"
-                                className="h-20 w-20 mx-auto object-cover border-2 border-black"
                               />
-                            ) : (
-                              <div className="h-20 w-20 mx-auto bg-gray-100 border-2 border-gray-300 flex items-center justify-center">
-                                <Store className="h-8 w-8 text-gray-400" />
-                              </div>
-                            )}
+                              <AvatarFallback>
+                                <Store />
+                              </AvatarFallback>
+                            </Avatar>
                             {isEditing && (
                               <Button
                                 variant="outline"
                                 size="sm"
                                 className="mt-2 border-2 border-black rounded-none"
+                                onClick={() =>
+                                  document
+                                    .getElementById("shop-logo-input")
+                                    ?.click()
+                                }
+                                disabled={isUploadingPhoto}
                               >
-                                <Upload className="h-4 w-4 mr-1" />
+                                <Upload className="mr-2 h-4 w-4" />
                                 Upload Logo
                               </Button>
                             )}
+                            <input
+                              id="shop-logo-input"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) =>
+                                handlePhotoUpload(e, "shop_logo")
+                              }
+                            />
                           </div>
                         </div>
 
                         <div>
-                          <Label>Banner Image</Label>
-                          <div className="mt-2 p-4 border-2 border-dashed border-gray-300 rounded-none text-center">
+                          <Label className="text-lg font-semibold mb-4 block">
+                            Banner Image
+                          </Label>
+                          <div className="aspect-video w-full bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden">
                             {profileData.banner_image ? (
-                              <img
+                              <Image
                                 src={profileData.banner_image}
                                 alt="Shop Banner"
-                                className="h-20 w-full mx-auto object-cover border-2 border-black"
+                                layout="fill"
+                                objectFit="cover"
                               />
                             ) : (
-                              <div className="h-20 w-full mx-auto bg-gray-100 border-2 border-gray-300 flex items-center justify-center">
-                                <Mountain className="h-8 w-8 text-gray-400" />
+                              <div className="h-full w-full flex items-center justify-center text-gray-400">
+                                <Camera className="h-8 w-8" />
                               </div>
                             )}
                             {isEditing && (
                               <Button
                                 variant="outline"
                                 size="sm"
-                                className="mt-2 border-2 border-black rounded-none"
+                                className="absolute bottom-4 right-4 border-2 border-black rounded-none"
+                                onClick={() =>
+                                  document
+                                    .getElementById("banner-image-input")
+                                    ?.click()
+                                }
+                                disabled={isUploadingPhoto}
                               >
-                                <Upload className="h-4 w-4 mr-1" />
+                                <Upload className="mr-2 h-4 w-4" />
                                 Upload Banner
                               </Button>
                             )}
+                            <input
+                              id="banner-image-input"
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) =>
+                                handlePhotoUpload(e, "banner_image")
+                              }
+                            />
                           </div>
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               </motion.div>
             </TabsContent>
 
-            {/* Social Media Tab */}
-            <TabsContent value="social">
+            {/* Portfolio Tab */}
+            <TabsContent value="portfolio" className="space-y-8">
               <motion.div
-                className="space-y-6"
-                variants={containerVariants}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6"
                 initial="hidden"
                 animate="visible"
+                variants={containerVariants}
               >
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
+                <div>
+                  <Card className="border-2 border-black rounded-2xl shadow-xl">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Globe className="h-5 w-5" />
-                        Social Media & Online Presence
+                        <Palette className="h-5 w-5" />
+                        Portfolio Images
                       </CardTitle>
-                      <CardDescription>
-                        Connect your social media accounts to boost your shop's
-                        visibility
-                      </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label
-                            htmlFor="website"
-                            className="flex items-center gap-2"
-                          >
-                            <Globe className="h-4 w-4" />
-                            Website
-                          </Label>
-                          <Input
-                            id="website"
-                            type="url"
-                            value={profileData.social_media.website}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "social_media",
-                                "website",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            placeholder="https://your-website.com"
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                        <div>
-                          <Label
-                            htmlFor="instagram"
-                            className="flex items-center gap-2"
-                          >
-                            <Instagram className="h-4 w-4" />
-                            Instagram
-                          </Label>
-                          <Input
-                            id="instagram"
-                            value={profileData.social_media.instagram}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "social_media",
-                                "instagram",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            placeholder="@your_instagram_handle"
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
+                    <CardContent>
+                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {(profileData.portfolio_images || []).map(
+                          (img: string, index: number) => (
+                            <div key={index} className="relative group">
+                              <Image
+                                src={img}
+                                alt={`Portfolio image ${index + 1}`}
+                                className="w-full h-full object-cover rounded-lg"
+                                width={200}
+                                height={200}
+                              />
+                              {isEditing && (
+                                <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-2 border-black rounded-none"
+                                    onClick={() => handleImageRemove(index)}
+                                  >
+                                    <X className="h-4 w-4 mr-1" />
+                                    Remove
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="border-2 border-black rounded-none"
+                                    onClick={() =>
+                                      document
+                                        .getElementById(
+                                          `portfolio-input-${index}`
+                                        )
+                                        ?.click()
+                                    }
+                                  >
+                                    <Upload className="h-4 w-4 mr-1" />
+                                    Change Image
+                                  </Button>
+                                </div>
+                              )}
+                              <input
+                                id={`portfolio-input-${index}`}
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) =>
+                                  handlePortfolioImageChange(e, index)
+                                }
+                              />
+                            </div>
+                          )
+                        )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label
-                            htmlFor="facebook"
-                            className="flex items-center gap-2"
-                          >
-                            <Facebook className="h-4 w-4" />
-                            Facebook
-                          </Label>
-                          <Input
-                            id="facebook"
-                            value={profileData.social_media.facebook}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "social_media",
-                                "facebook",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            placeholder="Facebook page or profile URL"
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                        <div>
-                          <Label
-                            htmlFor="twitter"
-                            className="flex items-center gap-2"
-                          >
-                            <Twitter className="h-4 w-4" />
-                            Twitter
-                          </Label>
-                          <Input
-                            id="twitter"
-                            value={profileData.social_media.twitter}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "social_media",
-                                "twitter",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            placeholder="@your_twitter_handle"
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                      </div>
+                      {isEditing && (
+                        <Button
+                          variant="outline"
+                          className="mt-4 border-2 border-black rounded-none"
+                          onClick={handleAddPortfolioImage}
+                        >
+                          <Upload className="h-4 w-4 mr-2" />
+                          Add Image
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Card className="border-2 border-black rounded-2xl shadow-xl">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Certificates & Awards
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
                         <div>
                           <Label
-                            htmlFor="linkedin"
-                            className="flex items-center gap-2"
+                            htmlFor="certificates"
+                            className="text-lg font-semibold mb-4 block"
                           >
-                            <Linkedin className="h-4 w-4" />
-                            LinkedIn
+                            Certificates & Credentials
                           </Label>
                           <Input
-                            id="linkedin"
-                            value={profileData.social_media.linkedin}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "social_media",
-                                "linkedin",
-                                e.target.value
-                              )
-                            }
+                            id="certificates"
+                            placeholder="e.g., Master Craftsman Certificate"
                             disabled={!isEditing}
-                            placeholder="LinkedIn profile URL"
+                            value={(profileData.certificates || []).join(", ")}
+                            onChange={(e) =>
+                              setProfileData((prev) => ({
+                                ...prev,
+                                certificates: e.target.value
+                                  ? e.target.value
+                                      .split(",")
+                                      .map((s) => s.trim())
+                                  : [],
+                              }))
+                            }
                             className="border-2 border-gray-300 rounded-none"
                           />
                         </div>
+
                         <div>
                           <Label
-                            htmlFor="youtube"
-                            className="flex items-center gap-2"
+                            htmlFor="awards"
+                            className="text-lg font-semibold mb-4 block"
                           >
-                            <Youtube className="h-4 w-4" />
-                            YouTube
+                            Awards & Recognitions
                           </Label>
                           <Input
-                            id="youtube"
-                            value={profileData.social_media.youtube}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "social_media",
-                                "youtube",
-                                e.target.value
-                              )
-                            }
+                            id="awards"
+                            placeholder="e.g., National Award for Handicrafts 2023"
                             disabled={!isEditing}
-                            placeholder="YouTube channel URL"
+                            value={(profileData.awards || []).join(", ")}
+                            onChange={(e) =>
+                              setProfileData((prev) => ({
+                                ...prev,
+                                awards: e.target.value
+                                  ? e.target.value
+                                      .split(",")
+                                      .map((s) => s.trim())
+                                  : [],
+                              }))
+                            }
                             className="border-2 border-gray-300 rounded-none"
                           />
                         </div>
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               </motion.div>
             </TabsContent>
 
-            {/* Business Information Tab */}
-            <TabsContent value="business">
+            {/* Business Tab */}
+            <TabsContent value="business" className="space-y-8">
               <motion.div
-                className="space-y-6"
-                variants={containerVariants}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6"
                 initial="hidden"
                 animate="visible"
+                variants={containerVariants}
               >
-                {/* Business License & Legal */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
+                <div>
+                  <Card className="border-2 border-black rounded-2xl shadow-xl">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <Shield className="h-5 w-5" />
-                        Business License & Legal
+                        <Briefcase className="h-5 w-5" />
+                        Business Information
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div>
-                        <Label htmlFor="business_license">
+                        <Label
+                          htmlFor="business_license"
+                          className="flex items-center gap-3 text-base font-medium"
+                        >
+                          <ShieldCheck className="h-5 w-5" />
                           Business License Number
                         </Label>
                         <Input
                           id="business_license"
-                          value={profileData.business_license}
+                          value={profileData.business_license || ""}
                           onChange={(e) =>
                             setProfileData((prev) => ({
                               ...prev,
@@ -1665,11 +1335,10 @@ export default function ArtisanProfilePage() {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
 
-                {/* Business Hours */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
+                <div>
+                  <Card className="border-2 border-black rounded-2xl shadow-xl">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Clock className="h-5 w-5" />
@@ -1682,31 +1351,22 @@ export default function ArtisanProfilePage() {
                     </CardHeader>
                     <CardContent>
                       <div className="space-y-4">
-                        {businessDays.map((day) => {
-                          const dayData =
-                            profileData.business_hours[
-                              day.key as keyof typeof profileData.business_hours
-                            ];
-
-                          return (
-                            <div
-                              key={day.key}
-                              className="flex items-center gap-4"
-                            >
+                        {Object.entries(profileData.business_hours || {}).map(
+                          ([day, hours]) => (
+                            <div key={day} className="flex items-center gap-4">
                               <div className="w-20 text-sm font-medium">
-                                {day.name}
+                                {day.charAt(0).toUpperCase() + day.slice(1)}
                               </div>
                               <div className="flex items-center gap-2">
                                 <Switch
-                                  checked={!dayData?.closed}
+                                  checked={!(hours as any)?.closed}
                                   onCheckedChange={(checked) => {
                                     const updatedHours = {
-                                      ...profileData.business_hours,
+                                      ...((profileData.business_hours as BusinessHours) ||
+                                        {}),
                                     };
-                                    updatedHours[
-                                      day.key as keyof typeof updatedHours
-                                    ] = {
-                                      ...dayData,
+                                    updatedHours[day] = {
+                                      ...(hours as any),
                                       closed: !checked,
                                     };
                                     setProfileData((prev) => ({
@@ -1716,19 +1376,18 @@ export default function ArtisanProfilePage() {
                                   }}
                                   disabled={!isEditing}
                                 />
-                                {!dayData?.closed && (
+                                {!(hours as any)?.closed && (
                                   <>
                                     <Input
                                       type="time"
-                                      value={dayData?.open || "09:00"}
+                                      value={(hours as any)?.open || "09:00"}
                                       onChange={(e) => {
                                         const updatedHours = {
-                                          ...profileData.business_hours,
+                                          ...((profileData.business_hours as BusinessHours) ||
+                                            {}),
                                         };
-                                        updatedHours[
-                                          day.key as keyof typeof updatedHours
-                                        ] = {
-                                          ...dayData,
+                                        updatedHours[day] = {
+                                          ...(hours as any),
                                           open: e.target.value,
                                         };
                                         setProfileData((prev) => ({
@@ -1744,15 +1403,14 @@ export default function ArtisanProfilePage() {
                                     </span>
                                     <Input
                                       type="time"
-                                      value={dayData?.close || "17:00"}
+                                      value={(hours as any)?.close || "17:00"}
                                       onChange={(e) => {
                                         const updatedHours = {
-                                          ...profileData.business_hours,
+                                          ...((profileData.business_hours as BusinessHours) ||
+                                            {}),
                                         };
-                                        updatedHours[
-                                          day.key as keyof typeof updatedHours
-                                        ] = {
-                                          ...dayData,
+                                        updatedHours[day] = {
+                                          ...(hours as any),
                                           close: e.target.value,
                                         };
                                         setProfileData((prev) => ({
@@ -1765,320 +1423,49 @@ export default function ArtisanProfilePage() {
                                     />
                                   </>
                                 )}
-                                {dayData?.closed && (
+                                {(hours as any)?.closed && (
                                   <span className="text-sm text-gray-500">
                                     Closed
                                   </span>
                                 )}
                               </div>
                             </div>
-                          );
-                        })}
+                          )
+                        )}
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
-
-                {/* Language & Preferences */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Languages className="h-5 w-5" />
-                        Language & Notifications
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div>
-                        <Label htmlFor="preferred_language">
-                          Preferred Language
-                        </Label>
-                        <Select
-                          value={profileData.preferred_language}
-                          onValueChange={(value) =>
-                            setProfileData((prev) => ({
-                              ...prev,
-                              preferred_language: value,
-                            }))
-                          }
-                          disabled={!isEditing}
-                        >
-                          <SelectTrigger className="border-2 border-gray-300 rounded-none">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {languages.map((lang) => (
-                              <SelectItem key={lang.code} value={lang.code}>
-                                {lang.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="space-y-3">
-                        <Label>Notification Preferences</Label>
-                        <div className="space-y-2">
-                          <div className="flex items-center justify-between">
-                            <Label
-                              htmlFor="order_notifications"
-                              className="text-sm"
-                            >
-                              Order Notifications
-                            </Label>
-                            <Switch
-                              id="order_notifications"
-                              checked={
-                                profileData.notification_preferences
-                                  .order_notifications
-                              }
-                              onCheckedChange={(checked) =>
-                                updateNestedField(
-                                  "notification_preferences",
-                                  "order_notifications",
-                                  checked
-                                )
-                              }
-                              disabled={!isEditing}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label
-                              htmlFor="review_notifications"
-                              className="text-sm"
-                            >
-                              Review Notifications
-                            </Label>
-                            <Switch
-                              id="review_notifications"
-                              checked={
-                                profileData.notification_preferences
-                                  .review_notifications
-                              }
-                              onCheckedChange={(checked) =>
-                                updateNestedField(
-                                  "notification_preferences",
-                                  "review_notifications",
-                                  checked
-                                )
-                              }
-                              disabled={!isEditing}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label
-                              htmlFor="marketing_emails"
-                              className="text-sm"
-                            >
-                              Marketing Emails
-                            </Label>
-                            <Switch
-                              id="marketing_emails"
-                              checked={
-                                profileData.notification_preferences
-                                  .marketing_emails
-                              }
-                              onCheckedChange={(checked) =>
-                                updateNestedField(
-                                  "notification_preferences",
-                                  "marketing_emails",
-                                  checked
-                                )
-                              }
-                              disabled={!isEditing}
-                            />
-                          </div>
-                          <div className="flex items-center justify-between">
-                            <Label
-                              htmlFor="sms_notifications"
-                              className="text-sm"
-                            >
-                              SMS Notifications
-                            </Label>
-                            <Switch
-                              id="sms_notifications"
-                              checked={
-                                profileData.notification_preferences
-                                  .sms_notifications
-                              }
-                              onCheckedChange={(checked) =>
-                                updateNestedField(
-                                  "notification_preferences",
-                                  "sms_notifications",
-                                  checked
-                                )
-                              }
-                              disabled={!isEditing}
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
+                </div>
               </motion.div>
             </TabsContent>
 
-            {/* Delivery & Payment Tab */}
-            <TabsContent value="delivery">
+            {/* Policies Tab */}
+            <TabsContent value="policies" className="space-y-8">
               <motion.div
-                className="space-y-6"
-                variants={containerVariants}
+                className="grid grid-cols-1 lg:grid-cols-2 gap-6"
                 initial="hidden"
                 animate="visible"
+                variants={containerVariants}
               >
-                {/* Delivery Information */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <Truck className="h-5 w-5" />
-                        Delivery Information
-                      </CardTitle>
-                    </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="delivery_time">
-                            Typical Delivery Time
-                          </Label>
-                          <Input
-                            id="delivery_time"
-                            value={profileData.delivery_info.delivery_time}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "delivery_info",
-                                "delivery_time",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            placeholder="e.g., 3-5 business days"
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="free_shipping_above">
-                            Free Shipping Above (₹)
-                          </Label>
-                          <Input
-                            id="free_shipping_above"
-                            type="number"
-                            value={
-                              profileData.delivery_info.free_shipping_above ||
-                              ""
-                            }
-                            onChange={(e) =>
-                              updateNestedField(
-                                "delivery_info",
-                                "free_shipping_above",
-                                parseInt(e.target.value) || 0
-                              )
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="shipping_charges">
-                          Shipping Charges Info
-                        </Label>
-                        <Input
-                          id="shipping_charges"
-                          value={profileData.delivery_info.shipping_charges}
-                          onChange={(e) =>
-                            updateNestedField(
-                              "delivery_info",
-                              "shipping_charges",
-                              e.target.value
-                            )
-                          }
-                          disabled={!isEditing}
-                          placeholder="e.g., ₹50 for orders below ₹500"
-                          className="border-2 border-gray-300 rounded-none"
-                        />
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-
-                {/* Payment Methods */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
-                    <CardHeader>
-                      <CardTitle className="flex items-center gap-2">
-                        <CreditCard className="h-5 w-5" />
-                        Payment Methods
-                      </CardTitle>
-                      <CardDescription>
-                        Select the payment methods you accept
-                      </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                        {paymentMethodOptions.map((method) => {
-                          const isSelected =
-                            profileData.payment_methods.includes(method);
-
-                          return (
-                            <button
-                              key={method}
-                              type="button"
-                              disabled={!isEditing}
-                              onClick={() => togglePaymentMethod(method)}
-                              className={`p-3 border-2 rounded-none transition-colors text-center text-sm ${
-                                isSelected
-                                  ? "border-green-500 bg-green-100 text-green-700"
-                                  : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
-                              } ${
-                                !isEditing
-                                  ? "opacity-60 cursor-not-allowed"
-                                  : "cursor-pointer"
-                              }`}
-                            >
-                              {method}
-                            </button>
-                          );
-                        })}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </motion.div>
-
-                {/* Policies */}
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
+                <div>
+                  <Card className="border-2 border-black rounded-2xl shadow-xl">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
-                        Policies
+                        Shipping Policy
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent>
                       <div>
-                        <Label htmlFor="return_policy">Return Policy</Label>
-                        <Textarea
-                          id="return_policy"
-                          value={profileData.return_policy}
-                          onChange={(e) =>
-                            setProfileData((prev) => ({
-                              ...prev,
-                              return_policy: e.target.value,
-                            }))
-                          }
-                          disabled={!isEditing}
-                          placeholder="Describe your return and exchange policy..."
-                          className="border-2 border-gray-300 rounded-none min-h-[80px]"
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="shipping_policy">Shipping Policy</Label>
+                        <Label
+                          htmlFor="shipping_policy"
+                          className="text-lg font-semibold mb-4 block"
+                        >
+                          Shipping Policy
+                        </Label>
                         <Textarea
                           id="shipping_policy"
-                          value={profileData.shipping_policy}
+                          value={profileData.shipping_policy || ""}
                           onChange={(e) =>
                             setProfileData((prev) => ({
                               ...prev,
@@ -2092,145 +1479,41 @@ export default function ArtisanProfilePage() {
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
-              </motion.div>
-            </TabsContent>
+                </div>
 
-            {/* Banking Information Tab */}
-            <TabsContent value="banking">
-              <motion.div
-                className="space-y-6"
-                variants={containerVariants}
-                initial="hidden"
-                animate="visible"
-              >
-                <motion.div variants={itemVariants}>
-                  <Card className="border-2 border-black rounded-none">
+                <div>
+                  <Card className="border-2 border-black rounded-2xl shadow-xl">
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
-                        <CreditCard className="h-5 w-5" />
-                        Banking Information
+                        <FileText className="h-5 w-5" />
+                        Return Policy
                       </CardTitle>
-                      <CardDescription>
-                        Secure banking details for payments. This information is
-                        encrypted and secure.
-                      </CardDescription>
                     </CardHeader>
-                    <CardContent className="space-y-4">
+                    <CardContent>
                       <div>
-                        <Label htmlFor="bank_name">Bank Name *</Label>
-                        <Input
-                          id="bank_name"
-                          value={profileData.bank_details.bank_name}
-                          onChange={(e) =>
-                            updateNestedField(
-                              "bank_details",
-                              "bank_name",
-                              e.target.value
-                            )
-                          }
-                          disabled={!isEditing}
-                          className="border-2 border-gray-300 rounded-none"
-                          required
-                        />
-                      </div>
-
-                      <div>
-                        <Label htmlFor="account_holder_name">
-                          Account Holder Name *
+                        <Label
+                          htmlFor="return_policy"
+                          className="text-lg font-semibold mb-4 block"
+                        >
+                          Return Policy
                         </Label>
-                        <Input
-                          id="account_holder_name"
-                          value={profileData.bank_details.account_holder_name}
+                        <Textarea
+                          id="return_policy"
+                          value={profileData.return_policy || ""}
                           onChange={(e) =>
-                            updateNestedField(
-                              "bank_details",
-                              "account_holder_name",
-                              e.target.value
-                            )
+                            setProfileData((prev) => ({
+                              ...prev,
+                              return_policy: e.target.value,
+                            }))
                           }
                           disabled={!isEditing}
-                          className="border-2 border-gray-300 rounded-none"
-                          required
+                          placeholder="Describe your return and exchange policy..."
+                          className="border-2 border-gray-300 rounded-none min-h-[80px]"
                         />
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="account_number">
-                            Account Number *
-                          </Label>
-                          <Input
-                            id="account_number"
-                            value={profileData.bank_details.account_number}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "bank_details",
-                                "account_number",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                            required
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="ifsc_code">IFSC Code *</Label>
-                          <Input
-                            id="ifsc_code"
-                            value={profileData.bank_details.ifsc_code}
-                            onChange={(e) =>
-                              updateNestedField(
-                                "bank_details",
-                                "ifsc_code",
-                                e.target.value
-                              )
-                            }
-                            disabled={!isEditing}
-                            className="border-2 border-gray-300 rounded-none"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div>
-                        <Label htmlFor="pan_number">PAN Number *</Label>
-                        <Input
-                          id="pan_number"
-                          value={profileData.bank_details.pan_number}
-                          onChange={(e) =>
-                            updateNestedField(
-                              "bank_details",
-                              "pan_number",
-                              e.target.value
-                            )
-                          }
-                          disabled={!isEditing}
-                          placeholder="ABCDE1234F"
-                          className="border-2 border-gray-300 rounded-none"
-                          required
-                        />
-                      </div>
-
-                      <div className="p-4 bg-blue-50 border-2 border-blue-200 rounded-none">
-                        <div className="flex items-start gap-3">
-                          <Shield className="h-5 w-5 text-blue-600 mt-1" />
-                          <div>
-                            <h4 className="font-medium text-blue-900">
-                              Secure Information
-                            </h4>
-                            <p className="text-sm text-blue-700">
-                              Your banking information is encrypted and stored
-                              securely. We use this information only for
-                              processing payments for your orders.
-                            </p>
-                          </div>
-                        </div>
                       </div>
                     </CardContent>
                   </Card>
-                </motion.div>
+                </div>
               </motion.div>
             </TabsContent>
           </Tabs>
