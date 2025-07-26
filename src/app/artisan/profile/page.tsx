@@ -17,15 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { motion } from "framer-motion";
@@ -60,7 +52,6 @@ import {
   Utensils,
   X,
 } from "lucide-react";
-import { artisanService } from "@/lib/artisan-service";
 import { clientDb } from "@/lib/database-client";
 import { Database, ArtisanProfileData } from "@/lib/database.types";
 import { useDatabase } from "@/contexts/DatabaseContext";

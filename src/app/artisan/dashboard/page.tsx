@@ -3,8 +3,7 @@
 import { useState, useEffect } from "react";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
-import { ArtisanOrder, ArtisanProduct } from "@/lib/types";
-import { artisanService, type DashboardData } from "@/lib/artisan-service";
+import { ArtisanService, type DashboardData } from "@/lib/artisan-service";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,18 +13,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  BarChart3,
   Package,
   ShoppingBag,
-  TrendingUp,
+  DollarSign,
   Eye,
   Users,
-  DollarSign,
   AlertCircle,
-  CheckCircle,
-  Clock,
   ArrowUpRight,
   Plus,
   Bell,
@@ -35,7 +29,7 @@ import { ArtisanWelcomeGuide } from "@/components/artisan-welcome-guide";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { clientDb } from "@/lib/database-client";
+import { useDatabase } from "@/contexts/DatabaseContext";
 import { useToast } from "@/hooks/use-toast";
 
 const containerVariants = {
@@ -56,33 +50,32 @@ const itemVariants = {
 export default function ArtisanDashboard() {
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { user, profile, artisanProfile, loading: dbLoading } = useDatabase();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [artisanId, setArtisanId] = useState<string | null>(null);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    if (!dbLoading && user) {
+      loadDashboardData();
+    }
+  }, [user, dbLoading]);
 
   const loadDashboardData = async () => {
+    if (!user) {
+      setError("Please log in to view your dashboard");
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       setError(null);
 
-      // Get current user
-      const user = await clientDb.getUser();
-      if (!user) {
-        setError("Please log in to view your dashboard");
-        return;
-      }
-
-      setArtisanId(user.id);
-
-      // Load dashboard data
-      const data = await artisanService.getDashboardData(user.id);
+      // Get dashboard data using the updated service
+      const data = await ArtisanService.getDashboardData(user.id);
       setDashboardData(data);
     } catch (err) {
       console.error("Error loading dashboard data:", err);
@@ -97,7 +90,7 @@ export default function ArtisanDashboard() {
     }
   };
 
-  if (loading) {
+  if (dbLoading || loading) {
     return (
       <div className="bg-white font-kalam text-black flex flex-col min-h-screen">
         <Header />
@@ -105,6 +98,27 @@ export default function ArtisanDashboard() {
           <div className="text-center">
             <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
             <p className="text-lg">Loading your dashboard...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="bg-white font-kalam text-black flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <AlertCircle className="h-12 w-12 text-orange-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold mb-2">Authentication Required</h2>
+            <p className="text-gray-600 mb-4">
+              Please log in to access your artisan dashboard.
+            </p>
+            <Link href="/login">
+              <Button>Go to Login</Button>
+            </Link>
           </div>
         </main>
         <Footer />
@@ -173,10 +187,10 @@ export default function ArtisanDashboard() {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900">
-                  {t("artisan.welcome_back")}, Priya!
+                  {t("artisan.welcome_back")}, {dashboardData.artisanName}!
                 </h1>
                 <p className="text-gray-600 mt-2">
-                  {t("artisan.whats_happening")}
+                  {t("artisan.whats_happening")} {dashboardData.shopName}.
                 </p>
               </div>
               <div className="flex gap-3">
@@ -231,7 +245,9 @@ export default function ArtisanDashboard() {
                     {dashboardData.stats.totalProducts}
                   </div>
                   <p className="text-xs text-gray-600">
-                    <span className="text-green-600">+2</span>{" "}
+                    <span className="text-green-600">
+                      +{Math.max(0, dashboardData.stats.totalProducts - 10)}
+                    </span>{" "}
                     {t("artisan.from_last_month")}
                   </p>
                 </CardContent>
@@ -251,8 +267,10 @@ export default function ArtisanDashboard() {
                     {dashboardData.stats.totalOrders}
                   </div>
                   <p className="text-xs text-gray-600">
-                    <span className="text-green-600">+12%</span>{" "}
-                    {t("artisan.from_last_month")}
+                    <span className="text-green-600">
+                      +{dashboardData.stats.pendingOrders}
+                    </span>{" "}
+                    {t("artisan.pending")}
                   </p>
                 </CardContent>
               </Card>
@@ -410,7 +428,7 @@ export default function ArtisanDashboard() {
                           <div>
                             <p className="font-medium">{order.orderNumber}</p>
                             <p className="text-sm text-gray-600">
-                              {order.buyerName}
+                              {order.customerName}
                             </p>
                           </div>
                         </div>
@@ -423,7 +441,7 @@ export default function ArtisanDashboard() {
                             {order.status}
                           </Badge>
                           <p className="text-sm font-medium mt-1">
-                            ₹{order.totalAmount}
+                            ₹{order.amount}
                           </p>
                         </div>
                       </div>

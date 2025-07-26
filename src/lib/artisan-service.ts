@@ -1,140 +1,270 @@
 // src/lib/artisan-service.ts
+import { clientDb } from "./database-client";
+import type { Database } from "./database.types";
 
-import { clientDb } from "@/lib/database-client";
-import type { Artisan, ArtisanBankDetails, DashboardStats, ArtisanOrder } from "@/lib/types";
-import type { Database } from "@/lib/database.types";
-
-type ProfileUpdate = Partial<Database['public']['Tables']['profiles']['Update']>;
-type ArtisanProfileUpdate = Partial<Database['public']['Tables']['artisan_profiles']['Update']>;
-
-export interface DashboardData {
-  stats: DashboardStats;
-  recentOrders: ArtisanOrder[];
-  topProducts: Array<{
-    id: string;
-    name: string;
-    price: number;
-    sales: number;
-    views: number;
-  }>;
-  unreadNotificationCount: number;
+// Dashboard statistics interface
+export interface DashboardStats {
+  totalProducts: number;
+  totalOrders: number;
+  totalEarnings: number;
+  monthlyEarnings: number;
+  totalViews: number;
+  conversionRate: number;
+  pendingOrders: number;
+  completedOrders: number;
+  averageRating: number;
 }
 
-export const artisanService = {
-  // Fetch artisan profile, shop, and bank details from Supabase
-  getArtisanFullProfile: async (userId: string) => {
-    // Fetch profile
-    const profile = await clientDb.getUserProfile(userId);
+// Recent order interface for dashboard
+export interface RecentOrder {
+  id: string;
+  orderNumber: string;
+  customerName: string;
+  amount: number;
+  status:
+    | "pending"
+    | "confirmed"
+    | "processing"
+    | "shipped"
+    | "delivered"
+    | "cancelled";
+  date: string;
+}
 
-    // Fetch artisan profile
-    const artisanProfile = await clientDb.getArtisanProfile(userId);
+// Top product interface for dashboard
+export interface TopProduct {
+  id: string;
+  name: string;
+  image: string;
+  price: number;
+  sales: number;
+  views: number;
+  revenue: number;
+}
 
-    // Fetch bank details
-    const bankDetails = await clientDb.getArtisanBankDetails(userId);
+// Complete dashboard data interface
+export interface DashboardData {
+  stats: DashboardStats;
+  recentOrders: RecentOrder[];
+  topProducts: TopProduct[];
+  unreadNotificationCount: number;
+  artisanName: string;
+  shopName: string;
+}
+
+// Profile update types
+type ProfileUpdate = Partial<
+  Database["public"]["Tables"]["profiles"]["Update"]
+>;
+type ArtisanProfileUpdate = Partial<
+  Database["public"]["Tables"]["artisan_profiles"]["Update"]
+>;
+
+export class ArtisanService {
+  /**
+   * Get comprehensive dashboard data for an artisan
+   */
+  static async getDashboardData(userId: string): Promise<DashboardData> {
+    try {
+      // Get user profile and artisan profile
+      const userProfile = await clientDb.getUserProfile(userId);
+      const artisanProfile = await clientDb.getArtisanProfile(userId);
+
+      if (!userProfile || !artisanProfile) {
+        throw new Error("User or artisan profile not found");
+      }
+
+      // Get all artisan products
+      const products = await clientDb.getArtisanProducts(artisanProfile.id);
+
+      // Get all artisan orders
+      const orders = await clientDb.getArtisanOrders(artisanProfile.id);
+
+      // Get notifications count (placeholder - implement when notification method is available)
+      const unreadNotificationCount = 0;
+
+      // Calculate dashboard statistics
+      const stats = this.calculateDashboardStats(products, orders);
+
+      // Get recent orders (last 10)
+      const recentOrders = this.formatRecentOrders(orders.slice(0, 10));
+
+      // Get top products by sales
+      const topProducts = this.calculateTopProducts(products, orders);
+
+      return {
+        stats,
+        recentOrders,
+        topProducts,
+        unreadNotificationCount,
+        artisanName: userProfile.full_name || "Artisan",
+        shopName: artisanProfile.shop_name || "Shop",
+      };
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      throw new Error("Failed to fetch dashboard data");
+    }
+  }
+
+  /**
+   * Calculate dashboard statistics from products and orders
+   */
+  private static calculateDashboardStats(
+    products: any[],
+    orders: any[]
+  ): DashboardStats {
+    const totalProducts = products.length;
+    const totalOrders = orders.length;
+
+    // Calculate earnings
+    const totalEarnings = orders.reduce((sum, order) => {
+      return sum + (order.total_amount || 0);
+    }, 0);
+
+    // Calculate monthly earnings (current month)
+    const currentMonth = new Date().getMonth();
+    const currentYear = new Date().getFullYear();
+    const monthlyEarnings = orders
+      .filter((order) => {
+        const orderDate = new Date(order.created_at);
+        return (
+          orderDate.getMonth() === currentMonth &&
+          orderDate.getFullYear() === currentYear
+        );
+      })
+      .reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+    // Calculate order statistics
+    const pendingOrders = orders.filter((order) =>
+      ["pending", "confirmed", "processing"].includes(order.status)
+    ).length;
+
+    const completedOrders = orders.filter(
+      (order) => order.status === "delivered"
+    ).length;
+
+    // Calculate total views (sum from all products)
+    const totalViews = products.reduce(
+      (sum, product) => sum + (product.views || 0),
+      0
+    );
+
+    // Calculate conversion rate (orders / total views * 100)
+    const conversionRate =
+      totalViews > 0 ? (totalOrders / totalViews) * 100 : 0;
+
+    // Calculate average rating from products
+    const ratingsCount = products.filter((p) => p.average_rating > 0).length;
+    const averageRating =
+      ratingsCount > 0
+        ? products.reduce((sum, p) => sum + (p.average_rating || 0), 0) /
+          ratingsCount
+        : 0;
 
     return {
-      profile,
-      artisanProfile,
-      bankDetails: bankDetails || null,
+      totalProducts,
+      totalOrders,
+      totalEarnings,
+      monthlyEarnings,
+      totalViews,
+      conversionRate: Math.round(conversionRate * 100) / 100,
+      pendingOrders,
+      completedOrders,
+      averageRating: Math.round(averageRating * 10) / 10,
     };
-  },
+  }
 
-  // Update profile, artisan profile, and bank details
-  updateArtisanFullProfile: async (userId: string, updates: {
-    profile?: ProfileUpdate,
-    artisanProfile?: ArtisanProfileUpdate,
-    bankDetails?: Partial<ArtisanBankDetails>
-  }) => {
-    let profileRes, artisanRes, bankRes;
+  /**
+   * Format orders for recent orders display
+   */
+  private static formatRecentOrders(orders: any[]): RecentOrder[] {
+    return orders.map((order) => ({
+      id: order.id,
+      orderNumber: `#${order.id.slice(-8).toUpperCase()}`,
+      customerName: order.profiles?.full_name || "Customer",
+      amount: order.total_amount || 0,
+      status: order.status || "pending",
+      date: new Date(order.created_at).toLocaleDateString(),
+    }));
+  }
 
-    if (updates.profile) {
-      profileRes = await clientDb.updateUserProfile(userId, updates.profile);
+  /**
+   * Calculate top products by sales and revenue
+   */
+  private static calculateTopProducts(
+    products: any[],
+    orders: any[]
+  ): TopProduct[] {
+    // Calculate sales and revenue for each product
+    const productStats = products.map((product) => {
+      // Find order items for this product
+      const productOrderItems = orders.flatMap(
+        (order) =>
+          order.order_items?.filter(
+            (item: any) => item.product_id === product.id
+          ) || []
+      );
+
+      const sales = productOrderItems.reduce(
+        (sum, item) => sum + (item.quantity || 0),
+        0
+      );
+      const revenue = productOrderItems.reduce(
+        (sum, item) => sum + (item.quantity || 0) * (item.price || 0),
+        0
+      );
+
+      return {
+        id: product.id,
+        name: product.name,
+        image: product.images?.[0] || "/placeholder.jpg",
+        price: product.price || 0,
+        sales,
+        views: product.views || 0,
+        revenue,
+      };
+    });
+
+    // Sort by revenue and return top 5
+    return productStats.sort((a, b) => b.revenue - a.revenue).slice(0, 5);
+  }
+
+  /**
+   * Update artisan profile information
+   */
+  static async updateArtisanProfile(
+    userId: string,
+    profileData: ProfileUpdate,
+    artisanData: ArtisanProfileUpdate
+  ): Promise<void> {
+    try {
+      await clientDb.updateArtisanFullProfile(userId, {
+        profile: profileData,
+        artisanProfile: artisanData,
+      });
+    } catch (error) {
+      console.error("Error updating artisan profile:", error);
+      throw new Error("Failed to update artisan profile");
     }
-    if (updates.artisanProfile) {
-      artisanRes = await clientDb.updateArtisanProfile(userId, updates.artisanProfile);
+  }
+
+  /**
+   * Get artisan's complete profile data
+   */
+  static async getArtisanProfileData(userId: string) {
+    try {
+      const userProfile = await clientDb.getUserProfile(userId);
+      const artisanProfile = await clientDb.getArtisanProfile(userId);
+
+      return {
+        userProfile,
+        artisanProfile,
+      };
+    } catch (error) {
+      console.error("Error fetching artisan profile data:", error);
+      throw new Error("Failed to fetch artisan profile data");
     }
-    if (updates.bankDetails) {
-      bankRes = await clientDb.upsertArtisanBankDetails(userId, updates.bankDetails);
-    }
+  }
+}
 
-    return {
-      profile: profileRes,
-      artisanProfile: artisanRes,
-      bankDetails: bankRes,
-    };
-  },
-
-  // Get dashboard data for artisan
-  getDashboardData: async (userId: string): Promise<DashboardData> => {
-    // Mock data for now - this would be replaced with actual database queries
-    const mockStats: DashboardStats = {
-      totalProducts: 12,
-      totalOrders: 48,
-      totalEarnings: 125000,
-      monthlyEarnings: 25000,
-      pendingOrders: 3,
-      completedOrders: 45,
-      totalViews: 1250,
-      conversionRate: 3.8,
-    };
-
-    const mockRecentOrders: ArtisanOrder[] = [
-      {
-        id: "1",
-        orderNumber: "ORD-2024-001",
-        productId: "prod-1",
-        productName: "Handcrafted Clay Pot",
-        productImage: "/placeholder.jpg",
-        quantity: 2,
-        pricePerItem: 1200,
-        totalAmount: 2400,
-        buyerName: "Raj Sharma",
-        buyerEmail: "raj@example.com",
-        shippingAddress: "Mumbai, Maharashtra",
-        status: "Pending",
-        orderDate: "2024-01-15",
-        estimatedDelivery: "2024-01-20",
-      },
-      {
-        id: "2",
-        orderNumber: "ORD-2024-002",
-        productId: "prod-2",
-        productName: "Wooden Sculpture",
-        productImage: "/placeholder.jpg",
-        quantity: 1,
-        pricePerItem: 3500,
-        totalAmount: 3500,
-        buyerName: "Priya Singh",
-        buyerEmail: "priya@example.com",
-        shippingAddress: "Delhi, Delhi",
-        status: "Shipped",
-        orderDate: "2024-01-14",
-        estimatedDelivery: "2024-01-19",
-      },
-    ];
-
-    const mockTopProducts = [
-      {
-        id: "prod-1",
-        name: "Handcrafted Clay Pot",
-        price: 1200,
-        sales: 25,
-        views: 156,
-      },
-      {
-        id: "prod-2",
-        name: "Wooden Sculpture",
-        price: 3500,
-        sales: 18,
-        views: 89,
-      },
-    ];
-
-    return {
-      stats: mockStats,
-      recentOrders: mockRecentOrders,
-      topProducts: mockTopProducts,
-      unreadNotificationCount: 2,
-    };
-  },
-};
+export default ArtisanService;

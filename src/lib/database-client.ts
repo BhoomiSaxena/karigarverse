@@ -176,7 +176,49 @@ export class ClientDatabaseOperations {
       .order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data || [];
+  }
+
+  async getArtisanOrders(artisanId: string, limit: number = 10) {
+    const { data, error } = await this.supabase
+      .from("order_items")
+      .select(
+        `
+        *,
+        orders!inner (
+          id,
+          order_number,
+          status,
+          total_amount,
+          created_at,
+          profiles!inner (
+            full_name
+          )
+        ),
+        products!inner (
+          name,
+          images
+        )
+      `
+      )
+      .eq("artisan_id", artisanId)
+      .order("created_at", { ascending: false })
+      .limit(limit);
+
+    if (error) throw error;
+
+    // Transform the data to include customer name and flatten structure
+    return (data || []).map((item) => ({
+      id: item.orders.id,
+      order_number: item.orders.order_number,
+      status: item.orders.status,
+      total_amount: item.orders.total_amount,
+      created_at: item.orders.created_at,
+      customer_name: item.orders.profiles?.full_name || "Unknown Customer",
+      product_name: item.products?.name || "Unknown Product",
+      quantity: item.quantity,
+      unit_price: item.unit_price,
+    }));
   }
 
   // =============================================
