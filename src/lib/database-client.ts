@@ -221,6 +221,30 @@ export class ClientDatabaseOperations {
     }));
   }
 
+  async getArtisanProfileById(
+    artisanId: string
+  ): Promise<Database["public"]["Tables"]["artisan_profiles"]["Row"] | null> {
+    try {
+      const { data, error } = await this.supabase
+        .from("artisan_profiles")
+        .select("*")
+        .eq("id", artisanId)
+        .single();
+
+      if (error) {
+        // If the error is "No rows found", return null (profile doesn't exist)
+        if (error.code === "PGRST116") {
+          return null;
+        }
+        throw error;
+      }
+      return data;
+    } catch (error) {
+      console.error("Error getting artisan profile by ID:", error);
+      throw error;
+    }
+  }
+
   // =============================================
   // PRODUCT OPERATIONS
   // =============================================
@@ -245,6 +269,28 @@ export class ClientDatabaseOperations {
 
     if (error) throw error;
     return data;
+  }
+
+  async incrementProductViews(productId: string) {
+    const { error } = await this.supabase.rpc("increment_product_views", {
+      product_id: productId,
+    });
+
+    if (error) {
+      // Fallback method if RPC doesn't exist
+      const { data: product } = await this.supabase
+        .from("products")
+        .select("views_count")
+        .eq("id", productId)
+        .single();
+
+      if (product) {
+        await this.supabase
+          .from("products")
+          .update({ views_count: (product.views_count || 0) + 1 })
+          .eq("id", productId);
+      }
+    }
   }
 
   async getProducts(
@@ -291,6 +337,108 @@ export class ClientDatabaseOperations {
 
     if (error) throw error;
     return data;
+  }
+
+  // =============================================
+  // CART OPERATIONS
+  // =============================================
+
+  async addToCart(productId: string, quantity: number = 1) {
+    const {
+      data: { user },
+    } = await this.supabase.auth.getUser();
+    if (!user) throw new Error("User not authenticated");
+
+    // Check if item already exists in cart
+    const { data: existingItem } = await this.supabase
+      .from("cart_items")
+      .select("*")
+      .eq("user_id", user.id)
+      .eq("product_id", productId)
+      .single();
+
+    if (existingItem) {
+      // Update quantity if item exists
+      const { data, error } = await this.supabase
+        .from("cart_items")
+        .update({
+          quantity: existingItem.quantity + quantity,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", existingItem.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    } else {
+      // Add new item to cart
+      const { data, error } = await this.supabase
+        .from("cart_items")
+        .insert([
+          {
+            user_id: user.id,
+            product_id: productId,
+            quantity: quantity,
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) throw error;
+      return data;
+    }
+  }
+
+  async getCartItems() {
+    const {
+      data: { user },
+    } = await this.supabase.auth.getUser();
+    if (!user) return [];
+
+    const { data, error } = await this.supabase
+      .from("cart_items")
+      .select(
+        `
+        *,
+        products (
+          id,
+          name,
+          price,
+          images,
+          stock_quantity,
+          is_active
+        )
+      `
+      )
+      .eq("user_id", user.id);
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  async updateCartItemQuantity(cartItemId: string, quantity: number) {
+    const { data, error } = await this.supabase
+      .from("cart_items")
+      .update({
+        quantity,
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", cartItemId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  }
+
+  async removeFromCart(cartItemId: string) {
+    const { error } = await this.supabase
+      .from("cart_items")
+      .delete()
+      .eq("id", cartItemId);
+
+    if (error) throw error;
   }
 
   // =============================================
