@@ -55,6 +55,7 @@ import {
 import { clientDb } from "@/lib/database-client";
 import { Database, ArtisanProfileData } from "@/lib/database.types";
 import { useDatabase } from "@/contexts/DatabaseContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 type BusinessHours = {
   [day: string]: {
@@ -102,27 +103,27 @@ const initialProfileData: Partial<ArtisanProfileData> = {
 
 // Specialty categories with icons
 const specialtyCategories = [
-  { id: "pottery", name: "Pottery", icon: Palette },
-  { id: "textiles", name: "Textiles", icon: Utensils },
-  { id: "jewelry", name: "Jewelry", icon: Star },
-  { id: "woodwork", name: "Woodwork", icon: Building },
-  { id: "metalwork", name: "Metalwork", icon: Shield },
-  { id: "painting", name: "Painting", icon: Palette },
-  { id: "sculpture", name: "Sculpture", icon: Award },
-  { id: "ceramics", name: "Ceramics", icon: Camera },
-  { id: "glasswork", name: "Glasswork", icon: Eye },
-  { id: "leatherwork", name: "Leatherwork", icon: ShoppingBag },
+  { id: "pottery", name: "pottery", icon: Palette },
+  { id: "textiles", name: "textiles", icon: Utensils },
+  { id: "jewelry", name: "jewelry", icon: Star },
+  { id: "woodwork", name: "woodwork", icon: Building },
+  { id: "metalwork", name: "metalwork", icon: Shield },
+  { id: "painting", name: "painting", icon: Palette },
+  { id: "sculpture", name: "sculpture", icon: Award },
+  { id: "ceramics", name: "ceramics", icon: Camera },
+  { id: "glasswork", name: "glasswork", icon: Eye },
+  { id: "leatherwork", name: "leatherwork", icon: ShoppingBag },
 ];
 
 // Business hours template
 const businessDays = [
-  { key: "monday", name: "Monday" },
-  { key: "tuesday", name: "Tuesday" },
-  { key: "wednesday", name: "Wednesday" },
-  { key: "thursday", name: "Thursday" },
-  { key: "friday", name: "Friday" },
-  { key: "saturday", name: "Saturday" },
-  { key: "sunday", name: "Sunday" },
+  { key: "monday", name: "monday" },
+  { key: "tuesday", name: "tuesday" },
+  { key: "wednesday", name: "wednesday" },
+  { key: "thursday", name: "thursday" },
+  { key: "friday", name: "friday" },
+  { key: "saturday", name: "saturday" },
+  { key: "sunday", name: "sunday" },
 ];
 
 // Languages
@@ -176,6 +177,7 @@ export default function ArtisanProfilePage() {
     useDatabase();
   const router = useRouter();
   const { toast } = useToast();
+  const { t } = useLanguage();
 
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setSaving] = useState(false);
@@ -235,16 +237,16 @@ export default function ArtisanProfilePage() {
     // Validate file type and size
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Invalid file type",
-        description: "Please select an image file.",
+        title: t("artisan_profile.invalid_file_type"),
+        description: t("artisan_profile.invalid_file_type_desc"),
         variant: "destructive",
       });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "File too large",
-        description: "Please select an image smaller than 5MB.",
+        title: t("artisan_profile.file_too_large"),
+        description: t("artisan_profile.file_too_large_desc"),
         variant: "destructive",
       });
       return;
@@ -268,16 +270,14 @@ export default function ArtisanProfilePage() {
 
           await refreshProfile();
           toast({
-            title: "Success",
-            description: `${
-              fieldName.charAt(0).toUpperCase() + fieldName.slice(1)
-            } updated.`,
+            title: t("artisan_profile.success"),
+            description: t("artisan_profile.photo_updated"),
           });
         } catch (error) {
           console.error("Error saving photo:", error);
           toast({
-            title: "Error",
-            description: "Failed to save photo.",
+            title: t("artisan_profile.error"),
+            description: t("artisan_profile.failed_to_save_photo"),
             variant: "destructive",
           });
         } finally {
@@ -288,8 +288,8 @@ export default function ArtisanProfilePage() {
     } catch (error) {
       console.error("Error uploading photo:", error);
       toast({
-        title: "Error",
-        description: "Failed to upload photo.",
+        title: t("artisan_profile.error"),
+        description: t("artisan_profile.failed_to_upload_photo"),
         variant: "destructive",
       });
       setUploadingPhoto(false);
@@ -314,16 +314,14 @@ export default function ArtisanProfilePage() {
       await refreshProfile();
       setIsEditing(false);
       toast({
-        title: "Success",
-        description: "Artisan profile updated successfully!",
+        title: t("artisan_profile.success"),
+        description: t("artisan_profile.profile_updated"),
       });
     } catch (error) {
       console.error("Error updating artisan profile:", error);
       toast({
-        title: "Error",
-        description: `Failed to update artisan profile: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        title: t("artisan_profile.error"),
+        description: t("artisan_profile.failed_to_update_profile"),
         variant: "destructive",
       });
     } finally {
@@ -387,8 +385,8 @@ export default function ArtisanProfilePage() {
     } catch (error) {
       console.error("Error uploading portfolio image:", error);
       toast({
-        title: "Error",
-        description: "Failed to upload image.",
+        title: t("artisan_profile.error"),
+        description: t("artisan_profile.failed_to_upload_photo"),
         variant: "destructive",
       });
     }
@@ -416,8 +414,8 @@ export default function ArtisanProfilePage() {
       } catch (error) {
         console.error("Error adding portfolio image:", error);
         toast({
-          title: "Error",
-          description: "Failed to add image.",
+          title: t("artisan_profile.error"),
+          description: t("artisan_profile.image_added"),
           variant: "destructive",
         });
       }
@@ -456,11 +454,15 @@ export default function ArtisanProfilePage() {
         <main className="flex-grow flex items-center justify-center">
           <div className="text-center">
             <AlertCircle className="h-16 w-16 mx-auto mb-4 text-red-500" />
-            <h1 className="text-2xl font-bold mb-2">Access Denied</h1>
+            <h1 className="text-2xl font-bold mb-2">
+              {t("artisan_profile.access_denied")}
+            </h1>
             <p className="text-gray-600 mb-4">
-              Please log in to view your artisan profile.
+              {t("artisan_profile.login_required")}
             </p>
-            <Button onClick={() => router.push("/login")}>Go to Login</Button>
+            <Button onClick={() => router.push("/login")}>
+              {t("artisan_profile.go_to_login")}
+            </Button>
           </div>
         </main>
         <Footer />
@@ -493,10 +495,10 @@ export default function ArtisanProfilePage() {
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 flex items-center gap-3">
                   <Store className="h-8 w-8 text-purple-500" />
-                  Artisan Profile
+                  {t("artisan_profile.title")}
                 </h1>
                 <p className="text-gray-600 mt-2">
-                  Manage your shop and professional information
+                  {t("artisan_profile.subtitle")}
                 </p>
               </div>
               {!isEditing ? (
@@ -505,7 +507,7 @@ export default function ArtisanProfilePage() {
                   onClick={() => setIsEditing(true)}
                 >
                   <Edit2 className="h-4 w-4 mr-2" />
-                  Edit Profile
+                  {t("artisan_profile.edit_profile")}
                 </Button>
               ) : (
                 <div className="flex gap-2">
@@ -516,7 +518,7 @@ export default function ArtisanProfilePage() {
                     disabled={isSaving}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Cancel
+                    {t("artisan_profile.cancel")}
                   </Button>
                   <Button
                     className="bg-green-500 hover:bg-green-600 text-white border-2 border-black rounded-none"
@@ -528,7 +530,9 @@ export default function ArtisanProfilePage() {
                     ) : (
                       <Save className="h-4 w-4 mr-2" />
                     )}
-                    {isSaving ? "Saving..." : "Save Changes"}
+                    {isSaving
+                      ? t("artisan_profile.saving")
+                      : t("artisan_profile.save_changes")}
                   </Button>
                 </div>
               )}
@@ -570,7 +574,7 @@ export default function ArtisanProfilePage() {
                 </div>
 
                 <p className="text-sm text-gray-600 mt-2 text-center">
-                  Edit Personal Photo
+                  {t("artisan_profile.edit_personal_photo")}
                 </p>
               </div>
 
@@ -578,16 +582,17 @@ export default function ArtisanProfilePage() {
               <div className="flex-1 min-w-0">
                 <div className="mb-4">
                   <h1 className="text-5xl font-bold mb-4 text-gray-900">
-                    {profileData.shop_name || "Your Shop"}
+                    {profileData.shop_name || t("artisan_profile.your_shop")}
                   </h1>
                   <p className="text-xl text-gray-600 mb-6">
-                    Managed by {profile?.first_name} {profile?.last_name}
+                    {t("artisan_profile.managed_by")} {profile?.first_name}{" "}
+                    {profile?.last_name}
                   </p>
 
                   {profileData.description && (
                     <div className="mb-4">
                       <h2 className="text-lg font-semibold text-gray-800 mb-2">
-                        About the Shop
+                        {t("artisan_profile.about_the_shop")}
                       </h2>
                       <p className="text-gray-700">{profileData.description}</p>
                     </div>
@@ -603,7 +608,7 @@ export default function ArtisanProfilePage() {
                           variant="outline"
                           className="border-2 border-gray-300 text-gray-700"
                         >
-                          {specialtyData.name}
+                          {t(`category.${specialtyData.name}`)}
                         </Badge>
                       ) : null;
                     })}
@@ -617,7 +622,7 @@ export default function ArtisanProfilePage() {
                       className="flex items-center gap-2 font-medium"
                     >
                       <Mail className="h-5 w-5" />
-                      Email Address
+                      {t("artisan_profile.email_address")}
                     </Label>
                     <Input
                       id="email"
@@ -639,7 +644,7 @@ export default function ArtisanProfilePage() {
                       className="flex items-center gap-2 font-medium"
                     >
                       <Phone className="h-5 w-5" />
-                      Phone Number
+                      {t("artisan_profile.phone_number")}
                     </Label>
                     <Input
                       id="phone"
@@ -717,28 +722,36 @@ export default function ArtisanProfilePage() {
                 className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
                 <Store className="h-4 w-4" />
-                <span className="hidden sm:inline">Shop Info</span>
+                <span className="hidden sm:inline">
+                  {t("artisan_profile.shop_info")}
+                </span>
               </TabsTrigger>
               <TabsTrigger
                 value="portfolio"
                 className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
                 <Palette className="h-4 w-4" />
-                <span className="hidden sm:inline">Portfolio</span>
+                <span className="hidden sm:inline">
+                  {t("artisan_profile.portfolio")}
+                </span>
               </TabsTrigger>
               <TabsTrigger
                 value="business"
                 className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
                 <Briefcase className="h-4 w-4" />
-                <span className="hidden sm:inline">Business</span>
+                <span className="hidden sm:inline">
+                  {t("artisan_profile.business")}
+                </span>
               </TabsTrigger>
               <TabsTrigger
                 value="policies"
                 className="flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-medium data-[state=active]:bg-black data-[state=active]:text-white data-[state=active]:rounded-xl transition-all border-0"
               >
                 <FileText className="h-4 w-4" />
-                <span className="hidden sm:inline">Policies</span>
+                <span className="hidden sm:inline">
+                  {t("artisan_profile.policies")}
+                </span>
               </TabsTrigger>
             </TabsList>
 
@@ -755,7 +768,7 @@ export default function ArtisanProfilePage() {
                     <CardHeader className="pb-6">
                       <CardTitle className="flex items-center gap-3 text-2xl">
                         <Store className="h-6 w-6" />
-                        Shop Details
+                        {t("artisan_profile.shop_details")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
@@ -765,7 +778,7 @@ export default function ArtisanProfilePage() {
                           className="flex items-center gap-3 text-base font-medium"
                         >
                           <Store className="h-5 w-5" />
-                          Shop Name
+                          {t("artisan_profile.shop_name")}
                         </Label>
                         <Input
                           id="shop_name"
@@ -777,7 +790,9 @@ export default function ArtisanProfilePage() {
                             }))
                           }
                           disabled={!isEditing}
-                          placeholder="Your shop or brand name"
+                          placeholder={t(
+                            "artisan_profile.shop_name_placeholder"
+                          )}
                           className="border-2 border-gray-300 rounded-none"
                           required
                         />
@@ -789,7 +804,7 @@ export default function ArtisanProfilePage() {
                           className="flex items-center gap-3 text-base font-medium"
                         >
                           <FileText className="h-5 w-5" />
-                          Shop Description
+                          {t("artisan_profile.shop_description")}
                         </Label>
                         <Textarea
                           id="description"
@@ -801,7 +816,9 @@ export default function ArtisanProfilePage() {
                             }))
                           }
                           disabled={!isEditing}
-                          placeholder="Describe your shop, your craft, and what makes you unique..."
+                          placeholder={t(
+                            "artisan_profile.shop_description_placeholder"
+                          )}
                           className="border-2 border-gray-300 rounded-none min-h-[120px]"
                         />
                       </div>
@@ -813,7 +830,7 @@ export default function ArtisanProfilePage() {
                             className="flex items-center gap-3 text-base font-medium"
                           >
                             <Phone className="h-5 w-5" />
-                            Contact Phone
+                            {t("artisan_profile.phone_number")}
                           </Label>
                           <Input
                             id="contact_phone"
@@ -834,7 +851,7 @@ export default function ArtisanProfilePage() {
                             className="flex items-center gap-3 text-base font-medium"
                           >
                             <Mail className="h-5 w-5" />
-                            Contact Email
+                            {t("artisan_profile.email_address")}
                           </Label>
                           <Input
                             id="contact_email"
@@ -859,7 +876,7 @@ export default function ArtisanProfilePage() {
                             className="flex items-center gap-3 text-base font-medium"
                           >
                             <Globe className="h-5 w-5" />
-                            Website URL
+                            {t("artisan_profile.website_url")}
                           </Label>
                           <Input
                             id="website_url"
@@ -872,7 +889,9 @@ export default function ArtisanProfilePage() {
                               }))
                             }
                             disabled={!isEditing}
-                            placeholder="https://your-website.com"
+                            placeholder={t(
+                              "artisan_profile.website_url_placeholder"
+                            )}
                             className="border-2 border-gray-300 rounded-none"
                           />
                         </div>
@@ -882,11 +901,13 @@ export default function ArtisanProfilePage() {
                             className="flex items-center gap-3 text-base font-medium"
                           >
                             <MapPin className="h-5 w-5" />
-                            Location / City
+                            {t("artisan_profile.location_city")}
                           </Label>
                           <Input
                             id="location"
-                            placeholder="e.g., Jaipur, Rajasthan"
+                            placeholder={t(
+                              "artisan_profile.location_placeholder"
+                            )}
                             value={profileData.location || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
@@ -907,12 +928,14 @@ export default function ArtisanProfilePage() {
                             className="flex items-center gap-3 text-base font-medium"
                           >
                             <Calendar className="h-5 w-5" />
-                            Established Year
+                            {t("artisan_profile.established_year")}
                           </Label>
                           <Input
                             id="established_year"
                             type="number"
-                            placeholder="e.g., 2010"
+                            placeholder={t(
+                              "artisan_profile.established_year_placeholder"
+                            )}
                             value={profileData.established_year || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
@@ -932,12 +955,14 @@ export default function ArtisanProfilePage() {
                             className="flex items-center gap-3 text-base font-medium"
                           >
                             <Star className="h-5 w-5" />
-                            Years of Experience
+                            {t("artisan_profile.experience_years")}
                           </Label>
                           <Input
                             id="experience_years"
                             type="number"
-                            placeholder="e.g., 5"
+                            placeholder={t(
+                              "artisan_profile.experience_years_placeholder"
+                            )}
                             value={profileData.experience_years || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
@@ -960,11 +985,10 @@ export default function ArtisanProfilePage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Star className="h-5 w-5" />
-                        Specialties & Crafts
+                        {t("artisan_profile.specialties")}
                       </CardTitle>
                       <CardDescription>
-                        Select the types of crafts and products you specialize
-                        in
+                        {t("artisan_profile.specialties_desc")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -993,7 +1017,7 @@ export default function ArtisanProfilePage() {
                             >
                               <IconComponent className="h-6 w-6 mx-auto mb-2" />
                               <span className="text-xs font-medium">
-                                {specialty.name}
+                                {t(`category.${specialty.name}`)}
                               </span>
                             </button>
                           );
@@ -1033,17 +1057,17 @@ export default function ArtisanProfilePage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Camera className="h-5 w-5" />
-                        Shop Images
+                        {t("artisan_profile.shop_images")}
                       </CardTitle>
                       <CardDescription>
-                        Upload your shop logo and banner image
+                        {t("artisan_profile.shop_images_desc")}
                       </CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
                           <Label className="text-lg font-semibold mb-4 block">
-                            Shop Logo
+                            {t("artisan_profile.shop_logo")}
                           </Label>
                           <div className="flex items-center gap-4">
                             <Avatar className="h-20 w-20 border-2 border-black">
@@ -1068,7 +1092,7 @@ export default function ArtisanProfilePage() {
                                 disabled={isUploadingPhoto}
                               >
                                 <Upload className="mr-2 h-4 w-4" />
-                                Upload Logo
+                                {t("artisan_profile.upload_logo")}
                               </Button>
                             )}
                             <input
@@ -1085,7 +1109,7 @@ export default function ArtisanProfilePage() {
 
                         <div>
                           <Label className="text-lg font-semibold mb-4 block">
-                            Banner Image
+                            {t("artisan_profile.banner_image")}
                           </Label>
                           <div className="aspect-video w-full bg-gray-100 rounded-lg border-2 border-dashed border-gray-300 flex items-center justify-center relative overflow-hidden">
                             {profileData.banner_image ? (
@@ -1113,7 +1137,7 @@ export default function ArtisanProfilePage() {
                                 disabled={isUploadingPhoto}
                               >
                                 <Upload className="mr-2 h-4 w-4" />
-                                Upload Banner
+                                {t("artisan_profile.upload_banner")}
                               </Button>
                             )}
                             <input
@@ -1171,7 +1195,7 @@ export default function ArtisanProfilePage() {
                                     onClick={() => handleImageRemove(index)}
                                   >
                                     <X className="h-4 w-4 mr-1" />
-                                    Remove
+                                    {t("artisan_profile.remove")}
                                   </Button>
                                   <Button
                                     variant="outline"
@@ -1223,7 +1247,7 @@ export default function ArtisanProfilePage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
-                        Certificates & Awards
+                        {t("artisan_profile.certificates_awards")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -1233,11 +1257,13 @@ export default function ArtisanProfilePage() {
                             htmlFor="certificates"
                             className="text-lg font-semibold mb-4 block"
                           >
-                            Certificates & Credentials
+                            {t("artisan_profile.certificates")}
                           </Label>
                           <Input
                             id="certificates"
-                            placeholder="e.g., Master Craftsman Certificate"
+                            placeholder={t(
+                              "artisan_profile.certificates_placeholder"
+                            )}
                             disabled={!isEditing}
                             value={(profileData.certificates || []).join(", ")}
                             onChange={(e) =>
@@ -1259,11 +1285,13 @@ export default function ArtisanProfilePage() {
                             htmlFor="awards"
                             className="text-lg font-semibold mb-4 block"
                           >
-                            Awards & Recognitions
+                            {t("artisan_profile.awards")}
                           </Label>
                           <Input
                             id="awards"
-                            placeholder="e.g., National Award for Handicrafts 2023"
+                            placeholder={t(
+                              "artisan_profile.awards_placeholder"
+                            )}
                             disabled={!isEditing}
                             value={(profileData.awards || []).join(", ")}
                             onChange={(e) =>
@@ -1333,7 +1361,7 @@ export default function ArtisanProfilePage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <Clock className="h-5 w-5" />
-                        Business Hours
+                        {t("artisan_profile.business_hours")}
                       </CardTitle>
                       <CardDescription>
                         Set your working hours so customers know when you're
@@ -1346,7 +1374,7 @@ export default function ArtisanProfilePage() {
                           ([day, hours]) => (
                             <div key={day} className="flex items-center gap-4">
                               <div className="w-20 text-sm font-medium">
-                                {day.charAt(0).toUpperCase() + day.slice(1)}
+                                {t(`artisan_profile.${day}`)}
                               </div>
                               <div className="flex items-center gap-2">
                                 <Switch
@@ -1443,7 +1471,7 @@ export default function ArtisanProfilePage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
-                        Shipping Policy
+                        {t("artisan_profile.shipping_policy")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -1452,7 +1480,7 @@ export default function ArtisanProfilePage() {
                           htmlFor="shipping_policy"
                           className="text-lg font-semibold mb-4 block"
                         >
-                          Shipping Policy
+                          {t("artisan_profile.shipping_policy")}
                         </Label>
                         <Textarea
                           id="shipping_policy"
@@ -1464,7 +1492,9 @@ export default function ArtisanProfilePage() {
                             }))
                           }
                           disabled={!isEditing}
-                          placeholder="Describe your shipping policy..."
+                          placeholder={t(
+                            "artisan_profile.shipping_policy_placeholder"
+                          )}
                           className="border-2 border-gray-300 rounded-none min-h-[80px]"
                         />
                       </div>
@@ -1477,7 +1507,7 @@ export default function ArtisanProfilePage() {
                     <CardHeader>
                       <CardTitle className="flex items-center gap-2">
                         <FileText className="h-5 w-5" />
-                        Return Policy
+                        {t("artisan_profile.return_policy")}
                       </CardTitle>
                     </CardHeader>
                     <CardContent>
@@ -1486,7 +1516,7 @@ export default function ArtisanProfilePage() {
                           htmlFor="return_policy"
                           className="text-lg font-semibold mb-4 block"
                         >
-                          Return Policy
+                          {t("artisan_profile.return_policy")}
                         </Label>
                         <Textarea
                           id="return_policy"
@@ -1498,7 +1528,9 @@ export default function ArtisanProfilePage() {
                             }))
                           }
                           disabled={!isEditing}
-                          placeholder="Describe your return and exchange policy..."
+                          placeholder={t(
+                            "artisan_profile.return_policy_placeholder"
+                          )}
                           className="border-2 border-gray-300 rounded-none min-h-[80px]"
                         />
                       </div>
