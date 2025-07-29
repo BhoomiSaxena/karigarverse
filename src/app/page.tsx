@@ -62,7 +62,7 @@ export default function HomePage() {
                   {t("home.learn_story")}
                 </Button>
               </Link>
-              <Link href="/artisan/dashboard">
+              <Link href="/artisan/check">
                 <Button className="bg-blue-600 hover:bg-blue-700 text-white font-bold px-6 py-2 rounded-md border-2 border-blue-700">
                   {t("home.artisan_dashboard")}
                 </Button>
@@ -156,7 +156,7 @@ export default function HomePage() {
                     </p>
                   </div>
                 </div>
-                <Link href="/artisan/dashboard">
+                <Link href="/artisan/check">
                   <Button
                     size="lg"
                     className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-bold px-8 py-3 rounded-lg text-xl shadow-lg hover:shadow-xl transition-all duration-300"
@@ -200,13 +200,13 @@ export default function HomePage() {
 
           {/* Floating Artisan Dashboard Button */}
           <div className="fixed bottom-6 right-6 z-50">
-            <Link href="/artisan/dashboard">
+            <Link href="/artisan/check">
               <Button
                 size="lg"
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-bold px-6 py-3 rounded-full shadow-lg hover:shadow-xl transition-all duration-300 border-2 border-purple-500"
               >
                 <span className="hidden sm:inline mr-2">🎨</span>
-                <span className="sm:hidden mr-2">🎨</span>
+                <span className="sm:inline-block mr-2">🎨</span>
                 {t("home.artisan_dashboard")}
               </Button>
             </Link>

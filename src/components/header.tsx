@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useDatabase } from "@/contexts/DatabaseContext";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -28,12 +29,13 @@ import type { User } from "@supabase/supabase-js";
 import { ClientOnly } from "@/components/client-only";
 
 export function Header() {
+  const router = useRouter();
+  const { t } = useLanguage();
+  const { user: dbUser, loading: dbLoading, isArtisan } = useDatabase();
   const [isSticky, setIsSticky] = useState(false);
+  const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const { t } = useLanguage();
-  const router = useRouter();
-  const supabase = createClient();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -146,7 +148,7 @@ export function Header() {
                     <Link href="/orders">My Orders</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/artisan/dashboard">Artisan Dashboard</Link>
+                    <Link href="/artisan/check">Artisan Dashboard</Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem

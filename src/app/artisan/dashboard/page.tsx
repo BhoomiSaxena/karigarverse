@@ -31,6 +31,7 @@ import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { useToast } from "@/hooks/use-toast";
+import { useRouter } from "next/navigation";
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -50,7 +51,14 @@ const itemVariants = {
 export default function ArtisanDashboard() {
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { user, profile, artisanProfile, loading: dbLoading } = useDatabase();
+  const router = useRouter();
+  const {
+    user,
+    profile,
+    artisanProfile,
+    loading: dbLoading,
+    isArtisan,
+  } = useDatabase();
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(
     null
   );
@@ -59,9 +67,14 @@ export default function ArtisanDashboard() {
 
   useEffect(() => {
     if (!dbLoading && user) {
+      // Check if user has artisan profile first
+      if (!isArtisan) {
+        router.push("/artisan/check");
+        return;
+      }
       loadDashboardData();
     }
-  }, [user, dbLoading]);
+  }, [user, dbLoading, isArtisan, router]);
 
   const loadDashboardData = async () => {
     if (!user) {
@@ -119,6 +132,22 @@ export default function ArtisanDashboard() {
             <Link href="/login">
               <Button>Go to Login</Button>
             </Link>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // Check if user needs to complete artisan onboarding
+  if (user && !dbLoading && !isArtisan) {
+    return (
+      <div className="bg-white font-kalam text-black flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-lg">Redirecting to artisan check...</p>
           </div>
         </main>
         <Footer />
