@@ -14,66 +14,22 @@ export type Database = {
   };
   public: {
     Tables: {
-      artisan_bank_details: {
-        Row: {
-          account_holder_name: string;
-          account_number: string;
-          bank_name: string;
-          created_at: string;
-          id: string;
-          ifsc_code: string;
-          pan_number: string;
-          updated_at: string;
-        };
-        Insert: {
-          account_holder_name: string;
-          account_number: string;
-          bank_name: string;
-          created_at?: string;
-          id: string;
-          ifsc_code: string;
-          pan_number: string;
-          updated_at?: string;
-        };
-        Update: {
-          account_holder_name?: string;
-          account_number?: string;
-          bank_name?: string;
-          created_at?: string;
-          id?: string;
-          ifsc_code?: string;
-          pan_number?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
       artisan_profiles: {
         Row: {
-          awards: string[] | null;
           banner_image: string | null;
-          business_hours: Json | null;
           business_license: string | null;
-          certificates: string[] | null;
           commission_rate: number | null;
           contact_email: string | null;
           contact_phone: string | null;
           created_at: string;
-          delivery_info: Json | null;
           description: string | null;
           established_year: number | null;
           experience_years: number | null;
           id: string;
           location: string | null;
-          notification_preferences: Json | null;
-          payment_methods: string[] | null;
-          portfolio_images: string[] | null;
-          preferred_language: string | null;
           rating: number | null;
-          return_policy: string | null;
-          shipping_policy: string | null;
           shop_logo: string | null;
           shop_name: string;
-          social_media: Json | null;
           specialties: string[] | null;
           status: string | null;
           total_orders: number | null;
@@ -84,31 +40,20 @@ export type Database = {
           website_url: string | null;
         };
         Insert: {
-          awards?: string[] | null;
           banner_image?: string | null;
-          business_hours?: Json | null;
           business_license?: string | null;
-          certificates?: string[] | null;
           commission_rate?: number | null;
           contact_email?: string | null;
           contact_phone?: string | null;
           created_at?: string;
-          delivery_info?: Json | null;
           description?: string | null;
           established_year?: number | null;
           experience_years?: number | null;
           id?: string;
           location?: string | null;
-          notification_preferences?: Json | null;
-          payment_methods?: string[] | null;
-          portfolio_images?: string[] | null;
-          preferred_language?: string | null;
           rating?: number | null;
-          return_policy?: string | null;
-          shipping_policy?: string | null;
           shop_logo?: string | null;
           shop_name: string;
-          social_media?: Json | null;
           specialties?: string[] | null;
           status?: string | null;
           total_orders?: number | null;
@@ -119,31 +64,20 @@ export type Database = {
           website_url?: string | null;
         };
         Update: {
-          awards?: string[] | null;
           banner_image?: string | null;
-          business_hours?: Json | null;
           business_license?: string | null;
-          certificates?: string[] | null;
           commission_rate?: number | null;
           contact_email?: string | null;
           contact_phone?: string | null;
           created_at?: string;
-          delivery_info?: Json | null;
           description?: string | null;
           established_year?: number | null;
           experience_years?: number | null;
           id?: string;
           location?: string | null;
-          notification_preferences?: Json | null;
-          payment_methods?: string[] | null;
-          portfolio_images?: string[] | null;
-          preferred_language?: string | null;
           rating?: number | null;
-          return_policy?: string | null;
-          shipping_policy?: string | null;
           shop_logo?: string | null;
           shop_name?: string;
-          social_media?: Json | null;
           specialties?: string[] | null;
           status?: string | null;
           total_orders?: number | null;

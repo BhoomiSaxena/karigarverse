@@ -55,13 +55,30 @@ export class ClientDatabaseOperations {
   // =============================================
 
   async createArtisanProfile(artisanData: any) {
+    console.log("ClientDatabase - Creating artisan profile with data:", {
+      artisanData,
+      keys: Object.keys(artisanData),
+    });
+
     const { data, error } = await this.supabase
       .from("artisan_profiles")
       .insert([artisanData])
       .select()
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("ClientDatabase - Error creating artisan profile:", {
+        error,
+        errorCode: error.code,
+        errorMessage: error.message,
+        errorDetails: error.details,
+        errorHint: error.hint,
+        artisanData,
+      });
+      throw error;
+    }
+
+    console.log("ClientDatabase - Successfully created artisan profile:", data);
     return data;
   }
 
@@ -121,17 +138,6 @@ export class ClientDatabaseOperations {
           website_url: updates.website_url || null,
           established_year: updates.established_year || null,
           experience_years: updates.experience_years || null,
-          social_media: updates.social_media || null,
-          business_hours: updates.business_hours || null,
-          portfolio_images: updates.portfolio_images || [],
-          certificates: updates.certificates || [],
-          awards: updates.awards || [],
-          delivery_info: updates.delivery_info || null,
-          payment_methods: updates.payment_methods || [],
-          return_policy: updates.return_policy || null,
-          shipping_policy: updates.shipping_policy || null,
-          preferred_language: updates.preferred_language || null,
-          notification_preferences: updates.notification_preferences || null,
         };
 
         const { data, error } = await this.supabase

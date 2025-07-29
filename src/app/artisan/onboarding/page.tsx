@@ -194,10 +194,19 @@ export default function ArtisanOnboarding() {
       // Redirect to dashboard
       router.push("/artisan/dashboard");
     } catch (error) {
-      console.error("Error creating artisan profile:", error);
+      console.error("Error creating artisan profile:", {
+        error,
+        errorMessage: error instanceof Error ? error.message : "Unknown error",
+        errorString: JSON.stringify(error),
+        formData,
+        user: user ? { id: user.id, email: user.email } : null,
+      });
       toast({
         title: "Error",
-        description: "Failed to create artisan profile. Please try again.",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to create artisan profile. Please try again.",
         variant: "destructive",
       });
     } finally {
