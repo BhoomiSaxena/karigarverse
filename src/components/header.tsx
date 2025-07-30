@@ -21,6 +21,7 @@ import {
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDatabase } from "@/contexts/DatabaseContext";
+import { useCart } from "@/contexts/CartContext";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -32,6 +33,7 @@ export function Header() {
   const router = useRouter();
   const { t } = useLanguage();
   const { user: dbUser, loading: dbLoading, isArtisan } = useDatabase();
+  const { totalItems } = useCart();
   const [isSticky, setIsSticky] = useState(false);
   const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
@@ -121,10 +123,15 @@ export function Header() {
 
             <Link
               href="/cart"
-              className="p-1 sm:p-2 hover:bg-gray-100 rounded-full"
+              className="p-1 sm:p-2 hover:bg-gray-100 rounded-full relative"
               aria-label={t("navigation.cart")}
             >
               <ShoppingCart className="h-6 w-6" />
+              {totalItems > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center font-bold">
+                  {totalItems > 99 ? "99+" : totalItems}
+                </span>
+              )}
             </Link>
 
             {/* Auth-dependent UI */}

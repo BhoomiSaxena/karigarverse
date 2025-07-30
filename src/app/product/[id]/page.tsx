@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ClientDatabaseOperations } from "@/lib/database-client";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -103,6 +104,7 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const { t } = useLanguage();
   const { user } = useDatabase();
+  const { addToCart } = useCart();
   const { toast } = useToast();
 
   // States
@@ -189,18 +191,11 @@ export default function ProductDetailPage() {
 
     setIsAddingToCart(true);
     try {
-      await db.addToCart(product.id, quantity);
-      toast({
-        title: "🎉 Added to Cart!",
-        description: `${product.name} has been added to your cart.`,
-      });
+      await addToCart(product.id, quantity);
+      // Toast is handled by the CartContext
     } catch (err) {
       console.error("Error adding to cart:", err);
-      toast({
-        title: "Error",
-        description: "Failed to add item to cart. Please try again.",
-        variant: "destructive",
-      });
+      // Error toast is also handled by the CartContext
     } finally {
       setIsAddingToCart(false);
     }
