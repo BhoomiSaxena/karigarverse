@@ -4,13 +4,10 @@ import Link from "next/link";
 import type { Product } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { RatingStars } from "@/components/ui/rating-stars";
-import { ShoppingCart, CheckCircle } from "lucide-react";
+import { ShoppingCart, CheckCircle } from "lucide-react"; // Added CheckCircle
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
-import { useCart } from "@/contexts/CartContext";
-import { useDatabase } from "@/contexts/DatabaseContext";
-import { toast } from "@/hooks/use-toast";
+import { useState } from "react"; // For button state
 
 interface ProductCardProps {
   product: Product;
@@ -25,39 +22,11 @@ const cardVariants = {
 
 export function ProductCard({ product, className }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const { addToCart } = useCart();
-  const { user } = useDatabase();
 
-  const handleAddToCart = async () => {
-    if (!user) {
-      toast({
-        title: "Please log in",
-        description: "You need to be logged in to add items to cart",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      await addToCart(product.id, 1);
-      setIsAdded(true);
-      toast({
-        title: "Added to cart",
-        description: `${product.name} has been added to your cart`,
-      });
-      setTimeout(() => setIsAdded(false), 2000);
-    } catch (error) {
-      console.error("Error adding to cart:", error);
-      toast({
-        title: "Error",
-        description: "Failed to add item to cart. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
+  const handleAddToCart = () => {
+    console.log(`Added ${product.name} to cart`); // Replace with actual cart logic
+    setIsAdded(true);
+    setTimeout(() => setIsAdded(false), 2000); // Reset after 2 seconds
   };
 
   return (
@@ -115,21 +84,10 @@ export function ProductCard({ product, className }: ProductCardProps) {
               "bg-green-100 border-green-500 text-green-700 hover:bg-green-200"
           )}
           onClick={handleAddToCart}
-          disabled={isAdded || isLoading}
+          disabled={isAdded}
         >
           <AnimatePresence mode="wait" initial={false}>
-            {isLoading ? (
-              <motion.span
-                key="loading"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                className="flex items-center"
-              >
-                <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-gray-600"></div>
-                Adding...
-              </motion.span>
-            ) : isAdded ? (
+            {isAdded ? (
               <motion.span
                 key="added"
                 initial={{ opacity: 0, y: -10 }}

@@ -21,7 +21,6 @@ import {
 import { LanguageToggle } from "@/components/language-toggle";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useDatabase } from "@/contexts/DatabaseContext";
-import { useCart } from "@/contexts/CartContext";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/utils/supabase/client";
@@ -33,14 +32,10 @@ export function Header() {
   const router = useRouter();
   const { t } = useLanguage();
   const { user: dbUser, loading: dbLoading, isArtisan } = useDatabase();
-  const { cartItems } = useCart();
   const [isSticky, setIsSticky] = useState(false);
   const supabase = createClient();
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-
-  // Calculate total cart items
-  const cartItemsCount = cartItems.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -126,15 +121,10 @@ export function Header() {
 
             <Link
               href="/cart"
-              className="p-1 sm:p-2 hover:bg-gray-100 rounded-full relative"
+              className="p-1 sm:p-2 hover:bg-gray-100 rounded-full"
               aria-label={t("navigation.cart")}
             >
               <ShoppingCart className="h-6 w-6" />
-              {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center min-w-[20px] font-medium">
-                  {cartItemsCount > 99 ? '99+' : cartItemsCount}
-                </span>
-              )}
             </Link>
 
             {/* Auth-dependent UI */}
