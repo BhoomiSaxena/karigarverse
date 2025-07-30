@@ -2,47 +2,29 @@
 
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
+import { products } from "@/lib/data"; // Use actual cart items from context/state
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Trash2, Plus, Minus, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useCart } from "@/contexts/CartContext";
-import { useEffect } from "react";
+
+// Mock cart items for now
+const cartItems = [
+  { ...products[0], quantity: 1 },
+  { ...products[1], quantity: 2 },
+];
+
+const subtotal = cartItems.reduce(
+  (sum, item) => sum + item.price * item.quantity,
+  0
+);
+const deliveryCharges = subtotal > 1000 ? 0 : 50; // Example logic
+const total = subtotal + deliveryCharges;
 
 export default function CartPage() {
   const { t } = useLanguage();
-  const {
-    cartItems,
-    totalItems,
-    totalAmount,
-    isLoading,
-    updateQuantity,
-    removeFromCart,
-    refreshCart,
-  } = useCart();
-
-  useEffect(() => {
-    refreshCart();
-  }, []);
-
-  // Calculate delivery charges and total
-  const deliveryCharges = totalAmount > 1000 ? 0 : 50;
-  const total = totalAmount + deliveryCharges;
-
-  if (isLoading) {
-    return (
-      <div className="bg-white font-kalam text-black flex flex-col min-h-screen">
-        <Header />
-        <main className="flex-grow max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12 text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-lg">Loading your cart...</p>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
 
   if (cartItems.length === 0) {
     return (
@@ -82,21 +64,19 @@ export default function CartPage() {
             >
               <div className="w-full sm:w-32 h-32 relative bg-gray-100 rounded-md overflow-hidden">
                 <Image
-                  src={item.products?.images?.[0] || "/placeholder.svg"}
-                  alt={item.products?.name || "Product"}
+                  src={item.images[0] || "/placeholder.svg"}
+                  alt={item.name}
                   fill
                   className="object-cover"
                 />
               </div>
               <div className="flex-grow">
-                <h2 className="text-xl font-semibold">
-                  {item.products?.name || "Unknown Product"}
-                </h2>
+                <h2 className="text-xl font-semibold">{item.name}</h2>
                 <p className="text-sm text-gray-500">
-                  Product ID: {item.product_id.slice(0, 8)}...
+                  Category: {item.category}
                 </p>
                 <p className="text-lg font-bold mt-1">
-                  ₹{item.products?.price?.toLocaleString() || "0"}
+                  ₹{item.price.toLocaleString()}
                 </p>
               </div>
               <div className="flex flex-col sm:items-end justify-between gap-2">
@@ -105,7 +85,6 @@ export default function CartPage() {
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 rounded-sm hover:bg-gray-200"
-                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
                   >
                     <Minus size={16} />
                   </Button>
@@ -116,10 +95,6 @@ export default function CartPage() {
                     variant="ghost"
                     size="icon"
                     className="h-6 w-6 rounded-sm hover:bg-gray-200"
-                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                    disabled={
-                      item.quantity >= (item.products?.stock_quantity || 0)
-                    }
                   >
                     <Plus size={16} />
                   </Button>
@@ -128,7 +103,6 @@ export default function CartPage() {
                   variant="ghost"
                   size="sm"
                   className="text-red-500 hover:text-red-700 hover:bg-red-50 p-1"
-                  onClick={() => removeFromCart(item.id)}
                 >
                   <Trash2 size={18} className="mr-1" /> {t("cart.remove")}
                 </Button>
@@ -144,7 +118,7 @@ export default function CartPage() {
           <div className="space-y-2 text-lg">
             <div className="flex justify-between">
               <span>{t("cart.subtotal")}:</span>
-              <span>₹{totalAmount.toLocaleString()}</span>
+              <span>₹{subtotal.toLocaleString()}</span>
             </div>
             <div className="flex justify-between">
               <span>{t("cart.delivery")}:</span>
