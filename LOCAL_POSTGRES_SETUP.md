@@ -18,7 +18,7 @@ This guide will help you migrate your Karigarverse application from Supabase to 
 cp .env.local.example .env.local
 ```
 
-2. Update your `.env.local` file with:
+2.Update your `.env.local` file with:
 
 ```bash
 # PostgreSQL Database Configuration

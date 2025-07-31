@@ -2,7 +2,7 @@
 
 ## Architecture Overview
 
-**Karigarverse** is a Next.js 15 marketplace connecting artisans with customers, built with TypeScript, Supabase, and shadcn/ui components.
+**Karigarverse** is a Next.js 15 marketplace connecting artisans with customers, built with TypeScript, postgres, and shadcn/ui components.
 
 ### Core Architecture Patterns
 

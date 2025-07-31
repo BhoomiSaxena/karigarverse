@@ -23,19 +23,14 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
-import type { User } from "@supabase/supabase-js";
 import { ClientOnly } from "@/components/client-only";
 
 export function Header() {
   const router = useRouter();
   const { t } = useLanguage();
-  const { user: dbUser, loading: dbLoading, isArtisan } = useDatabase();
+  const { user, profile, loading, isArtisan, logout } = useDatabase();
   const [isSticky, setIsSticky] = useState(false);
-  const supabase = createClient();
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -45,31 +40,8 @@ export function Header() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  useEffect(() => {
-    // Get initial user
-    const getUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-      setLoading(false);
-    };
-
-    getUser();
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
-
-    return () => subscription.unsubscribe();
-  }, [supabase.auth]);
-
   const handleSignOut = async () => {
-    await supabase.auth.signOut();
+    await logout();
     router.push("/");
     router.refresh();
   };
@@ -138,7 +110,9 @@ export function Header() {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-56">
                   <div className="px-2 py-1.5 text-sm font-medium">
-                    {user.user_metadata?.full_name || user.email}
+                    {profile?.first_name && profile?.last_name
+                      ? `${profile.first_name} ${profile.last_name}`
+                      : user.email}
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>

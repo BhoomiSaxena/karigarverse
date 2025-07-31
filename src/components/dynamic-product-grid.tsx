@@ -10,7 +10,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { RefreshCw, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { createClient } from "@/utils/supabase/client";
+// Removed Supabase import - using PostgreSQL now
 
 interface DynamicProductGridProps {
   title?: string;
@@ -76,7 +76,6 @@ export function DynamicProductGrid({
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const db = new ClientDatabaseOperations();
-  const supabase = createClient();
 
   const fetchProducts = async (showRefreshing = false) => {
     try {
@@ -107,33 +106,6 @@ export function DynamicProductGrid({
   useEffect(() => {
     fetchProducts();
   }, [filters]);
-
-  // Set up real-time updates
-  useEffect(() => {
-    const channel = supabase
-      .channel("products-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "products",
-          filter: filters.artisanId
-            ? `artisan_id=eq.${filters.artisanId}`
-            : undefined,
-        },
-        (payload) => {
-          console.log("Product change detected:", payload);
-          // Refetch products when there's a change
-          fetchProducts(true);
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [filters.artisanId]);
 
   const getGridClasses = () => {
     switch (gridCols) {

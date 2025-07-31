@@ -1,6 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/database-postgres";
-import { handleError, withAuth } from "@/lib/api-middleware";
+import {
+  handleError,
+  withAuth,
+  AuthenticatedRequest,
+} from "@/lib/api-middleware";
 
 export async function GET(
   request: NextRequest,
@@ -15,7 +19,10 @@ export async function GET(
 }
 
 export const PUT = withAuth(
-  async (request, { params }: { params: { id: string } }) => {
+  async (
+    request: AuthenticatedRequest,
+    { params }: { params: { id: string } }
+  ) => {
     try {
       const updates = await request.json();
       const product = await db.updateProduct(params.id, updates);
@@ -27,10 +34,13 @@ export const PUT = withAuth(
 );
 
 export const DELETE = withAuth(
-  async (request, { params }: { params: { id: string } }) => {
+  async (
+    request: AuthenticatedRequest,
+    { params }: { params: { id: string } }
+  ) => {
     try {
       const result = await db.deleteProduct(params.id);
-      return NextResponse.json({ data: result });
+      return NextResponse.json({ data: { success: true } });
     } catch (error) {
       return handleError(error);
     }

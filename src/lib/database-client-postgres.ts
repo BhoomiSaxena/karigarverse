@@ -27,7 +27,9 @@ export class ClientDatabaseOperations {
       throw new Error(error.message || `HTTP ${response.status}`);
     }
 
-    return response.json();
+    const result = await response.json();
+    // Return the data property if it exists, otherwise return the whole result
+    return result.data !== undefined ? result.data : result;
   }
 
   // =============================================
@@ -59,7 +61,7 @@ export class ClientDatabaseOperations {
   }
 
   async signIn(email: string, password: string) {
-    const response = await fetch("/api/auth/signin", {
+    const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -119,7 +121,11 @@ export class ClientDatabaseOperations {
     });
   }
 
-  async getUserProfile(userId: string) {
+  async getUserProfile(userId?: string) {
+    // If no userId provided, get current user's profile
+    if (!userId) {
+      return this.apiCall("/profiles");
+    }
     return this.apiCall(`/profiles/${userId}`);
   }
 
@@ -135,21 +141,27 @@ export class ClientDatabaseOperations {
   // =============================================
 
   async createArtisanProfile(artisanData: {
-    user_id: string;
+    user_id?: string; // Optional since we get it from auth
     shop_name: string;
     description?: string;
     specialties?: string[];
     location?: string;
     business_license?: string;
+    phone?: string;
+    email?: string;
+    website?: string;
   }) {
+    // Remove user_id since it's handled by auth
+    const { user_id, ...data } = artisanData;
     return this.apiCall("/artisan-profiles", {
       method: "POST",
-      body: JSON.stringify(artisanData),
+      body: JSON.stringify(data),
     });
   }
 
-  async getArtisanProfile(userId: string) {
-    return this.apiCall(`/artisan-profiles/${userId}`);
+  async getArtisanProfile(userId?: string) {
+    // Get current user's artisan profile
+    return this.apiCall("/artisan-profiles");
   }
 
   async updateArtisanProfile(userId: string, updates: any) {
@@ -246,28 +258,29 @@ export class ClientDatabaseOperations {
   // CART OPERATIONS
   // =============================================
 
-  async getCartItems(userId: string) {
-    return this.apiCall(`/cart/${userId}`);
+  async getCartItems(userId?: string) {
+    // Get current user's cart items
+    return this.apiCall("/cart");
   }
 
   async addToCart(userId: string, productId: string, quantity: number) {
     return this.apiCall("/cart", {
       method: "POST",
-      body: JSON.stringify({ userId, productId, quantity }),
+      body: JSON.stringify({ productId, quantity }),
     });
   }
 
   async updateCartItem(userId: string, productId: string, quantity: number) {
     return this.apiCall("/cart", {
       method: "PUT",
-      body: JSON.stringify({ userId, productId, quantity }),
+      body: JSON.stringify({ productId, quantity }),
     });
   }
 
   async removeFromCart(userId: string, productId: string) {
     return this.apiCall("/cart", {
       method: "DELETE",
-      body: JSON.stringify({ userId, productId }),
+      body: JSON.stringify({ productId }),
     });
   }
 
@@ -314,6 +327,14 @@ export class ClientDatabaseOperations {
     if (options.offset) params.append("offset", options.offset.toString());
 
     return this.apiCall(`/orders/${userId}?${params.toString()}`);
+  }
+
+  async getUserOrders(
+    userId: string,
+    options: { limit?: number; offset?: number } = {}
+  ) {
+    // Alias for getOrders to maintain compatibility
+    return this.getOrders(userId, options);
   }
 
   async getOrderById(orderId: string) {

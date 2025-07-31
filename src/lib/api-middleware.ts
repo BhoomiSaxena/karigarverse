@@ -6,13 +6,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/lib/auth";
 
 export interface AuthenticatedRequest extends NextRequest {
-  userId?: string;
+  userId: string;
+  user: { id: string; email: string };
 }
 
 export function withAuth(
-  handler: (request: AuthenticatedRequest) => Promise<NextResponse>
+  handler: (
+    request: AuthenticatedRequest,
+    context?: any
+  ) => Promise<NextResponse>
 ) {
-  return async (request: AuthenticatedRequest) => {
+  return async (request: AuthenticatedRequest, context?: any) => {
     const token = request.headers.get("authorization")?.replace("Bearer ", "");
 
     if (!token) {
@@ -32,7 +36,8 @@ export function withAuth(
     }
 
     request.userId = decoded.userId;
-    return handler(request);
+    request.user = { id: decoded.userId, email: "" }; // You can fetch full user details if needed
+    return handler(request, context);
   };
 }
 

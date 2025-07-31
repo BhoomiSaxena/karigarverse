@@ -11,7 +11,6 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 
 export default function SignupPage() {
@@ -28,12 +27,12 @@ export default function SignupPage() {
     setIsLoading(true);
     setError("");
     setSuccess("");
-    
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
-    const confirmPassword = formData.get('confirmPassword') as string;
-    const firstName = formData.get('firstName') as string;
-    const lastName = formData.get('lastName') as string;
+
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+    const confirmPassword = formData.get("confirmPassword") as string;
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
 
     // Basic validation
     if (password !== confirmPassword) {
@@ -49,30 +48,32 @@ export default function SignupPage() {
     }
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            firstName,
-            lastName,
-            full_name: `${firstName} ${lastName}`,
-          }
-        }
+      const response = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email,
+          password,
+          first_name: firstName,
+          last_name: lastName,
+        }),
       });
 
-      if (error) {
-        setError(error.message);
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result.error || "Registration failed");
       } else {
-        setSuccess("Check your email for a confirmation link!");
-        // Optionally redirect after a delay
+        setSuccess("Account created successfully! You can now log in.");
+        // Redirect to login after a delay
         setTimeout(() => {
-          router.push('/login');
-        }, 3000);
+          router.push("/login");
+        }, 2000);
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -123,7 +124,7 @@ export default function SignupPage() {
                 />
               </div>
             </div>
-            
+
             <div>
               <Label htmlFor="email" className="text-lg">
                 Email
@@ -196,7 +197,9 @@ export default function SignupPage() {
               <Checkbox
                 id="terms"
                 checked={agreedToTerms}
-                onCheckedChange={(checked) => setAgreedToTerms(checked as boolean)}
+                onCheckedChange={(checked) =>
+                  setAgreedToTerms(checked as boolean)
+                }
                 className="mt-1"
               />
               <Label htmlFor="terms" className="text-sm leading-relaxed">
@@ -226,9 +229,9 @@ export default function SignupPage() {
               {t("signup.signup_button")}
             </Button>
           </form>
-          
+
           <Separator className="border-black/10" />
-          
+
           <p className="text-center text-sm">
             {t("signup.already_have_account")}{" "}
             <Link

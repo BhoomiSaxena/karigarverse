@@ -10,12 +10,13 @@ import Link from "next/link";
 import { Eye, EyeOff } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useState } from "react";
-import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
+import { useDatabase } from "@/contexts/DatabaseContext";
 
 export default function LoginPage() {
   const { t } = useLanguage();
   const router = useRouter();
+  const { refreshProfile } = useDatabase();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -23,25 +24,37 @@ export default function LoginPage() {
   const handleLogin = async (formData: FormData) => {
     setIsLoading(true);
     setError("");
-    
-    const email = formData.get('email') as string;
-    const password = formData.get('password') as string;
+
+    const email = formData.get("email") as string;
+    const password = formData.get("password") as string;
+
+    console.log("Attempting login with:", { email, password: "***" });
 
     try {
-      const supabase = createClient();
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
       });
 
-      if (error) {
-        setError(error.message);
+      const result = await response.json();
+      console.log("Login response:", { status: response.status, result });
+
+      if (!response.ok) {
+        setError(result.error || "Login failed");
       } else {
-        router.push('/');
-        router.refresh();
+        // Store the token
+        localStorage.setItem("auth_token", result.token);
+        console.log("Token stored, redirecting...");
+
+        // Refresh the page to trigger the DatabaseContext to load the user
+        window.location.href = "/";
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      console.error("Login error:", err);
+      setError("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }

@@ -92,9 +92,9 @@ export class AuthService {
 
       const user = userResult.rows[0];
 
-      // Create profile
-      const profileResult = await query(
-        "INSERT INTO profiles (id, first_name, last_name, email, phone) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      // Create profile manually (don't rely on trigger)
+      await query(
+        "INSERT INTO profiles (id, first_name, last_name, email, phone) VALUES ($1, $2, $3, $4, $5)",
         [
           user.id,
           userData.first_name,

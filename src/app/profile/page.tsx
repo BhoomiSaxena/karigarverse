@@ -30,7 +30,6 @@ import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { clientDb } from "@/lib/database-client";
-import { createClient } from "@/utils/supabase/client";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
 import {
@@ -177,7 +176,6 @@ export default function ProfilePage() {
   const { t } = useLanguage();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const supabase = createClient();
 
   // State management
   const [isEditing, setIsEditing] = useState(false);
