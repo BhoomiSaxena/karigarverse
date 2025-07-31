@@ -25,7 +25,14 @@ export interface UserProfile {
   phone?: string;
   avatar_url?: string;
   date_of_birth?: string;
+  bio?: string;
+  gender?: string;
+  occupation?: string;
+  interests?: string[];
   address?: any;
+  social_media?: any;
+  preferences?: any;
+  notification_settings?: any;
   created_at: string;
   updated_at: string;
 }
