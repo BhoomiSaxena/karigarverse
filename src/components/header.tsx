@@ -142,13 +142,15 @@ export function Header() {
                   </div>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/profile">Profile</Link>
+                    <Link href="/profile">{t("navigation.profile")}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/orders">My Orders</Link>
+                    <Link href="/orders">{t("navigation.orders")}</Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/artisan/check">Artisan Dashboard</Link>
+                    <Link href="/artisan/check">
+                      {t("navigation.dashboard")}
+                    </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
@@ -156,7 +158,7 @@ export function Header() {
                     className="text-red-600"
                   >
                     <LogOut className="h-4 w-4 mr-2" />
-                    Sign Out
+                    {t("navigation.logout")}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
@@ -175,7 +177,7 @@ export function Header() {
                   size="sm"
                   className="hidden sm:inline-flex border-2 border-black rounded-none"
                 >
-                  <Link href="/signup">Sign Up</Link>
+                  <Link href="/signup">{t("navigation.signup")}</Link>
                 </Button>
               </>
             )}

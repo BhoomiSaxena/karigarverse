@@ -550,5 +550,115 @@ export class ClientDatabaseOperations {
       bankDetails,
     };
   }
+
+  // =============================================
+  // ORDER OPERATIONS
+  // =============================================
+
+  async createOrder(orderData: {
+    user_id: string;
+    total_amount: number;
+    status: string;
+    shipping_address: any;
+    payment_method: string;
+    delivery_option: string;
+    items: Array<{
+      product_id: string;
+      quantity: number;
+      price: number;
+    }>;
+  }) {
+    try {
+      // Start a transaction-like operation
+      const orderNumber = `ORD${Date.now()}${Math.random()
+        .toString(36)
+        .substr(2, 4)
+        .toUpperCase()}`;
+
+      // Create the order
+      const { data: order, error: orderError } = await this.supabase
+        .from("orders")
+        .insert([
+          {
+            user_id: orderData.user_id,
+            order_number: orderNumber,
+            total_amount: orderData.total_amount,
+            status: orderData.status,
+            shipping_address: orderData.shipping_address,
+            payment_method: orderData.payment_method,
+            delivery_option: orderData.delivery_option,
+          },
+        ])
+        .select()
+        .single();
+
+      if (orderError) {
+        return { success: false, error: orderError.message };
+      }
+
+      // Create order items
+      const orderItemsData = orderData.items.map((item) => ({
+        order_id: order.id,
+        product_id: item.product_id,
+        quantity: item.quantity,
+        price: item.price,
+      }));
+
+      const { error: itemsError } = await this.supabase
+        .from("order_items")
+        .insert(orderItemsData);
+
+      if (itemsError) {
+        // If order items creation fails, we should ideally rollback the order
+        // For now, we'll return the error
+        return { success: false, error: itemsError.message };
+      }
+
+      return { success: true, data: order };
+    } catch (error) {
+      console.error("Error creating order:", error);
+      return { success: false, error: "Failed to create order" };
+    }
+  }
+
+  async getUserOrders(userId: string) {
+    try {
+      const { data, error } = await this.supabase
+        .from("orders")
+        .select(
+          `
+          id,
+          order_number,
+          total_amount,
+          status,
+          created_at,
+          shipping_address,
+          payment_method,
+          delivery_option,
+          order_items (
+            id,
+            quantity,
+            price,
+            products (
+              id,
+              name,
+              images
+            )
+          )
+        `
+        )
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+
+      if (error) {
+        return { success: false, error: error.message };
+      }
+
+      return { success: true, data };
+    } catch (error) {
+      console.error("Error fetching user orders:", error);
+      return { success: false, error: "Failed to fetch orders" };
+    }
+  }
 }
 export const clientDb = new ClientDatabaseOperations();
