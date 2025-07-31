@@ -463,14 +463,15 @@ export default function AddProductPage() {
         price: parseFloat(formData.price),
         original_price: formData.original_price
           ? parseFloat(formData.original_price)
-          : null,
+          : undefined,
         images: formData.images,
-        features: formData.features.length > 0 ? formData.features : null,
-        tags: formData.tags.length > 0 ? formData.tags : null,
-        materials: formData.materials.length > 0 ? formData.materials : null,
+        features: formData.features.length > 0 ? formData.features : undefined,
+        tags: formData.tags.length > 0 ? formData.tags : undefined,
+        materials:
+          formData.materials.length > 0 ? formData.materials : undefined,
         stock_quantity: parseInt(formData.stock_quantity),
-        care_instructions: formData.care_instructions.trim() || null,
-        weight: formData.weight ? parseFloat(formData.weight) : null,
+        care_instructions: formData.care_instructions.trim() || undefined,
+        weight: formData.weight ? parseFloat(formData.weight) : undefined,
         dimensions:
           formData.dimensions.length ||
           formData.dimensions.width ||
@@ -478,19 +479,18 @@ export default function AddProductPage() {
             ? {
                 length: formData.dimensions.length
                   ? parseFloat(formData.dimensions.length)
-                  : null,
+                  : undefined,
                 width: formData.dimensions.width
                   ? parseFloat(formData.dimensions.width)
-                  : null,
+                  : undefined,
                 height: formData.dimensions.height
                   ? parseFloat(formData.dimensions.height)
-                  : null,
+                  : undefined,
               }
-            : null,
-        sku: formData.sku || null,
+            : undefined,
+        sku: formData.sku || undefined,
         is_active: true,
         is_featured: false,
-        views_count: 0,
       };
 
       // Create the product

@@ -10,10 +10,15 @@ export const GET = withAuth(async (request) => {
       `
       SELECT 
         ci.*,
-        p.name,
-        p.price,
-        p.images,
-        p.stock_quantity,
+        json_build_object(
+          'id', p.id,
+          'name', p.name,
+          'price', p.price,
+          'images', p.images,
+          'stock_quantity', p.stock_quantity,
+          'is_active', p.is_active,
+          'artisan_id', p.artisan_id
+        ) as products,
         ap.shop_name
       FROM cart_items ci
       JOIN products p ON ci.product_id = p.id

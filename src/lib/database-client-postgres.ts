@@ -130,7 +130,7 @@ export class ClientDatabaseOperations {
   }
 
   async updateUserProfile(userId: string, updates: any) {
-    return this.apiCall(`/profiles/${userId}`, {
+    return this.apiCall("/profiles", {
       method: "PUT",
       body: JSON.stringify(updates),
     });
@@ -165,7 +165,7 @@ export class ClientDatabaseOperations {
   }
 
   async updateArtisanProfile(userId: string, updates: any) {
-    return this.apiCall(`/artisan-profiles/${userId}`, {
+    return this.apiCall("/artisan-profiles", {
       method: "PUT",
       body: JSON.stringify(updates),
     });
@@ -277,6 +277,13 @@ export class ClientDatabaseOperations {
     });
   }
 
+  async updateCartItemQuantity(cartItemId: string, quantity: number) {
+    return this.apiCall("/cart", {
+      method: "PUT",
+      body: JSON.stringify({ cartItemId, quantity }),
+    });
+  }
+
   async removeFromCart(userId: string, productId: string) {
     return this.apiCall("/cart", {
       method: "DELETE",
@@ -326,7 +333,7 @@ export class ClientDatabaseOperations {
     if (options.limit) params.append("limit", options.limit.toString());
     if (options.offset) params.append("offset", options.offset.toString());
 
-    return this.apiCall(`/orders/${userId}?${params.toString()}`);
+    return this.apiCall(`/orders?${params.toString()}`);
   }
 
   async getUserOrders(
@@ -407,6 +414,46 @@ export class ClientDatabaseOperations {
       is_active: true,
       ...options,
     });
+  }
+
+  // Helper method for getting artisan orders
+  async getArtisanOrders(
+    artisanId?: string,
+    options: { limit?: number; offset?: number } = {}
+  ) {
+    const params = new URLSearchParams();
+    if (options.limit) params.append("limit", options.limit.toString());
+    if (options.offset) params.append("offset", options.offset.toString());
+
+    return this.apiCall(`/artisan-orders?${params.toString()}`);
+  }
+
+  // Helper method for updating full artisan profile (both user and artisan)
+  async updateArtisanFullProfile(
+    userId: string,
+    updates: {
+      profile?: any;
+      artisanProfile?: any;
+    }
+  ) {
+    const promises = [];
+
+    if (updates.profile) {
+      promises.push(this.updateUserProfile(userId, updates.profile));
+    }
+
+    if (updates.artisanProfile) {
+      promises.push(this.updateArtisanProfile(userId, updates.artisanProfile));
+    }
+
+    const results = await Promise.all(promises);
+
+    return {
+      profile: updates.profile ? results[0] : null,
+      artisanProfile: updates.artisanProfile
+        ? results[updates.profile ? 1 : 0]
+        : null,
+    };
   }
 
   // Helper method for category products

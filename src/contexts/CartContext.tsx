@@ -25,6 +25,7 @@ interface CartItem {
     images: string[];
     stock_quantity: number;
     is_active: boolean;
+    artisan_id: string;
   } | null;
 }
 
@@ -109,7 +110,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
 
     try {
-      await clientDb.addToCart(productId, quantity);
+      await clientDb.addToCart(user.id, productId, quantity);
       await refreshCart(); // Refresh cart to get updated data
       toast({
         title: "🎉 Added to Cart!",
@@ -146,7 +147,7 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const removeFromCart = async (cartItemId: string) => {
     try {
-      await clientDb.removeFromCart(cartItemId);
+      await clientDb.removeFromCart(user!.id, cartItemId);
       await refreshCart(); // Refresh cart to get updated data
       toast({
         title: "Item Removed",
@@ -165,7 +166,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const clearCart = async () => {
     try {
       // Remove all items one by one
-      const promises = cartItems.map((item) => clientDb.removeFromCart(item.id));
+      const promises = cartItems.map((item) =>
+        clientDb.removeFromCart(user!.id, item.id)
+      );
       await Promise.all(promises);
       await refreshCart();
       toast({

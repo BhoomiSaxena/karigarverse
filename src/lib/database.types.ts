@@ -38,6 +38,18 @@ export type Database = {
           user_id: string;
           verification_status: string | null;
           website_url: string | null;
+          // Additional fields for extended artisan profile
+          social_media: Json | null;
+          business_hours: Json | null;
+          portfolio_images: string[] | null;
+          certificates: string[] | null;
+          awards: string[] | null;
+          delivery_info: Json | null;
+          payment_methods: string[] | null;
+          return_policy: string | null;
+          shipping_policy: string | null;
+          preferred_language: string | null;
+          notification_preferences: Json | null;
         };
         Insert: {
           banner_image?: string | null;
@@ -62,6 +74,18 @@ export type Database = {
           user_id: string;
           verification_status?: string | null;
           website_url?: string | null;
+          // Additional fields for extended artisan profile
+          social_media?: Json | null;
+          business_hours?: Json | null;
+          portfolio_images?: string[] | null;
+          certificates?: string[] | null;
+          awards?: string[] | null;
+          delivery_info?: Json | null;
+          payment_methods?: string[] | null;
+          return_policy?: string | null;
+          shipping_policy?: string | null;
+          preferred_language?: string | null;
+          notification_preferences?: Json | null;
         };
         Update: {
           banner_image?: string | null;
@@ -86,6 +110,18 @@ export type Database = {
           user_id?: string;
           verification_status?: string | null;
           website_url?: string | null;
+          // Additional fields for extended artisan profile
+          social_media?: Json | null;
+          business_hours?: Json | null;
+          portfolio_images?: string[] | null;
+          certificates?: string[] | null;
+          awards?: string[] | null;
+          delivery_info?: Json | null;
+          payment_methods?: string[] | null;
+          return_policy?: string | null;
+          shipping_policy?: string | null;
+          preferred_language?: string | null;
+          notification_preferences?: Json | null;
         };
         Relationships: [
           {

@@ -70,9 +70,9 @@ export default function OrdersPage() {
 
         if (result.success && result.data) {
           // Transform data: extract single product from products array
-          const formatted = result.data.map((order) => ({
+          const formatted = result.data.map((order: any) => ({
             ...order,
-            order_items: order.order_items.map((item) => ({
+            order_items: order.order_items.map((item: any) => ({
               ...item,
               products: Array.isArray(item.products)
                 ? item.products[0] ?? null

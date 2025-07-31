@@ -2,11 +2,11 @@
 
 ## Architecture Overview
 
-**Karigarverse** is a Next.js 15 marketplace connecting artisans with customers, built with TypeScript, postgres, and shadcn/ui components.
+**Karigarverse** is a Next.js 15 marketplace connecting artisans with customers, built with TypeScript, **local PostgreSQL**, and shadcn/ui components.
 
 ### Core Architecture Patterns
 
-- **Client/Server Split**: Strict separation between client (`src/lib/database-client.ts`) and server (`src/lib/database.ts`) database operations
+- **Client/Server Split**: Strict separation between client (`src/lib/database-client-postgres.ts`) and server (`src/lib/database-postgres.ts`) database operations
 - **Context-Driven State**: Three main React contexts provide global state - `DatabaseContext`, `LanguageContext`, and `ProductsContext`
 - **Dual Layout System**: Standard layout for customers + specialized `ArtisanLayout` for artisan dashboard pages
 - **Animation-First**: Framer Motion integrated at root level via `clientLayout.tsx` for page transitions
@@ -15,8 +15,8 @@
 
 - **Frontend**: Next.js 15 (App Router), TypeScript, Tailwind CSS
 - **UI Components**: shadcn/ui with Radix UI primitives
-- **Database**: Supabase with generated TypeScript types (`database.types.ts`)
-- **Authentication**: Supabase Auth with SSR support
+- **Database**: **Local PostgreSQL** with custom authentication system
+- **Authentication**: **Custom JWT-based Auth** with bcrypt password hashing
 - **Internationalization**: react-i18next (English/Hindi support)
 - **Animations**: Framer Motion with page-level AnimatePresence
 
@@ -58,13 +58,14 @@ const containerVariants = {
 - **Loading States**: Use skeleton components with `animate-pulse` for perceived performance
 - **Interactive Feedback**: Button state changes with `motion.span` and icon transitions
 
-## Supabase Integration & Database Architecture
+## Local PostgreSQL Integration & Database Architecture
 
 ### Database Schema Structure
 
-The complete schema (`supabase-schema.sql`) includes 9 core tables:
+The complete schema (`local-postgres-migration-fixed.sql`) includes 9 core tables:
 
-- **profiles**: Extends Supabase auth.users with user details
+- **users**: Local authentication table with email/password (replaces Supabase auth.users)
+- **profiles**: Extends users table with user details and profile information
 - **categories**: Product categorization with hierarchical support
 - **artisan_profiles**: Shop information and verification status
 - **products**: Full product catalog with images, pricing, inventory
@@ -73,23 +74,23 @@ The complete schema (`supabase-schema.sql`) includes 9 core tables:
 - **reviews**: Product reviews with ratings
 - **notifications**: User notification system
 
-### Row Level Security (RLS) Policies
+### Authentication System
 
-```sql
--- Key RLS patterns implemented:
--- Users can only access their own data
-CREATE POLICY "Users can view own profile" ON profiles
-FOR SELECT USING (auth.uid() = id);
+```typescript
+// Custom JWT-based authentication (src/lib/auth.ts)
+import { AuthService } from "@/lib/auth";
 
--- Artisans can only manage their own products
-CREATE POLICY "Artisans can update their own products" ON products
-FOR UPDATE USING (
-  EXISTS (SELECT 1 FROM artisan_profiles WHERE id = artisan_id AND user_id = auth.uid())
-);
+// Sign up new users
+const result = await AuthService.signUp(email, password, {
+  first_name: "John",
+  last_name: "Doe",
+});
 
--- Public data is accessible to everyone
-CREATE POLICY "Active products are viewable by everyone" ON products
-FOR SELECT USING (is_active = true);
+// Sign in users
+const result = await AuthService.signIn(email, password);
+
+// Get user profile
+const { profile } = await AuthService.getUserProfile(userId);
 ```
 
 ### Database Setup Workflow
@@ -98,45 +99,43 @@ FOR SELECT USING (is_active = true);
 
 ```bash
 # Required in .env.local
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=karigarverse
+POSTGRES_USER=proximus
+POSTGRES_PASSWORD=
+
+# JWT Secret for authentication
+JWT_SECRET=your_32_character_random_string
 ```
 
 #### 2. Schema Deployment
 
 ```bash
-# Option A: Via Supabase Dashboard
-# 1. Go to SQL Editor in Supabase Dashboard
-# 2. Copy entire supabase-schema.sql content
-# 3. Execute the script
-
-# Option B: Via Supabase CLI
-supabase db push
+# Apply the PostgreSQL migration
+psql -h localhost -U proximus -d karigarverse -f local-postgres-migration-fixed.sql
 ```
 
 #### 3. Verification Steps
 
-- Check all 9 tables exist in Database > Tables
-- Verify RLS is enabled on all tables
-- Test authentication trigger creates profile automatically
+- Check all 9 tables exist in PostgreSQL database
+- Verify triggers and functions are created
+- Test authentication creates profile automatically
 - Confirm sample categories are populated
 
-#### 4. Type Generation
+#### 4. No Type Generation Needed
 
-```bash
-# Generate TypeScript types after schema changes
-supabase gen types typescript --project-id YOUR_PROJECT_ID > src/lib/database.types.ts
-```
+Unlike Supabase, the local setup uses manually defined TypeScript types in `database.types.ts` that don't require regeneration.
 
 ### Critical Database Operations Pattern
 
 ```typescript
-// Server-side operations (src/lib/database.ts)
-import { db } from "@/lib/database";
+// Server-side operations (src/lib/database-postgres.ts)
+import { db } from "@/lib/database-postgres";
 const products = await db.getProducts({ category: "pottery", limit: 10 });
 
-// Client-side operations (src/lib/database-client.ts)
-import { clientDb } from "@/lib/database-client";
+// Client-side operations (src/lib/database-client-postgres.ts)
+import { clientDb } from "@/lib/database-client-postgres";
 const userProfile = await clientDb.getUserProfile(userId);
 ```
 
@@ -146,11 +145,11 @@ const userProfile = await clientDb.getUserProfile(userId);
 
 ```typescript
 // Server components: use DatabaseOperations class
-import { db } from "@/lib/database";
+import { db } from "@/lib/database-postgres";
 const user = await db.getUserProfile(userId);
 
 // Client components: use clientDb instance
-import { clientDb } from "@/lib/database-client";
+import { clientDb } from "@/lib/database-client-postgres";
 const user = await clientDb.getUserProfile(userId);
 ```
 
@@ -164,27 +163,27 @@ const user = await clientDb.getUserProfile(userId);
 
 - Middleware handles session updates across all routes
 - `DatabaseContext` manages user state, profile, and artisan status
-- Route protection handled via Supabase RLS policies
+- Custom JWT-based authentication with local PostgreSQL storage
 
 ### Complete Development Workflow
 
 #### After Database Setup - Essential Commands
 
 ```bash
-# NEVER run npm run dev directly - use pnpm instead expect (pnpm dev)
+# NEVER run npm run dev directly - use pnpm instead (pnpm dev)
 pnpm build        # Production build with type checking
 pnpm lint         # ESLint validation
 
-# Database operations
-supabase status   # Check connection
-supabase db reset # Reset database (destructive)
+# Database operations (PostgreSQL)
+psql -h localhost -U proximus -d karigarverse -c "SELECT NOW();"  # Test connection
+psql -h localhost -U proximus -d karigarverse -f local-postgres-migration-fixed.sql  # Apply schema
 ```
 
 #### Post-Setup Verification Checklist
 
 1. **Database Connection**: Visit `/api/test-db` endpoint
 2. **Authentication**: Test signup/login flow creates profile automatically
-3. **RLS Policies**: Verify users can only access their own data
+3. **Local Tables**: Verify all 9 tables exist in PostgreSQL
 4. **Product Display**: Check `DynamicProductGrid` loads sample categories
 5. **Artisan Flow**: Test artisan profile creation and product management
 
@@ -193,6 +192,10 @@ supabase db reset # Reset database (destructive)
 ### File Organization
 
 - **Database**: Separate client/server files prevent hydration issues
+  - `src/lib/database-postgres.ts` - Server-side database operations
+  - `src/lib/database-client-postgres.ts` - Client-side database operations
+  - `src/lib/auth.ts` - Custom JWT authentication service
+  - `src/lib/postgres-config.ts` - PostgreSQL connection configuration
 - **Components**: UI components in `/ui`, feature components at root level
 - **Contexts**: Global state providers wrap the app in `clientLayout.tsx`
 - **Artisan Features**: Nested under `/artisan/` routes with dedicated layout
@@ -212,11 +215,12 @@ supabase db reset # Reset database (destructive)
 
 ## Integration Points
 
-### Supabase Integration
+### Local PostgreSQL Integration
 
-- **Environment**: Requires `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`
-- **Schema**: Database schema in `supabase-schema.sql` with setup instructions in `DATABASE_SETUP.md`
-- **Types**: Auto-generated types in `database.types.ts` - regenerate after schema changes
+- **Environment**: Requires `POSTGRES_HOST`, `POSTGRES_USER`, `POSTGRES_DB`, and `JWT_SECRET`
+- **Schema**: Database schema in `local-postgres-migration-fixed.sql` with setup instructions in `LOCAL_POSTGRES_SETUP.md`
+- **Types**: Manually defined types in `database.types.ts` - no regeneration needed
+- **Authentication**: Custom JWT-based authentication using bcrypt for password hashing
 
 ### State Management Flow
 
@@ -230,7 +234,7 @@ LanguageContext → translations → UI text
 ### Route Patterns
 
 - **Public Routes**: `/`, `/products`, `/product/[id]`
-- **Auth Routes**: `/login`, `/signup`, `/auth/confirm`
+- **Auth Routes**: `/login`, `/signup` (custom auth pages)
 - **Artisan Routes**: `/artisan/*` - protected, use ArtisanLayout
 - **Customer Routes**: `/cart`, `/checkout`, `/orders`
 
@@ -244,10 +248,9 @@ pnpm build        # Production build with Next.js optimization
 pnpm start        # Start production server
 pnpm lint         # ESLint validation and auto-fix
 
-# Database commands (requires Supabase CLI)
-supabase status   # Check project connection
-supabase db push  # Apply schema changes
-supabase gen types typescript --project-id [ID] > src/lib/database.types.ts
+# Database commands (requires PostgreSQL)
+psql -h localhost -U proximus -d karigarverse -c "SELECT NOW();"  # Test connection
+psql -h localhost -U proximus -d karigarverse -f local-postgres-migration-fixed.sql  # Apply schema
 ```
 
 ## Complete Database Setup - Essential Commands to Run Project
@@ -256,45 +259,28 @@ supabase gen types typescript --project-id [ID] > src/lib/database.types.ts
 
 ```bash
 # Create .env.local with these required variables:
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=karigarverse
+POSTGRES_USER=proximus
+POSTGRES_PASSWORD=
+JWT_SECRET=your_32_character_random_string
 ```
 
 ### 2. Database Schema Deployment
 
 ```bash
-# Option A: Via Supabase Dashboard SQL Editor
-# Copy entire supabase-schema.sql content and execute
-
-# Option B: Via Supabase CLI
-supabase db push
+# Apply the PostgreSQL migration
+psql -h localhost -U proximus -d karigarverse -f local-postgres-migration-fixed.sql
 ```
 
 ### 3. Post-Setup Verification
 
-- Check all 9 tables exist in Supabase Dashboard
-- Verify RLS is enabled on all tables
+- Check all 9 tables exist in PostgreSQL database
 - Test authentication creates profile automatically
 - Confirm sample categories are populated
 
-### 4. Current RLS Policies Implementation
-
-```sql
--- Users access own data only
-profiles: Users can view/update own profile
-cart_items: Users manage own cart
-orders: Users see own orders
-
--- Artisans manage own content
-products: Artisans CRUD own products, public reads active ones
-artisan_profiles: Artisans update own profile, public reads active ones
-
--- Public access
-categories: Public read access
-reviews: Public read, users write own reviews
-```
-
-### 5. Essential Workflow After Database Setup
+### 4. Essential Workflow After Database Setup
 
 1. **Start Project**: `pnpm dev` (NOT npm run dev)
 2. **Test Database**: Visit `/api/test-db` endpoint
@@ -302,54 +288,43 @@ reviews: Public read, users write own reviews
 4. **Product Display**: Verify `DynamicProductGrid` loads sample categories
 5. **Artisan Dashboard**: Test artisan profile creation and product management
 
-## ⚠️ IMPORTANT: Supabase MCP Server Integration
+## ⚠️ IMPORTANT: PostgreSQL MCP Server Integration
 
 ### Using MCP Server Tools for Database Operations
 
-When working with this project, **ALWAYS use the available Supabase MCP server tools** to interact with the database instead of writing manual SQL queries or trying to guess the schema structure.
+When working with this project, you can use the available PostgreSQL MCP server tools to interact with the database.
 
 #### Essential MCP Commands for Karigarverse
 
 ```bash
 # 1. List all tables and their structure
-mcp_supabase_list_tables
+mcp_postgres_list_tables
 
 # 2. Execute queries on specific tables
-mcp_supabase_execute_sql --query "SELECT * FROM profiles LIMIT 5"
-mcp_supabase_execute_sql --query "SELECT * FROM products WHERE is_active = true"
+mcp_postgres_execute "SELECT * FROM profiles LIMIT 5"
+mcp_postgres_execute "SELECT * FROM products WHERE is_active = true"
 
-# 3. Get project configuration details
-mcp_supabase_get_project_url
-mcp_supabase_get_anon_key
+# 3. Get table descriptions
+mcp_postgres_describe_table profiles
+mcp_postgres_describe_table products
 
-# 4. Apply database migrations
-mcp_supabase_apply_migration --name "add_new_feature" --query "ALTER TABLE..."
-
-# 5. Check for security advisors and performance issues
-mcp_supabase_get_advisors --type "security"
-mcp_supabase_get_advisors --type "performance"
-
-# 6. List all database extensions
-mcp_supabase_list_extensions
-
-# 7. Generate TypeScript types
-mcp_supabase_generate_typescript_types
+# 4. List all schemas
+mcp_postgres_list_schemas
 ```
 
 #### Database Schema Discovery Workflow
 
 **Before making any database changes**, use these MCP commands to understand the current state:
 
-1. **Explore Tables**: `mcp_supabase_list_tables` - See all 9 tables and their relationships
-2. **Check RLS Policies**: Look for existing policies on each table
-3. **Examine Data**: Use `execute_sql` to see sample data and understand structure
-4. **Security Check**: Run `get_advisors` to ensure no RLS policy gaps
+1. **Explore Tables**: `mcp_postgres_list_tables` - See all 9 tables and their relationships
+2. **Examine Data**: Use `mcp_postgres_execute` to see sample data and understand structure
+3. **Check Schema**: Use `mcp_postgres_describe_table` to understand table structure
 
 #### Integration with Development Workflow
 
 ```typescript
 // Instead of guessing table structure, use MCP to discover:
-// mcp_supabase_execute_sql --query "DESCRIBE products"
+// mcp_postgres_execute "DESCRIBE products"
 
 // Then implement in code:
 const products = await clientDb.getProducts({
@@ -362,10 +337,9 @@ const products = await clientDb.getProducts({
 #### MCP Server Benefits for This Project
 
 - **Schema Discovery**: Understand the 9-table structure without reading files
-- **RLS Policy Verification**: Ensure security policies are correctly implemented
 - **Live Data Inspection**: See actual data to understand relationships
-- **Migration Safety**: Test changes before applying to production
-- **Type Generation**: Keep TypeScript types in sync with database changes
+- **Query Testing**: Test queries before implementing in code
+- **Data Verification**: Ensure authentication and profile creation works correctly
 
 **🚨 CRITICAL**: Always verify database changes using MCP tools before implementing code changes that depend on schema modifications.
 
@@ -373,8 +347,10 @@ const products = await clientDb.getProducts({
 
 - `src/app/clientLayout.tsx` - Root client wrapper with providers
 - `src/contexts/DatabaseContext.tsx` - User authentication & profile state
-- `src/lib/database-client.ts` vs `src/lib/database.ts` - Client/server data access
+- `src/lib/database-client-postgres.ts` vs `src/lib/database-postgres.ts` - Client/server data access
+- `src/lib/auth.ts` - Custom JWT authentication service
+- `src/lib/postgres-config.ts` - PostgreSQL connection configuration
 - `src/components/product-card.tsx` - Standard product display component
 - `src/components/dynamic-product-grid.tsx` - Animated product grid with filtering
-- `DATABASE_SETUP.md` - Supabase configuration instructions
-- `supabase-schema.sql` - Complete database schema with RLS policies
+- `LOCAL_POSTGRES_SETUP.md` - PostgreSQL configuration instructions
+- `local-postgres-migration-fixed.sql` - Complete database schema with triggers

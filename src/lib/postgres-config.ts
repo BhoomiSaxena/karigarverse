@@ -3,10 +3,10 @@
  * Replaces Supabase client configuration
  */
 
-import { Pool, PoolConfig } from "pg";
+import { Pool } from "pg";
 
 // Database configuration
-const dbConfig: PoolConfig = {
+const dbConfig = {
   user: process.env.POSTGRES_USER || "postgres",
   host: process.env.POSTGRES_HOST || "localhost",
   database: process.env.POSTGRES_DB || "karigarverse",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { clientDb } from "@/lib/database-client-postgres";
+import { clientDb } from "@/lib/database-client";
 import type { Database } from "@/lib/database.types";
 
 // Local user type for our PostgreSQL setup

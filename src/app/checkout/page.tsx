@@ -129,18 +129,33 @@ export default function CheckoutPage() {
 
     setIsProcessing(true);
     try {
+      // Calculate totals
+      const subtotal = cartItems.reduce(
+        (sum, item) => sum + (item.products?.price || 0) * item.quantity,
+        0
+      );
+      const taxAmount = subtotal * 0.18; // 18% GST
+      const shippingCost = deliveryOption === "express" ? 200 : 100;
+      const discountAmount = 0;
+      const totalAmount = subtotal + taxAmount + shippingCost - discountAmount;
+
       // Create order using database client
       const orderData = {
-        user_id: user!.id,
-        total_amount: total,
-        status: "pending" as const,
+        customer_id: user!.id,
+        subtotal: subtotal,
+        tax_amount: taxAmount,
+        shipping_cost: shippingCost,
+        discount_amount: discountAmount,
+        total_amount: totalAmount,
         shipping_address: shippingAddress,
+        billing_address: shippingAddress,
         payment_method: paymentMethod,
-        delivery_option: deliveryOption,
+        notes: `Delivery option: ${deliveryOption}`,
         items: cartItems.map((item) => ({
           product_id: item.product_id,
+          artisan_id: item.products?.artisan_id || "", // Need to get this from product
           quantity: item.quantity,
-          price: item.products?.price || 0,
+          unit_price: item.products?.price || 0,
         })),
       };
 
