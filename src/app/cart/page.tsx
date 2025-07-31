@@ -9,7 +9,7 @@ import Link from "next/link";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useCart } from "@/contexts/CartContext";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "@/hooks/use-toast";
 
 export default function CartPage() {
@@ -17,6 +17,27 @@ export default function CartPage() {
   const { cartItems, updateQuantity, removeFromCart } = useCart();
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Handle hydration
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="bg-white font-kalam text-black flex flex-col min-h-screen">
+        <Header />
+        <main className="flex-grow max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black mx-auto mb-4"></div>
+            <p>Loading...</p>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   const subtotal = cartItems.reduce(
     (sum, item) => sum + (item.products?.price || 0) * item.quantity,
@@ -26,14 +47,14 @@ export default function CartPage() {
   const total = subtotal + deliveryCharges;
 
   const handleQuantityUpdate = async (
-    productId: string,
+    cartItemId: string,
     newQuantity: number
   ) => {
     if (newQuantity < 1) return;
 
-    setUpdatingItems((prev) => new Set(prev).add(productId));
+    setUpdatingItems((prev) => new Set(prev).add(cartItemId));
     try {
-      await updateQuantity(productId, newQuantity);
+      await updateQuantity(cartItemId, newQuantity);
       toast({
         title: t("cart.quantity_updated"),
         description: t("cart.quantity_updated"),
@@ -48,15 +69,15 @@ export default function CartPage() {
     } finally {
       setUpdatingItems((prev) => {
         const newSet = new Set(prev);
-        newSet.delete(productId);
+        newSet.delete(cartItemId);
         return newSet;
       });
     }
   };
 
-  const handleRemoveItem = async (productId: string) => {
+  const handleRemoveItem = async (cartItemId: string) => {
     try {
-      await removeFromCart(productId);
+      await removeFromCart(cartItemId);
       toast({
         title: t("cart.removed_from_cart"),
         description: t("cart.removed_from_cart"),
@@ -157,9 +178,9 @@ export default function CartPage() {
                       size="icon"
                       className="h-6 w-6 rounded-sm hover:bg-gray-200"
                       onClick={() =>
-                        handleQuantityUpdate(item.product_id, item.quantity - 1)
+                        handleQuantityUpdate(item.id, item.quantity - 1)
                       }
-                      disabled={updatingItems.has(item.product_id)}
+                      disabled={updatingItems.has(item.id)}
                     >
                       <Minus size={16} />
                     </Button>
@@ -171,9 +192,9 @@ export default function CartPage() {
                       size="icon"
                       className="h-6 w-6 rounded-sm hover:bg-gray-200"
                       onClick={() =>
-                        handleQuantityUpdate(item.product_id, item.quantity + 1)
+                        handleQuantityUpdate(item.id, item.quantity + 1)
                       }
-                      disabled={updatingItems.has(item.product_id)}
+                      disabled={updatingItems.has(item.id)}
                     >
                       <Plus size={16} />
                     </Button>
@@ -182,7 +203,7 @@ export default function CartPage() {
                     variant="outline"
                     size="sm"
                     className="border-red-200 text-red-600 hover:bg-red-50"
-                    onClick={() => handleRemoveItem(item.product_id)}
+                    onClick={() => handleRemoveItem(item.id)}
                   >
                     <Trash2 size={16} className="mr-1" />
                     {t("cart.remove")}

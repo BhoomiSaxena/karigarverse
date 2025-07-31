@@ -580,8 +580,9 @@ export class ClientDatabaseOperations {
         .from("orders")
         .insert([
           {
-            user_id: orderData.user_id,
+            customer_id: orderData.user_id,
             order_number: orderNumber,
+            subtotal: orderData.total_amount,
             total_amount: orderData.total_amount,
             status: orderData.status,
             shipping_address: orderData.shipping_address,
@@ -596,13 +597,27 @@ export class ClientDatabaseOperations {
         return { success: false, error: orderError.message };
       }
 
-      // Create order items
-      const orderItemsData = orderData.items.map((item) => ({
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        price: item.price,
-      }));
+      // Create order items - need to get artisan_id from products
+      const orderItemsData = [];
+      for (const item of orderData.items) {
+        // Get product details to find artisan_id
+        const { data: product } = await this.supabase
+          .from("products")
+          .select("artisan_id")
+          .eq("id", item.product_id)
+          .single();
+
+        if (product) {
+          orderItemsData.push({
+            order_id: order.id,
+            product_id: item.product_id,
+            artisan_id: product.artisan_id,
+            quantity: item.quantity,
+            unit_price: item.price,
+            total_price: item.price * item.quantity,
+          });
+        }
+      }
 
       const { error: itemsError } = await this.supabase
         .from("order_items")
@@ -638,7 +653,7 @@ export class ClientDatabaseOperations {
           order_items (
             id,
             quantity,
-            price,
+            unit_price,
             products (
               id,
               name,
@@ -647,7 +662,7 @@ export class ClientDatabaseOperations {
           )
         `
         )
-        .eq("user_id", userId)
+        .eq("customer_id", userId)
         .order("created_at", { ascending: false });
 
       if (error) {
