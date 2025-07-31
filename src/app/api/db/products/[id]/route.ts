@@ -8,10 +8,11 @@ import {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const product = await db.getProductById(params.id);
+    const { id } = await params;
+    const product = await db.getProductById(id);
     return NextResponse.json({ data: product });
   } catch (error) {
     return handleError(error);
@@ -21,11 +22,12 @@ export async function GET(
 export const PUT = withAuth(
   async (
     request: AuthenticatedRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
+      const { id } = await params;
       const updates = await request.json();
-      const product = await db.updateProduct(params.id, updates);
+      const product = await db.updateProduct(id, updates);
       return NextResponse.json({ data: product });
     } catch (error) {
       return handleError(error);
@@ -36,10 +38,11 @@ export const PUT = withAuth(
 export const DELETE = withAuth(
   async (
     request: AuthenticatedRequest,
-    { params }: { params: { id: string } }
+    { params }: { params: Promise<{ id: string }> }
   ) => {
     try {
-      const result = await db.deleteProduct(params.id);
+      const { id } = await params;
+      const result = await db.deleteProduct(id);
       return NextResponse.json({ data: { success: true } });
     } catch (error) {
       return handleError(error);

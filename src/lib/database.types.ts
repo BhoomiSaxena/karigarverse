@@ -19,8 +19,8 @@ export type Database = {
           banner_image: string | null;
           business_license: string | null;
           commission_rate: number | null;
-          contact_email: string | null;
-          contact_phone: string | null;
+          email: string | null;
+          phone: string | null;
           created_at: string;
           description: string | null;
           established_year: number | null;
@@ -37,7 +37,7 @@ export type Database = {
           updated_at: string;
           user_id: string;
           verification_status: string | null;
-          website_url: string | null;
+          website: string | null;
           // Additional fields for extended artisan profile
           social_media: Json | null;
           business_hours: Json | null;
@@ -50,13 +50,17 @@ export type Database = {
           shipping_policy: string | null;
           preferred_language: string | null;
           notification_preferences: Json | null;
+          // Alias fields for backwards compatibility
+          contact_email: string | null;
+          contact_phone: string | null;
+          website_url: string | null;
         };
         Insert: {
           banner_image?: string | null;
           business_license?: string | null;
           commission_rate?: number | null;
-          contact_email?: string | null;
-          contact_phone?: string | null;
+          email?: string | null;
+          phone?: string | null;
           created_at?: string;
           description?: string | null;
           established_year?: number | null;
@@ -73,7 +77,7 @@ export type Database = {
           updated_at?: string;
           user_id: string;
           verification_status?: string | null;
-          website_url?: string | null;
+          website?: string | null;
           // Additional fields for extended artisan profile
           social_media?: Json | null;
           business_hours?: Json | null;
@@ -86,13 +90,17 @@ export type Database = {
           shipping_policy?: string | null;
           preferred_language?: string | null;
           notification_preferences?: Json | null;
+          // Alias fields for backwards compatibility
+          contact_email?: string | null;
+          contact_phone?: string | null;
+          website_url?: string | null;
         };
         Update: {
           banner_image?: string | null;
           business_license?: string | null;
           commission_rate?: number | null;
-          contact_email?: string | null;
-          contact_phone?: string | null;
+          email?: string | null;
+          phone?: string | null;
           created_at?: string;
           description?: string | null;
           established_year?: number | null;
@@ -109,7 +117,7 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
           verification_status?: string | null;
-          website_url?: string | null;
+          website?: string | null;
           // Additional fields for extended artisan profile
           social_media?: Json | null;
           business_hours?: Json | null;
@@ -122,6 +130,10 @@ export type Database = {
           shipping_policy?: string | null;
           preferred_language?: string | null;
           notification_preferences?: Json | null;
+          // Alias fields for backwards compatibility
+          contact_email?: string | null;
+          contact_phone?: string | null;
+          website_url?: string | null;
         };
         Relationships: [
           {

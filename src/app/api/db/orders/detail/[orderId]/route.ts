@@ -4,10 +4,10 @@ import { handleError } from "@/lib/api-middleware";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { orderId: string } }
+  { params }: { params: Promise<{ orderId: string }> }
 ) {
   try {
-    const { orderId } = params;
+    const { orderId } = await params;
 
     const orderResult = await query("SELECT * FROM orders WHERE id = $1", [
       orderId,

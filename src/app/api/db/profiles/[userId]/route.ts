@@ -4,10 +4,11 @@ import { handleError } from "@/lib/api-middleware";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { userId: string } }
+  { params }: { params: Promise<{ userId: string }> }
 ) {
   try {
-    const { profile, error } = await AuthService.getUserProfile(params.userId);
+    const { userId } = await params;
+    const { profile, error } = await AuthService.getUserProfile(userId);
 
     if (error) {
       return NextResponse.json({ error }, { status: 404 });

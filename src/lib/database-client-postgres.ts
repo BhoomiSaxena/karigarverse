@@ -11,6 +11,12 @@ export class ClientDatabaseOperations {
   private async apiCall(endpoint: string, options: RequestInit = {}) {
     const token = localStorage.getItem("auth_token");
 
+    console.log("API Call:", {
+      endpoint,
+      hasToken: !!token,
+      method: options.method || "GET",
+    });
+
     const response = await fetch(`/api/db${endpoint}`, {
       ...options,
       headers: {
@@ -20,14 +26,32 @@ export class ClientDatabaseOperations {
       },
     });
 
+    console.log("API Response:", {
+      endpoint,
+      status: response.status,
+      statusText: response.statusText,
+      ok: response.ok,
+    });
+
     if (!response.ok) {
-      const error = await response
-        .json()
-        .catch(() => ({ message: "Unknown error" }));
+      let error;
+      try {
+        error = await response.json();
+      } catch {
+        error = { message: `HTTP ${response.status}: ${response.statusText}` };
+      }
+
+      console.error("API Error Details:", {
+        endpoint,
+        error,
+        status: response.status,
+      });
       throw new Error(error.message || `HTTP ${response.status}`);
     }
 
     const result = await response.json();
+    console.log("API Success:", { endpoint, hasData: !!result.data });
+
     // Return the data property if it exists, otherwise return the whole result
     return result.data !== undefined ? result.data : result;
   }

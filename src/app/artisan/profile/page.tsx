@@ -74,9 +74,9 @@ const initialProfileData: Partial<ArtisanProfileData> = {
   banner_image: null,
   specialties: [],
   location: null,
-  contact_phone: null,
-  contact_email: null,
-  website_url: null,
+  phone: null,
+  email: null,
+  website: null,
   established_year: null,
   experience_years: null,
   social_media: null,
@@ -200,9 +200,9 @@ export default function ArtisanProfilePage() {
     shop_logo: initialProfileData.shop_logo,
     created_at: "",
     updated_at: "",
-    contact_phone: initialProfileData.contact_phone,
-    contact_email: initialProfileData.contact_email,
-    website_url: initialProfileData.website_url,
+    phone: initialProfileData.phone,
+    email: initialProfileData.email,
+    website: initialProfileData.website,
     established_year: initialProfileData.established_year,
     experience_years: initialProfileData.experience_years,
     social_media: initialProfileData.social_media,
@@ -627,11 +627,11 @@ export default function ArtisanProfilePage() {
                     <Input
                       id="email"
                       type="email"
-                      value={profileData.contact_email || ""}
+                      value={profileData.email || ""}
                       onChange={(e) =>
                         setProfileData((prev) => ({
                           ...prev,
-                          contact_email: e.target.value,
+                          email: e.target.value,
                         }))
                       }
                       disabled={!isEditing}
@@ -648,11 +648,11 @@ export default function ArtisanProfilePage() {
                     </Label>
                     <Input
                       id="phone"
-                      value={profileData.contact_phone || ""}
+                      value={profileData.phone || ""}
                       onChange={(e) =>
                         setProfileData((prev) => ({
                           ...prev,
-                          contact_phone: e.target.value,
+                          phone: e.target.value,
                         }))
                       }
                       disabled={!isEditing}
@@ -826,19 +826,19 @@ export default function ArtisanProfilePage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label
-                            htmlFor="contact_phone"
+                            htmlFor="phone"
                             className="flex items-center gap-3 text-base font-medium"
                           >
                             <Phone className="h-5 w-5" />
                             {t("artisan_profile.phone_number")}
                           </Label>
                           <Input
-                            id="contact_phone"
-                            value={profileData.contact_phone || ""}
+                            id="phone"
+                            value={profileData.phone || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
                                 ...prev,
-                                contact_phone: e.target.value,
+                                phone: e.target.value,
                               }))
                             }
                             disabled={!isEditing}
@@ -872,20 +872,20 @@ export default function ArtisanProfilePage() {
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                           <Label
-                            htmlFor="website_url"
+                            htmlFor="website"
                             className="flex items-center gap-3 text-base font-medium"
                           >
                             <Globe className="h-5 w-5" />
                             {t("artisan_profile.website_url")}
                           </Label>
                           <Input
-                            id="website_url"
+                            id="website"
                             type="url"
-                            value={profileData.website_url || ""}
+                            value={profileData.website || ""}
                             onChange={(e) =>
                               setProfileData((prev) => ({
                                 ...prev,
-                                website_url: e.target.value,
+                                website: e.target.value,
                               }))
                             }
                             disabled={!isEditing}

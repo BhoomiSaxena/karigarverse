@@ -286,3 +286,70 @@ export class AuthService {
     }
   }
 }
+
+// Utility function to verify authentication in API routes
+export async function verifyAuth(request: Request): Promise<{
+  success: boolean;
+  user?: User;
+  error?: string;
+}> {
+  try {
+    const authHeader = request.headers.get("authorization");
+    const cookieToken = request.headers.get("cookie")?.includes("auth-token");
+
+    let token: string | null = null;
+
+    // Check Authorization header first
+    if (authHeader && authHeader.startsWith("Bearer ")) {
+      token = authHeader.substring(7);
+    }
+
+    // If no Bearer token, check cookies
+    if (!token && cookieToken) {
+      const cookies = request.headers.get("cookie");
+      const authTokenMatch = cookies?.match(/auth-token=([^;]+)/);
+      if (authTokenMatch) {
+        token = authTokenMatch[1];
+      }
+    }
+
+    if (!token) {
+      return {
+        success: false,
+        error: "No authentication token provided",
+      };
+    }
+
+    // Verify the token
+    const decoded = verifyToken(token);
+    if (!decoded) {
+      return {
+        success: false,
+        error: "Invalid or expired token",
+      };
+    }
+
+    // Get user from database
+    const userResult = await query(
+      "SELECT id, email, email_verified, created_at, updated_at FROM users WHERE id = $1",
+      [decoded.userId]
+    );
+
+    if (userResult.rows.length === 0) {
+      return {
+        success: false,
+        error: "User not found",
+      };
+    }
+
+    return {
+      success: true,
+      user: userResult.rows[0],
+    };
+  } catch (error: any) {
+    return {
+      success: false,
+      error: error.message || "Authentication failed",
+    };
+  }
+}

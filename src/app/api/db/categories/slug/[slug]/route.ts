@@ -4,10 +4,11 @@ import { handleError } from "@/lib/api-middleware";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
-    const category = await db.getCategoryBySlug(params.slug);
+    const { slug } = await params;
+    const category = await db.getCategoryBySlug(slug);
 
     if (!category) {
       return NextResponse.json(
