@@ -15,13 +15,11 @@ import { clientDb } from "@/lib/database-client";
 
 interface Order {
   id: string;
-  order_number: string;
   total_amount: number;
   status: string;
   created_at: string;
   shipping_address: any;
   payment_method: string;
-  delivery_option: string;
   order_items: Array<{
     id: string;
     quantity: number;
@@ -71,7 +69,17 @@ export default function OrdersPage() {
         const result = await clientDb.getUserOrders(user.id);
 
         if (result.success && result.data) {
-          setOrders(result.data);
+          // Transform data: extract single product from products array
+          const formatted = result.data.map((order) => ({
+            ...order,
+            order_items: order.order_items.map((item) => ({
+              ...item,
+              products: Array.isArray(item.products)
+                ? item.products[0] ?? null
+                : item.products,
+            })),
+          }));
+          setOrders(formatted);
         } else {
           setError(result.error || "Failed to fetch orders");
         }
