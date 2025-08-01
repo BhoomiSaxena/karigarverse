@@ -85,21 +85,52 @@ export class DatabaseOperations {
     specialties?: string[];
     location?: string;
     business_license?: string;
+    phone?: string;
+    email?: string;
+    website?: string;
+    established_year?: number;
+    experience_years?: number;
   }) {
     try {
-      const result = await query(
-        "INSERT INTO artisan_profiles (user_id, shop_name, description, specialties, location, business_license) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-        [
-          artisanData.user_id,
-          artisanData.shop_name,
-          artisanData.description,
-          artisanData.specialties,
-          artisanData.location,
-          artisanData.business_license,
-        ]
-      );
+      // Build dynamic query based on provided fields
+      const fields = ['user_id', 'shop_name'];
+      const values = [artisanData.user_id, artisanData.shop_name];
+      const placeholders = ['$1', '$2'];
+      let paramIndex = 3;
+
+      // Add optional fields if they exist
+      const optionalFields = [
+        'description',
+        'specialties', 
+        'location',
+        'business_license',
+        'phone',
+        'email', 
+        'website',
+        'established_year',
+        'experience_years'
+      ];
+
+      optionalFields.forEach(field => {
+        const value = artisanData[field as keyof typeof artisanData];
+        if (value !== undefined && value !== null) {
+          fields.push(field);
+          values.push(value as any);
+          placeholders.push(`$${paramIndex}`);
+          paramIndex++;
+        }
+      });
+
+      const queryText = `
+        INSERT INTO artisan_profiles (${fields.join(', ')}) 
+        VALUES (${placeholders.join(', ')}) 
+        RETURNING *
+      `;
+
+      const result = await query(queryText, values);
       return result.rows[0];
     } catch (error: any) {
+      console.error('Database error creating artisan profile:', error);
       throw new Error(`Failed to create artisan profile: ${error.message}`);
     }
   }

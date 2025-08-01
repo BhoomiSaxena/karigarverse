@@ -29,6 +29,13 @@ interface DatabaseContextType {
     specialties?: string[];
     location?: string;
     business_license?: string;
+    contact_phone?: string;
+    contact_email?: string;
+    website_url?: string;
+    established_year?: number;
+    experience_years?: number;
+    verification_status?: string;
+    status?: string;
   }) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -72,6 +79,13 @@ export function DatabaseProvider({ children }: { children: React.ReactNode }) {
     specialties?: string[];
     location?: string;
     business_license?: string;
+    contact_phone?: string;
+    contact_email?: string;
+    website_url?: string;
+    established_year?: number;
+    experience_years?: number;
+    verification_status?: string;
+    status?: string;
   }) => {
     if (!user) throw new Error("User not authenticated");
 

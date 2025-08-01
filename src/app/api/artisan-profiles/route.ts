@@ -2,6 +2,92 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/database-postgres";
 import { verifyAuth } from "@/lib/auth";
 
+export async function POST(request: NextRequest) {
+  try {
+    // Verify authentication
+    const authResult = await verifyAuth(request);
+    if (!authResult.success || !authResult.user) {
+      return NextResponse.json(
+        { error: "Authentication required" },
+        { status: 401 }
+      );
+    }
+
+    const userId = authResult.user.id;
+    const artisanData = await request.json();
+
+    // Check if user already has an artisan profile
+    const existingProfile = await db.getArtisanProfile(userId);
+    if (existingProfile) {
+      return NextResponse.json(
+        { error: "Artisan profile already exists" },
+        { status: 409 }
+      );
+    }
+
+    // Clean up the artisan data object to match database schema
+    const cleanArtisanData: any = {
+      user_id: userId,
+    };
+
+    // Map the frontend field names to database field names
+    const fieldMapping: { [key: string]: string } = {
+      contact_email: "email",
+      contact_phone: "phone",
+      website_url: "website",
+    };
+
+    // Direct mappings (field names are the same)
+    const directFields = [
+      "shop_name",
+      "description",
+      "specialties",
+      "location",
+      "business_license",
+      "phone",
+      "email",
+      "website",
+      "established_year",
+      "experience_years",
+    ];
+
+    // Process direct mappings
+    directFields.forEach((field) => {
+      if (artisanData[field] !== undefined) {
+        cleanArtisanData[field] = artisanData[field];
+      }
+    });
+
+    // Process field mappings
+    Object.entries(fieldMapping).forEach(([frontendField, dbField]) => {
+      if (artisanData[frontendField] !== undefined) {
+        cleanArtisanData[dbField] = artisanData[frontendField];
+      }
+    });
+
+    // Create the artisan profile
+    const newProfile = await db.createArtisanProfile(cleanArtisanData);
+
+    return NextResponse.json(
+      {
+        success: true,
+        data: newProfile,
+        message: "Artisan profile created successfully",
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    console.error("Error creating artisan profile:", error);
+    return NextResponse.json(
+      {
+        error: "Failed to create artisan profile",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 }
+    );
+  }
+}
+
 export async function PUT(request: NextRequest) {
   try {
     // Verify authentication

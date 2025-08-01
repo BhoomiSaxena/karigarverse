@@ -174,6 +174,13 @@ export class ClientDatabaseOperations {
     phone?: string;
     email?: string;
     website?: string;
+    contact_phone?: string;
+    contact_email?: string;
+    website_url?: string;
+    established_year?: number;
+    experience_years?: number;
+    verification_status?: string;
+    status?: string;
   }) {
     // Remove user_id since it's handled by auth
     const { user_id, ...data } = artisanData;
