@@ -7,7 +7,7 @@ import React, {
   useEffect,
   ReactNode,
 } from "react";
-import { clientDb } from "@/lib/database-client";
+import { ClientDatabaseOperations } from "@/lib/database-client-postgres";
 import { useDatabase } from "./DatabaseContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -60,6 +60,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useDatabase();
   const { toast } = useToast();
+
+  // Create database instance
+  const clientDb = new ClientDatabaseOperations();
 
   // Calculate totals
   const totalItems = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -133,7 +136,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
     }
 
     try {
-      await clientDb.updateCartItemQuantity(cartItemId, quantity);
+      // Find the cart item to get the product_id
+      const cartItem = cartItems.find((item) => item.id === cartItemId);
+      if (!cartItem) {
+        throw new Error("Cart item not found");
+      }
+
+      await clientDb.updateCartItemQuantity(cartItem.product_id, quantity);
       await refreshCart(); // Refresh cart to get updated data
     } catch (error) {
       console.error("Error updating quantity:", error);
@@ -147,7 +156,13 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const removeFromCart = async (cartItemId: string) => {
     try {
-      await clientDb.removeFromCart(user!.id, cartItemId);
+      // Find the cart item to get the product_id
+      const cartItem = cartItems.find((item) => item.id === cartItemId);
+      if (!cartItem) {
+        throw new Error("Cart item not found");
+      }
+
+      await clientDb.removeFromCart(user!.id, cartItem.product_id);
       await refreshCart(); // Refresh cart to get updated data
       toast({
         title: "Item Removed",
@@ -165,9 +180,9 @@ export const CartProvider: React.FC<CartProviderProps> = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      // Remove all items one by one
+      // Remove all items one by one using product_id
       const promises = cartItems.map((item) =>
-        clientDb.removeFromCart(user!.id, item.id)
+        clientDb.removeFromCart(user!.id, item.product_id)
       );
       await Promise.all(promises);
       await refreshCart();

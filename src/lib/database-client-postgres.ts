@@ -312,10 +312,10 @@ export class ClientDatabaseOperations {
     });
   }
 
-  async updateCartItemQuantity(cartItemId: string, quantity: number) {
+  async updateCartItemQuantity(productId: string, quantity: number) {
     return this.apiCall("/cart", {
       method: "PUT",
-      body: JSON.stringify({ cartItemId, quantity }),
+      body: JSON.stringify({ productId, quantity }),
     });
   }
 

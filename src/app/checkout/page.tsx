@@ -15,7 +15,7 @@ import { useDatabase } from "@/contexts/DatabaseContext";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/hooks/use-toast";
-import { clientDb } from "@/lib/database-client";
+import { ClientDatabaseOperations } from "@/lib/database-client-postgres";
 
 interface ShippingAddress {
   fullName: string;
@@ -126,6 +126,9 @@ export default function CheckoutPage() {
     if (!validateForm()) {
       return;
     }
+
+    // Create database instance
+    const clientDb = new ClientDatabaseOperations();
 
     setIsProcessing(true);
     try {
