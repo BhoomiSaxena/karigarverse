@@ -158,22 +158,22 @@ supabase gen types typescript --project-id YOUR_PROJECT_ID > src/lib/database.ty
 ### **Essential Commands to Run Project**
 
 ```bash
-# ⚠️ IMPORTANT: This project uses pnpm exclusively - NEVER use npm run dev
+# Development Commands
 
 # 1. Install dependencies
-pnpm install
+npm install
 
 # 2. Start development server
-pnpm dev           # Runs on http://localhost:3000
+npm run dev        # Runs on http://localhost:3000
 
 # 3. Production build
-pnpm build         # Next.js optimization with type checking
+npm run build      # Next.js optimization with type checking
 
 # 4. Production server
-pnpm start         # Serves production build
+npm start          # Serves production build
 
 # 5. Code quality
-pnpm lint          # ESLint validation and auto-fix
+npm run lint       # ESLint validation and auto-fix
 ```
 
 ### **Database Development Commands**

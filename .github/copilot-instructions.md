@@ -170,9 +170,10 @@ const user = await clientDb.getUserProfile(userId);
 #### After Database Setup - Essential Commands
 
 ```bash
-# NEVER run npm run dev directly - use pnpm instead (pnpm dev)
-pnpm build        # Production build with type checking
-pnpm lint         # ESLint validation
+# Use npm for development
+npm run dev       # Start development server 
+npm run build     # Production build with type checking
+npm run lint      # ESLint validation
 
 # Database operations (PostgreSQL)
 psql -h localhost -U proximus -d karigarverse -c "SELECT NOW();"  # Test connection
@@ -240,13 +241,11 @@ LanguageContext → translations → UI text
 
 ## Development Commands
 
-**⚠️ IMPORTANT: NEVER use `npm run dev` - this project uses pnpm exclusively**
-
 ```bash
-pnpm dev          # Start development server (localhost:3000)
-pnpm build        # Production build with Next.js optimization
-pnpm start        # Start production server
-pnpm lint         # ESLint validation and auto-fix
+npm run dev       # Start development server (localhost:3000)
+npm run build     # Production build with Next.js optimization
+npm start         # Start production server
+npm run lint      # ESLint validation and auto-fix
 
 # Database commands (requires PostgreSQL)
 psql -h localhost -U proximus -d karigarverse -c "SELECT NOW();"  # Test connection
@@ -282,7 +281,7 @@ psql -h localhost -U proximus -d karigarverse -f local-postgres-migration-fixed.
 
 ### 4. Essential Workflow After Database Setup
 
-1. **Start Project**: `pnpm dev` (NOT npm run dev)
+1. **Start Project**: `npm run dev`
 2. **Test Database**: Visit `/api/test-db` endpoint
 3. **Auth Flow**: Test signup/login creates profile automatically
 4. **Product Display**: Verify `DynamicProductGrid` loads sample categories
