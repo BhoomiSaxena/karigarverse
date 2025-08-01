@@ -190,6 +190,18 @@ export function VoiceInputModal({
     if (speechServiceRef.current) {
       speechServiceRef.current.stop();
     }
+
+    // If there's interim transcript when stopping, finalize it
+    if (interimTranscript.trim()) {
+      setTranscript((prev) => {
+        const newText = prev
+          ? `${prev} ${interimTranscript}`
+          : interimTranscript;
+        return newText.substring(0, maxLength);
+      });
+      setInterimTranscript("");
+    }
+
     setIsListening(false);
   };
 
@@ -201,9 +213,23 @@ export function VoiceInputModal({
   };
 
   const handleApply = () => {
-    if (transcript.trim()) {
-      onApply(transcript.trim());
+    // Include both final transcript and interim transcript
+    const fullText = getDisplayText().trim();
+    if (fullText) {
+      onApply(fullText);
       onClose();
+    }
+  };
+
+  const handleFinalizeInterim = () => {
+    if (interimTranscript.trim()) {
+      setTranscript((prev) => {
+        const newText = prev
+          ? `${prev} ${interimTranscript}`
+          : interimTranscript;
+        return newText.substring(0, maxLength);
+      });
+      setInterimTranscript("");
     }
   };
 
@@ -457,9 +483,19 @@ export function VoiceInputModal({
               maxLength={maxLength}
             />
             {interimTranscript && (
-              <p className="text-xs text-blue-600 italic">
-                Processing: "{interimTranscript}"
-              </p>
+              <div className="flex items-center justify-between bg-blue-50 p-2 rounded border">
+                <p className="text-xs text-blue-600 italic flex-1">
+                  Processing: "{interimTranscript}"
+                </p>
+                <Button
+                  onClick={handleFinalizeInterim}
+                  variant="outline"
+                  size="sm"
+                  className="ml-2 text-xs border-blue-300 text-blue-600 hover:bg-blue-100"
+                >
+                  ✓ Finalize
+                </Button>
+              </div>
             )}
           </div>
 
@@ -524,7 +560,7 @@ export function VoiceInputModal({
             <Button
               onClick={handleApply}
               className="flex-1 bg-black text-white hover:bg-gray-800 border-2 border-black"
-              disabled={!transcript.trim()}
+              disabled={!getDisplayText().trim()}
             >
               <span className="flex items-center gap-2">
                 <Check className="h-4 w-4" />

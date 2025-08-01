@@ -120,6 +120,12 @@ export class SpeechService {
     this.recognition.continuous = this.config.continuous || false;
     this.recognition.interimResults = this.config.interimResults || true;
 
+    // Better configuration for multilingual support
+    this.recognition.maxAlternatives = 1;
+    if (this.config.lang === "hi-IN") {
+      this.recognition.grammars = null; // Allow natural speech for Hindi
+    }
+
     this.recognition.onstart = () => {
       this.isListening = true;
       this.config.onStart?.();
