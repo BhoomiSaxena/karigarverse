@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
-import { ClientDatabaseOperations } from "@/lib/database-client";
+import { ClientDatabaseOperations } from "@/lib/database-client-postgres";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useToast } from "@/hooks/use-toast";
@@ -133,7 +133,7 @@ export default function ProductDetailPage() {
         setError(null);
 
         // Fetch product details
-        const productData = await db.getProduct(productId);
+        const productData = await db.getProductById(productId);
 
         if (!productData) {
           setError("Product not found");
@@ -189,7 +189,7 @@ export default function ProductDetailPage() {
 
     setIsAddingToCart(true);
     try {
-      await db.addToCart(product.id, quantity);
+      await db.addToCart(user.id, product.id, quantity);
       toast({
         title: "🎉 Added to Cart!",
         description: `${product.name} has been added to your cart.`,

@@ -188,6 +188,11 @@ export class ClientDatabaseOperations {
     return this.apiCall("/artisan-profiles");
   }
 
+  async getArtisanProfileById(artisanId: string) {
+    // Get artisan profile by artisan ID
+    return this.apiCall(`/artisan-profiles/${artisanId}`);
+  }
+
   async updateArtisanProfile(userId: string, updates: any) {
     return this.apiCall("/artisan-profiles", {
       method: "PUT",
@@ -239,6 +244,12 @@ export class ClientDatabaseOperations {
 
   async getProductById(productId: string) {
     return this.apiCall(`/products/${productId}`);
+  }
+
+  async incrementProductViews(productId: string) {
+    return this.apiCall(`/products/${productId}/views`, {
+      method: "POST",
+    });
   }
 
   async createProduct(productData: {

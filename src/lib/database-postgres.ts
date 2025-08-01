@@ -116,6 +116,18 @@ export class DatabaseOperations {
     }
   }
 
+  async getArtisanProfileById(artisanId: string) {
+    try {
+      const result = await query(
+        "SELECT * FROM artisan_profiles WHERE id = $1",
+        [artisanId]
+      );
+      return result.rows[0] || null;
+    } catch (error: any) {
+      throw new Error(`Failed to get artisan profile by ID: ${error.message}`);
+    }
+  }
+
   async updateArtisanProfile(userId: string, updates: any) {
     try {
       const setClause = Object.keys(updates)
@@ -268,6 +280,18 @@ export class DatabaseOperations {
       return result.rows[0];
     } catch (error: any) {
       throw new Error(`Failed to get product: ${error.message}`);
+    }
+  }
+
+  async incrementProductViews(productId: string) {
+    try {
+      const result = await query(
+        "UPDATE products SET views_count = COALESCE(views_count, 0) + 1 WHERE id = $1 RETURNING views_count",
+        [productId]
+      );
+      return result.rows[0]?.views_count || 0;
+    } catch (error: any) {
+      throw new Error(`Failed to increment product views: ${error.message}`);
     }
   }
 
