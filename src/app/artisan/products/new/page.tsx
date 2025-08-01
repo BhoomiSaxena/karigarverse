@@ -1418,15 +1418,34 @@ export default function AddProductPage() {
                         Tags & Keywords
                       </Label>
                       <div className="flex gap-2 mb-4">
-                        <Input
-                          value={newTag}
-                          onChange={(e) => setNewTag(e.target.value)}
-                          placeholder="e.g., handmade, traditional, eco-friendly"
-                          className="border-2 border-gray-300 rounded-none text-lg py-3 focus:border-orange-500 transition-colors"
-                          onKeyPress={(e) =>
-                            e.key === "Enter" && (e.preventDefault(), addTag())
-                          }
-                        />
+                        <div className="relative flex-1">
+                          <Input
+                            value={newTag}
+                            onChange={(e) => setNewTag(e.target.value)}
+                            placeholder="e.g., handmade, traditional, eco-friendly"
+                            className="border-2 border-gray-300 rounded-none text-lg py-3 pr-12 focus:border-orange-500 transition-colors"
+                            onKeyPress={(e) =>
+                              e.key === "Enter" &&
+                              (e.preventDefault(), addTag())
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-orange-50"
+                            onClick={() =>
+                              openVoiceModal(
+                                "newTag",
+                                "Tag/Keyword",
+                                newTag,
+                                50
+                              )
+                            }
+                          >
+                            <Mic className="h-4 w-4 text-orange-500" />
+                          </Button>
+                        </div>
                         <motion.div
                           variants={buttonVariants}
                           whileHover="hover"
