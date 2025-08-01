@@ -11,7 +11,8 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { clientDb } from "@/lib/database-client";
+import { ClientDatabaseOperations } from "@/lib/database-client-postgres";
+import { toast } from "@/hooks/use-toast";
 
 interface Order {
   id: string;
@@ -56,6 +57,9 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [cancellingOrders, setCancellingOrders] = useState<Set<string>>(
+    new Set()
+  );
 
   useEffect(() => {
     if (!user) {
@@ -66,22 +70,20 @@ export default function OrdersPage() {
     const fetchOrders = async () => {
       try {
         setLoading(true);
+
+        // Create database instance
+        const clientDb = new ClientDatabaseOperations();
         const result = await clientDb.getUserOrders(user.id);
 
-        if (result.success && result.data) {
-          // Transform data: extract single product from products array
-          const formatted = result.data.map((order: any) => ({
+        if (result && Array.isArray(result)) {
+          // The PostgreSQL API returns data directly, not wrapped in success/data
+          const formatted = result.map((order: any) => ({
             ...order,
-            order_items: order.order_items.map((item: any) => ({
-              ...item,
-              products: Array.isArray(item.products)
-                ? item.products[0] ?? null
-                : item.products,
-            })),
+            order_items: order.order_items || [],
           }));
           setOrders(formatted);
         } else {
-          setError(result.error || "Failed to fetch orders");
+          setError("Failed to fetch orders");
         }
       } catch (err) {
         console.error("Error fetching orders:", err);
@@ -100,6 +102,47 @@ export default function OrdersPage() {
       month: "long",
       day: "numeric",
     });
+  };
+
+  const handleCancelOrder = async (orderId: string) => {
+    if (!confirm(t("orders.confirm_cancel"))) {
+      return;
+    }
+
+    setCancellingOrders((prev) => new Set(prev).add(orderId));
+
+    try {
+      const clientDb = new ClientDatabaseOperations();
+      await clientDb.cancelOrder(orderId);
+
+      // Update the order status in the local state
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === orderId ? { ...order, status: "cancelled" } : order
+        )
+      );
+
+      toast({
+        title: t("orders.order_cancelled"),
+        description: t("orders.order_cancelled_desc"),
+      });
+    } catch (error) {
+      console.error("Error cancelling order:", error);
+      toast({
+        title: t("orders.cancel_error"),
+        description:
+          error instanceof Error
+            ? error.message
+            : t("orders.cancel_error_desc"),
+        variant: "destructive",
+      });
+    } finally {
+      setCancellingOrders((prev) => {
+        const newSet = new Set(prev);
+        newSet.delete(orderId);
+        return newSet;
+      });
+    }
   };
 
   if (!user) {
@@ -240,9 +283,13 @@ export default function OrdersPage() {
                     <Button
                       variant="outline"
                       size="sm"
+                      onClick={() => handleCancelOrder(order.id)}
+                      disabled={cancellingOrders.has(order.id)}
                       className="border-2 border-red-200 text-red-600 hover:bg-red-50"
                     >
-                      {t("orders.cancel_order")}
+                      {cancellingOrders.has(order.id)
+                        ? t("orders.cancelling")
+                        : t("orders.cancel_order")}
                     </Button>
                   )}
                 </div>

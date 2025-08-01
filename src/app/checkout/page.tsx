@@ -156,15 +156,19 @@ export default function CheckoutPage() {
         notes: `Delivery option: ${deliveryOption}`,
         items: cartItems.map((item) => ({
           product_id: item.product_id,
-          artisan_id: item.products?.artisan_id || "", // Need to get this from product
+          artisan_id: item.products?.artisan_id || "",
           quantity: item.quantity,
           unit_price: item.products?.price || 0,
         })),
       };
 
+      console.log("Order data being sent:", orderData);
+
       const result = await clientDb.createOrder(orderData);
 
-      if (result.success && result.data) {
+      console.log("Order creation result:", result);
+
+      if (result && result.id) {
         // Clear cart after successful order
         await clearCart();
 
@@ -174,15 +178,18 @@ export default function CheckoutPage() {
         });
 
         // Redirect to order confirmation or orders page
-        router.push(`/orders?orderId=${result.data.id}`);
+        router.push(`/orders?orderId=${result.id}`);
       } else {
-        throw new Error(result.error || "Failed to create order");
+        throw new Error("Failed to create order - invalid response");
       }
     } catch (error) {
       console.error("Error placing order:", error);
       toast({
-        title: t("checkout.order_error"),
-        description: t("checkout.order_error"),
+        title: "Order Error",
+        description:
+          error instanceof Error
+            ? error.message
+            : "Failed to create order. Please try again.",
         variant: "destructive",
       });
     } finally {

@@ -629,6 +629,23 @@ export class DatabaseOperations {
     }
   }
 
+  async cancelOrder(orderId: string) {
+    try {
+      const result = await query(
+        "UPDATE orders SET status = 'cancelled', updated_at = NOW() WHERE id = $1 RETURNING *",
+        [orderId]
+      );
+
+      if (result.rows.length === 0) {
+        throw new Error("Order not found");
+      }
+
+      return result.rows[0];
+    } catch (error: any) {
+      throw new Error(`Failed to cancel order: ${error.message}`);
+    }
+  }
+
   // =============================================
   // REVIEW OPERATIONS
   // =============================================

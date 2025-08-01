@@ -379,6 +379,12 @@ export class ClientDatabaseOperations {
     return this.getOrders(userId, options);
   }
 
+  async cancelOrder(orderId: string) {
+    return this.apiCall(`/orders/${orderId}/cancel`, {
+      method: "POST",
+    });
+  }
+
   async getOrderById(orderId: string) {
     return this.apiCall(`/orders/detail/${orderId}`);
   }

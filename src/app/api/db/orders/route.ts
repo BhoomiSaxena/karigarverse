@@ -14,10 +14,26 @@ export const GET = withAuth(async (request) => {
       ? parseInt(searchParams.get("offset")!)
       : undefined;
 
+    // Get orders with order items and product details
     let queryText = `
-      SELECT o.*, 
-             COUNT(oi.id) as item_count,
-             array_agg(p.name) as product_names
+      SELECT 
+        o.*,
+        COALESCE(
+          json_agg(
+            json_build_object(
+              'id', oi.id,
+              'quantity', oi.quantity,
+              'unit_price', oi.unit_price,
+              'total_price', oi.total_price,
+              'products', json_build_object(
+                'id', p.id,
+                'name', p.name,
+                'images', p.images
+              )
+            )
+          ) FILTER (WHERE oi.id IS NOT NULL),
+          '[]'::json
+        ) as order_items
       FROM orders o
       LEFT JOIN order_items oi ON o.id = oi.order_id
       LEFT JOIN products p ON oi.product_id = p.id
