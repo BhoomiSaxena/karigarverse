@@ -54,7 +54,7 @@ export function ProductsProvider({ children }: { children: ReactNode }) {
       setError(null);
 
       const dbProducts = await db.getProducts({
-        isActive: true,
+        is_active: true,
         limit: 100, // Get more products for the context
       });
 
