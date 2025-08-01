@@ -49,11 +49,13 @@ import {
   Heart,
   Eye,
   Home,
+  Mic,
 } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useDatabase } from "@/contexts/DatabaseContext";
 import { clientDb } from "@/lib/database-client";
+import { VoiceInputModal } from "@/components/voice-input-modal";
 
 // Enhanced animation variants with proper typing
 const pageVariants: Variants = {
@@ -188,6 +190,15 @@ export default function AddProductPage() {
   const [newTag, setNewTag] = useState("");
   const [newMaterial, setNewMaterial] = useState("");
 
+  // Voice input states
+  const [isVoiceModalOpen, setIsVoiceModalOpen] = useState(false);
+  const [voiceModalConfig, setVoiceModalConfig] = useState<{
+    field: keyof ProductFormData | "newFeature" | "newTag" | "newMaterial";
+    label: string;
+    currentValue: string;
+    maxLength?: number;
+  } | null>(null);
+
   // Load categories on component mount
   useEffect(() => {
     const loadCategories = async () => {
@@ -245,6 +256,37 @@ export default function AddProductPage() {
         [dimension]: value,
       },
     }));
+  };
+
+  // Voice input handlers
+  const openVoiceModal = (
+    field: keyof ProductFormData | "newFeature" | "newTag" | "newMaterial",
+    label: string,
+    currentValue: string = "",
+    maxLength?: number
+  ) => {
+    setVoiceModalConfig({ field, label, currentValue, maxLength });
+    setIsVoiceModalOpen(true);
+  };
+
+  const handleVoiceApply = (transcript: string) => {
+    if (!voiceModalConfig) return;
+
+    const { field } = voiceModalConfig;
+
+    if (
+      field === "name" ||
+      field === "description" ||
+      field === "care_instructions"
+    ) {
+      handleInputChange(field, transcript);
+    } else if (field === "newFeature") {
+      setNewFeature(transcript);
+    } else if (field === "newTag") {
+      setNewTag(transcript);
+    } else if (field === "newMaterial") {
+      setNewMaterial(transcript);
+    }
   };
 
   // Enhanced image upload with preview
@@ -742,16 +784,34 @@ export default function AddProductPage() {
                           <FileText className="h-5 w-5 text-blue-500" />
                           Product Name *
                         </Label>
-                        <Input
-                          id="name"
-                          value={formData.name}
-                          onChange={(e) =>
-                            handleInputChange("name", e.target.value)
-                          }
-                          placeholder="e.g., Handcrafted Ceramic Vase with Traditional Patterns"
-                          className="border-2 border-gray-300 rounded-none text-lg py-3 focus:border-blue-500 transition-colors"
-                          required
-                        />
+                        <div className="relative">
+                          <Input
+                            id="name"
+                            value={formData.name}
+                            onChange={(e) =>
+                              handleInputChange("name", e.target.value)
+                            }
+                            placeholder="e.g., Handcrafted Ceramic Vase with Traditional Patterns"
+                            className="border-2 border-gray-300 rounded-none text-lg py-3 pr-12 focus:border-blue-500 transition-colors"
+                            required
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-blue-50"
+                            onClick={() =>
+                              openVoiceModal(
+                                "name",
+                                "Product Name",
+                                formData.name,
+                                100
+                              )
+                            }
+                          >
+                            <Mic className="h-4 w-4 text-blue-500" />
+                          </Button>
+                        </div>
                         {formData.name && (
                           <motion.p
                             className="text-sm text-green-600 mt-1 flex items-center gap-1"
@@ -767,10 +827,29 @@ export default function AddProductPage() {
                       <div className="md:col-span-2">
                         <Label
                           htmlFor="description"
-                          className="text-lg font-semibold flex items-center gap-2"
+                          className="text-lg font-semibold flex items-center gap-2 justify-between"
                         >
-                          <FileText className="h-5 w-5 text-blue-500" />
-                          Description *
+                          <span className="flex items-center gap-2">
+                            <FileText className="h-5 w-5 text-blue-500" />
+                            Description *
+                          </span>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                            onClick={() =>
+                              openVoiceModal(
+                                "description",
+                                "Product Description",
+                                formData.description,
+                                1000
+                              )
+                            }
+                          >
+                            <Mic className="h-4 w-4 mr-1" />
+                            Speak
+                          </Button>
                         </Label>
                         <Textarea
                           id="description"
@@ -1162,16 +1241,34 @@ export default function AddProductPage() {
                         Key Features
                       </Label>
                       <div className="flex gap-2 mb-4">
-                        <Input
-                          value={newFeature}
-                          onChange={(e) => setNewFeature(e.target.value)}
-                          placeholder="e.g., Dishwasher safe, Handcrafted details"
-                          className="border-2 border-gray-300 rounded-none text-lg py-3 focus:border-orange-500 transition-colors"
-                          onKeyPress={(e) =>
-                            e.key === "Enter" &&
-                            (e.preventDefault(), addFeature())
-                          }
-                        />
+                        <div className="relative flex-1">
+                          <Input
+                            value={newFeature}
+                            onChange={(e) => setNewFeature(e.target.value)}
+                            placeholder="e.g., Dishwasher safe, Handcrafted details"
+                            className="border-2 border-gray-300 rounded-none text-lg py-3 pr-12 focus:border-orange-500 transition-colors"
+                            onKeyPress={(e) =>
+                              e.key === "Enter" &&
+                              (e.preventDefault(), addFeature())
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-orange-50"
+                            onClick={() =>
+                              openVoiceModal(
+                                "newFeature",
+                                "Product Feature",
+                                newFeature,
+                                100
+                              )
+                            }
+                          >
+                            <Mic className="h-4 w-4 text-orange-500" />
+                          </Button>
+                        </div>
                         <motion.div
                           variants={buttonVariants}
                           whileHover="hover"
@@ -1233,16 +1330,34 @@ export default function AddProductPage() {
                         Materials Used
                       </Label>
                       <div className="flex gap-2 mb-4">
-                        <Input
-                          value={newMaterial}
-                          onChange={(e) => setNewMaterial(e.target.value)}
-                          placeholder="e.g., Clay, Natural fibers, Organic cotton"
-                          className="border-2 border-gray-300 rounded-none text-lg py-3 focus:border-orange-500 transition-colors"
-                          onKeyPress={(e) =>
-                            e.key === "Enter" &&
-                            (e.preventDefault(), addMaterial())
-                          }
-                        />
+                        <div className="relative flex-1">
+                          <Input
+                            value={newMaterial}
+                            onChange={(e) => setNewMaterial(e.target.value)}
+                            placeholder="e.g., Clay, Natural fibers, Organic cotton"
+                            className="border-2 border-gray-300 rounded-none text-lg py-3 pr-12 focus:border-orange-500 transition-colors"
+                            onKeyPress={(e) =>
+                              e.key === "Enter" &&
+                              (e.preventDefault(), addMaterial())
+                            }
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-2 top-1/2 -translate-y-1/2 p-2 hover:bg-orange-50"
+                            onClick={() =>
+                              openVoiceModal(
+                                "newMaterial",
+                                "Material",
+                                newMaterial,
+                                50
+                              )
+                            }
+                          >
+                            <Mic className="h-4 w-4 text-orange-500" />
+                          </Button>
+                        </div>
                         <motion.div
                           variants={buttonVariants}
                           whileHover="hover"
@@ -1368,10 +1483,29 @@ export default function AddProductPage() {
                     <div>
                       <Label
                         htmlFor="care_instructions"
-                        className="text-lg font-semibold flex items-center gap-2"
+                        className="text-lg font-semibold flex items-center justify-between gap-2"
                       >
-                        <Heart className="h-5 w-5 text-orange-500" />
-                        Care Instructions
+                        <span className="flex items-center gap-2">
+                          <Heart className="h-5 w-5 text-orange-500" />
+                          Care Instructions
+                        </span>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                          onClick={() =>
+                            openVoiceModal(
+                              "care_instructions",
+                              "Care Instructions",
+                              formData.care_instructions,
+                              500
+                            )
+                          }
+                        >
+                          <Mic className="h-4 w-4 mr-1" />
+                          Speak
+                        </Button>
                       </Label>
                       <Textarea
                         id="care_instructions"
@@ -1612,6 +1746,21 @@ export default function AddProductPage() {
           </motion.div>
         </motion.div>
       </main>
+
+      {/* Voice Input Modal */}
+      {isVoiceModalOpen && voiceModalConfig && (
+        <VoiceInputModal
+          isOpen={isVoiceModalOpen}
+          onClose={() => setIsVoiceModalOpen(false)}
+          onApply={handleVoiceApply}
+          title={`Voice Input for ${voiceModalConfig.label}`}
+          description={`Speak clearly to add text for ${voiceModalConfig.label.toLowerCase()}`}
+          placeholder={`Your spoken text for ${voiceModalConfig.label.toLowerCase()} will appear here...`}
+          initialValue={voiceModalConfig.currentValue}
+          field={voiceModalConfig.field}
+          maxLength={voiceModalConfig.maxLength}
+        />
+      )}
 
       <Footer />
     </div>
