@@ -54,6 +54,7 @@ import {
 import Link from "next/link";
 import Image from "next/image";
 import { useDatabase } from "@/contexts/DatabaseContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { clientDb } from "@/lib/database-client";
 import { VoiceInputModal } from "@/components/voice-input-modal";
 
@@ -177,6 +178,7 @@ export default function AddProductPage() {
   const router = useRouter();
   const { toast } = useToast();
   const { user, artisanProfile, loading } = useDatabase();
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState<ProductFormData>(initialFormData);
@@ -208,8 +210,10 @@ export default function AddProductPage() {
       } catch (error) {
         console.error("Error loading categories:", error);
         toast({
-          title: "Error",
-          description: "Failed to load categories",
+          title: t("product_form.toast_messages.categories_load_error"),
+          description: t(
+            "product_form.toast_messages.categories_load_error_message"
+          ),
           variant: "destructive",
         });
       }
@@ -297,8 +301,8 @@ export default function AddProductPage() {
     // Validate file type and size
     if (!file.type.startsWith("image/")) {
       toast({
-        title: "Invalid file type",
-        description: "Please select an image file.",
+        title: t("product_form.toast_messages.invalid_file_type"),
+        description: t("product_form.toast_messages.invalid_file_type_message"),
         variant: "destructive",
       });
       return;
@@ -306,8 +310,8 @@ export default function AddProductPage() {
 
     if (file.size > 5 * 1024 * 1024) {
       toast({
-        title: "File too large",
-        description: "Please select an image smaller than 5MB.",
+        title: t("product_form.toast_messages.file_too_large"),
+        description: t("product_form.toast_messages.file_too_large_message"),
         variant: "destructive",
       });
       return;
@@ -315,8 +319,10 @@ export default function AddProductPage() {
 
     if (formData.images.length >= 10) {
       toast({
-        title: "Image limit reached",
-        description: "You can upload a maximum of 10 images.",
+        title: t("product_form.toast_messages.image_limit_reached"),
+        description: t(
+          "product_form.toast_messages.image_limit_reached_message"
+        ),
         variant: "destructive",
       });
       return;
@@ -334,16 +340,16 @@ export default function AddProductPage() {
         }));
         setIsUploadingImage(false);
         toast({
-          title: "Image uploaded! 📸",
-          description: "Your image has been added successfully.",
+          title: t("product_form.toast_messages.image_uploaded"),
+          description: t("product_form.toast_messages.image_uploaded_message"),
         });
       };
       reader.readAsDataURL(file);
     } catch (error) {
       console.error("Error uploading image:", error);
       toast({
-        title: "Upload failed",
-        description: "Failed to upload image. Please try again.",
+        title: t("product_form.toast_messages.upload_failed"),
+        description: t("product_form.toast_messages.upload_failed_message"),
         variant: "destructive",
       });
       setIsUploadingImage(false);
@@ -356,8 +362,8 @@ export default function AddProductPage() {
       images: prev.images.filter((_, index) => index !== indexToRemove),
     }));
     toast({
-      title: "Image removed",
-      description: "Image has been removed from your product.",
+      title: t("product_form.toast_messages.image_removed"),
+      description: t("product_form.toast_messages.image_removed_message"),
     });
   };
 
@@ -370,8 +376,10 @@ export default function AddProductPage() {
       }));
       setNewFeature("");
       toast({
-        title: "Feature added! ✨",
-        description: `Added "${newFeature.trim()}" to product features.`,
+        title: t("product_form.toast_messages.feature_added"),
+        description: t("product_form.toast_messages.feature_added_message", {
+          feature: newFeature.trim(),
+        }),
       });
     }
   };
@@ -383,8 +391,10 @@ export default function AddProductPage() {
       features: prev.features.filter((_, index) => index !== indexToRemove),
     }));
     toast({
-      title: "Feature removed",
-      description: `Removed "${removedFeature}" from features.`,
+      title: t("product_form.toast_messages.feature_removed"),
+      description: t("product_form.toast_messages.feature_removed_message", {
+        feature: removedFeature,
+      }),
     });
   };
 
@@ -396,8 +406,10 @@ export default function AddProductPage() {
       }));
       setNewTag("");
       toast({
-        title: "Tag added! 🏷️",
-        description: `Added "${newTag.trim()}" tag.`,
+        title: t("product_form.toast_messages.tag_added"),
+        description: t("product_form.toast_messages.tag_added_message", {
+          tag: newTag.trim(),
+        }),
       });
     }
   };
@@ -409,8 +421,10 @@ export default function AddProductPage() {
       tags: prev.tags.filter((_, index) => index !== indexToRemove),
     }));
     toast({
-      title: "Tag removed",
-      description: `Removed "${removedTag}" tag.`,
+      title: t("product_form.toast_messages.tag_removed"),
+      description: t("product_form.toast_messages.tag_removed_message", {
+        tag: removedTag,
+      }),
     });
   };
 
@@ -582,7 +596,9 @@ export default function AddProductPage() {
             transition={{ duration: 2, repeat: Infinity }}
           >
             <Loader2 className="h-12 w-12 animate-spin mx-auto mb-4 text-blue-500" />
-            <p className="text-xl font-semibold">Loading your workspace...</p>
+            <p className="text-xl font-semibold">
+              {t("product_form.loading_workspace")}
+            </p>
           </motion.div>
         </main>
         <Footer />
@@ -607,10 +623,11 @@ export default function AddProductPage() {
             >
               <AlertCircle className="h-16 w-16 text-orange-500 mx-auto mb-6" />
             </motion.div>
-            <h2 className="text-3xl font-bold mb-4">Complete Your Profile</h2>
+            <h2 className="text-3xl font-bold mb-4">
+              {t("product_form.complete_profile")}
+            </h2>
             <p className="text-gray-600 mb-6 leading-relaxed">
-              To add products, you need to complete your artisan profile first.
-              This helps customers learn about you and your craft!
+              {t("product_form.complete_profile_message")}
             </p>
             <Link href="/artisan/profile">
               <motion.div
@@ -620,7 +637,7 @@ export default function AddProductPage() {
               >
                 <Button className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 text-lg border-2 border-black rounded-none">
                   <Store className="h-5 w-5 mr-2" />
-                  Complete Profile
+                  {t("product_form.complete_profile_button")}
                 </Button>
               </motion.div>
             </Link>
@@ -670,14 +687,14 @@ export default function AddProductPage() {
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
               </motion.div>
               <h2 className="text-2xl font-bold text-green-600 mb-2">
-                Product Created! 🎉
+                {t("product_form.success_title")}
               </h2>
               <p className="text-gray-600">
-                Your product is now live on the marketplace!
+                {t("product_form.success_message")}
               </p>
               <div className="flex items-center justify-center gap-2 mt-4 text-sm text-gray-500">
                 <Home className="h-4 w-4" />
-                <span>Redirecting to products page...</span>
+                <span>{t("product_form.redirecting")}</span>
               </div>
             </motion.div>
           </motion.div>
@@ -710,7 +727,7 @@ export default function AddProductPage() {
                     className="border-2 border-black rounded-none hover:bg-gray-100"
                   >
                     <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Products
+                    {t("product_form.back_to_products")}
                   </Button>
                 </motion.div>
               </Link>
@@ -719,7 +736,7 @@ export default function AddProductPage() {
               <div className="flex items-center gap-3">
                 <div className="text-right">
                   <p className="text-sm font-semibold text-gray-600">
-                    Form Completion
+                    {t("product_form.form_completion")}
                   </p>
                   <p className="text-lg font-bold text-blue-600">
                     {validation.completionPercentage}%
@@ -744,13 +761,12 @@ export default function AddProductPage() {
               >
                 <Sparkles className="h-8 w-8 text-purple-500" />
                 <h1 className="text-4xl font-bold text-gray-900">
-                  Create New Product
+                  {t("product_form.create_new_product")}
                 </h1>
                 <Sparkles className="h-8 w-8 text-purple-500" />
               </motion.div>
               <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-                Craft a beautiful listing that showcases your handmade creation.
-                Every detail matters in telling your product's unique story! ✨
+                {t("product_form.create_product_subtitle")}
               </p>
             </div>
           </motion.div>
@@ -768,10 +784,10 @@ export default function AddProductPage() {
                   <CardHeader className="pb-6 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-2xl">
                       <Package className="h-7 w-7" />
-                      Basic Information
+                      {t("product_form.basic_information")}
                     </CardTitle>
                     <CardDescription className="text-blue-100">
-                      The essential details that define your product
+                      {t("product_form.basic_information_desc")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
@@ -782,7 +798,7 @@ export default function AddProductPage() {
                           className="text-lg font-semibold flex items-center gap-2"
                         >
                           <FileText className="h-5 w-5 text-blue-500" />
-                          Product Name *
+                          {t("product_form.product_name_required")}
                         </Label>
                         <div className="relative">
                           <Input
@@ -791,7 +807,9 @@ export default function AddProductPage() {
                             onChange={(e) =>
                               handleInputChange("name", e.target.value)
                             }
-                            placeholder="e.g., Handcrafted Ceramic Vase with Traditional Patterns"
+                            placeholder={t(
+                              "product_form.product_name_placeholder"
+                            )}
                             className="border-2 border-gray-300 rounded-none text-lg py-3 pr-12 focus:border-blue-500 transition-colors"
                             required
                           />
@@ -831,7 +849,7 @@ export default function AddProductPage() {
                         >
                           <span className="flex items-center gap-2">
                             <FileText className="h-5 w-5 text-blue-500" />
-                            Description *
+                            {t("product_form.description")} *
                           </span>
                           <Button
                             type="button"
@@ -848,7 +866,7 @@ export default function AddProductPage() {
                             }
                           >
                             <Mic className="h-4 w-4 mr-1" />
-                            Speak
+                            {t("product_form.speak")}
                           </Button>
                         </Label>
                         <Textarea
@@ -857,7 +875,9 @@ export default function AddProductPage() {
                           onChange={(e) =>
                             handleInputChange("description", e.target.value)
                           }
-                          placeholder="Tell the story of your creation... What inspired you to make it? What makes it special? How is it crafted?"
+                          placeholder={t(
+                            "product_form.description_placeholder"
+                          )}
                           className="border-2 border-gray-300 rounded-none min-h-[150px] text-lg focus:border-blue-500 transition-colors resize-none"
                           required
                         />
@@ -884,7 +904,7 @@ export default function AddProductPage() {
                           className="text-lg font-semibold flex items-center gap-2"
                         >
                           <Palette className="h-5 w-5 text-blue-500" />
-                          Category *
+                          {t("product_form.category")} *
                         </Label>
                         <Select
                           value={formData.category_id}
@@ -946,10 +966,10 @@ export default function AddProductPage() {
                   <CardHeader className="pb-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-2xl">
                       <DollarSign className="h-7 w-7" />
-                      Pricing & Inventory
+                      {t("product_form.pricing_inventory")}
                     </CardTitle>
                     <CardDescription className="text-green-100">
-                      Set competitive prices and manage your stock
+                      {t("product_form.pricing_inventory_desc")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
@@ -960,7 +980,7 @@ export default function AddProductPage() {
                           className="text-lg font-semibold flex items-center gap-2"
                         >
                           <span className="text-green-600">₹</span>
-                          Current Price *
+                          {t("product_form.current_price")} *
                         </Label>
                         <Input
                           id="price"
@@ -1040,7 +1060,7 @@ export default function AddProductPage() {
                           className="text-lg font-semibold flex items-center gap-2"
                         >
                           <Package className="h-5 w-5 text-green-500" />
-                          Stock Quantity *
+                          {t("product_form.stock_quantity")} *
                         </Label>
                         <Input
                           id="stock"
@@ -1080,11 +1100,10 @@ export default function AddProductPage() {
                   <CardHeader className="pb-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-2xl">
                       <Camera className="h-7 w-7" />
-                      Product Images
+                      {t("product_form.product_images")}
                     </CardTitle>
                     <CardDescription className="text-purple-100">
-                      Showcase your product with stunning visuals (Max 10
-                      images, 5MB each)
+                      {t("product_form.product_images_desc")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6 space-y-6">
@@ -1107,12 +1126,12 @@ export default function AddProductPage() {
                           {isUploadingImage ? (
                             <>
                               <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                              Uploading...
+                              {t("product_form.uploading_image")}
                             </>
                           ) : (
                             <>
                               <Upload className="h-5 w-5 mr-2" />
-                              Upload Image
+                              {t("product_form.upload_image")}
                             </>
                           )}
                         </Button>
@@ -1125,7 +1144,7 @@ export default function AddProductPage() {
                         </div>
                         <div className="flex items-center gap-1">
                           <Eye className="h-4 w-4" />
-                          <span>Max 5MB each</span>
+                          <span>{t("product_form.max_images_note")}</span>
                         </div>
                       </div>
                     </div>
@@ -1206,13 +1225,13 @@ export default function AddProductPage() {
                           <ImageIcon className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                         </motion.div>
                         <h3 className="text-xl font-semibold text-gray-600 mb-2">
-                          No images yet
+                          {t("product_form.no_images_yet")}
                         </h3>
                         <p className="text-gray-500 mb-4">
-                          Add stunning photos to showcase your craft
+                          {t("product_form.add_photos_showcase")}
                         </p>
                         <p className="text-sm text-purple-600">
-                          💡 Tip: Use natural light for the best results!
+                          {t("product_form.natural_light_tip")}
                         </p>
                       </motion.div>
                     )}
@@ -1226,11 +1245,10 @@ export default function AddProductPage() {
                   <CardHeader className="pb-6 bg-gradient-to-r from-orange-500 to-red-500 text-white rounded-t-xl">
                     <CardTitle className="flex items-center gap-3 text-2xl">
                       <ShoppingBag className="h-7 w-7" />
-                      Product Details
+                      {t("product_form.product_details")}
                     </CardTitle>
                     <CardDescription className="text-orange-100">
-                      Add rich details that help customers understand your
-                      product
+                      {t("product_form.product_details_desc")}
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="p-6 space-y-8">
@@ -1238,14 +1256,14 @@ export default function AddProductPage() {
                     <div>
                       <Label className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Sparkles className="h-5 w-5 text-orange-500" />
-                        Key Features
+                        {t("product_form.key_features")}
                       </Label>
                       <div className="flex gap-2 mb-4">
                         <div className="relative flex-1">
                           <Input
                             value={newFeature}
                             onChange={(e) => setNewFeature(e.target.value)}
-                            placeholder="e.g., Dishwasher safe, Handcrafted details"
+                            placeholder={t("product_form.feature_placeholder")}
                             className="border-2 border-gray-300 rounded-none text-lg py-3 pr-12 focus:border-orange-500 transition-colors"
                             onKeyPress={(e) =>
                               e.key === "Enter" &&
@@ -1327,14 +1345,14 @@ export default function AddProductPage() {
                     <div>
                       <Label className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Package className="h-5 w-5 text-orange-500" />
-                        Materials Used
+                        {t("product_form.materials_used")}
                       </Label>
                       <div className="flex gap-2 mb-4">
                         <div className="relative flex-1">
                           <Input
                             value={newMaterial}
                             onChange={(e) => setNewMaterial(e.target.value)}
-                            placeholder="e.g., Clay, Natural fibers, Organic cotton"
+                            placeholder={t("product_form.material_placeholder")}
                             className="border-2 border-gray-300 rounded-none text-lg py-3 pr-12 focus:border-orange-500 transition-colors"
                             onKeyPress={(e) =>
                               e.key === "Enter" &&
@@ -1415,14 +1433,14 @@ export default function AddProductPage() {
                     <div>
                       <Label className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Tag className="h-5 w-5 text-orange-500" />
-                        Tags & Keywords
+                        {t("product_form.tags_keywords")}
                       </Label>
                       <div className="flex gap-2 mb-4">
                         <div className="relative flex-1">
                           <Input
                             value={newTag}
                             onChange={(e) => setNewTag(e.target.value)}
-                            placeholder="e.g., handmade, traditional, eco-friendly"
+                            placeholder={t("product_form.tag_placeholder")}
                             className="border-2 border-gray-300 rounded-none text-lg py-3 pr-12 focus:border-orange-500 transition-colors"
                             onKeyPress={(e) =>
                               e.key === "Enter" &&
@@ -1506,7 +1524,7 @@ export default function AddProductPage() {
                       >
                         <span className="flex items-center gap-2">
                           <Heart className="h-5 w-5 text-orange-500" />
-                          Care Instructions
+                          {t("product_form.care_instructions")}
                         </span>
                         <Button
                           type="button"
@@ -1523,7 +1541,7 @@ export default function AddProductPage() {
                           }
                         >
                           <Mic className="h-4 w-4 mr-1" />
-                          Speak
+                          {t("product_form.speak")}
                         </Button>
                       </Label>
                       <Textarea
@@ -1532,12 +1550,13 @@ export default function AddProductPage() {
                         onChange={(e) =>
                           handleInputChange("care_instructions", e.target.value)
                         }
-                        placeholder="How should customers care for this product? Include cleaning, storage, and maintenance tips..."
+                        placeholder={t(
+                          "product_form.care_instructions_placeholder"
+                        )}
                         className="border-2 border-gray-300 rounded-none text-lg min-h-[100px] focus:border-orange-500 transition-colors resize-none"
                       />
                       <p className="text-sm text-gray-500 mt-2">
-                        💡 Help customers keep your product beautiful for years
-                        to come
+                        {t("product_form.care_instructions_help")}
                       </p>
                     </div>
 
@@ -1549,7 +1568,7 @@ export default function AddProductPage() {
                           className="text-lg font-semibold flex items-center gap-2"
                         >
                           <Package className="h-5 w-5 text-orange-500" />
-                          Weight (kg)
+                          {t("product_form.weight")}
                         </Label>
                         <Input
                           id="weight"
@@ -1564,14 +1583,14 @@ export default function AddProductPage() {
                           className="border-2 border-gray-300 rounded-none text-lg py-3 focus:border-orange-500 transition-colors"
                         />
                         <p className="text-sm text-gray-500 mt-1">
-                          📦 Helps with accurate shipping calculations
+                          {t("product_form.weight_help")}
                         </p>
                       </div>
 
                       <div>
                         <Label className="text-lg font-semibold mb-3 flex items-center gap-2">
                           <Package className="h-5 w-5 text-orange-500" />
-                          Dimensions (cm)
+                          {t("product_form.dimensions")}
                         </Label>
                         <div className="grid grid-cols-3 gap-3">
                           <Input
@@ -1582,7 +1601,7 @@ export default function AddProductPage() {
                             onChange={(e) =>
                               handleDimensionChange("length", e.target.value)
                             }
-                            placeholder="Length"
+                            placeholder={t("product_form.length")}
                             className="border-2 border-gray-300 rounded-none text-sm py-3 focus:border-orange-500 transition-colors"
                           />
                           <Input
@@ -1593,7 +1612,7 @@ export default function AddProductPage() {
                             onChange={(e) =>
                               handleDimensionChange("width", e.target.value)
                             }
-                            placeholder="Width"
+                            placeholder={t("product_form.width")}
                             className="border-2 border-gray-300 rounded-none text-sm py-3 focus:border-orange-500 transition-colors"
                           />
                           <Input
@@ -1604,7 +1623,7 @@ export default function AddProductPage() {
                             onChange={(e) =>
                               handleDimensionChange("height", e.target.value)
                             }
-                            placeholder="Height"
+                            placeholder={t("product_form.height")}
                             className="border-2 border-gray-300 rounded-none text-sm py-3 focus:border-orange-500 transition-colors"
                           />
                         </div>
@@ -1638,11 +1657,10 @@ export default function AddProductPage() {
                               </div>
                               <div>
                                 <p className="text-xl font-bold text-green-600">
-                                  Ready to Launch! 🚀
+                                  {t("product_form.ready_to_submit")}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  Your product listing is complete and ready to
-                                  go live
+                                  {t("product_form.ready_to_submit")}
                                 </p>
                               </div>
                             </motion.div>
@@ -1659,14 +1677,13 @@ export default function AddProductPage() {
                               </div>
                               <div>
                                 <p className="text-xl font-bold text-orange-600">
-                                  Almost There!
+                                  {t("product_form.form_incomplete")}
                                 </p>
                                 <p className="text-sm text-gray-600">
                                   {validation.errors[0]}
                                 </p>
                                 <p className="text-xs text-gray-500 mt-1">
-                                  {validation.errors.length - 1} more fields to
-                                  complete
+                                  {t("product_form.validation_errors")}
                                 </p>
                               </div>
                             </motion.div>
@@ -1688,7 +1705,7 @@ export default function AddProductPage() {
                               disabled={isSubmitting}
                             >
                               <ArrowLeft className="h-5 w-5 mr-2" />
-                              Cancel
+                              {t("product_form.cancel")}
                             </Button>
                           </motion.div>
                         </Link>
@@ -1717,7 +1734,7 @@ export default function AddProductPage() {
                                   className="flex items-center"
                                 >
                                   <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                                  Creating Product...
+                                  {t("product_form.creating_product")}
                                 </motion.div>
                               ) : (
                                 <motion.div
@@ -1728,7 +1745,7 @@ export default function AddProductPage() {
                                   className="flex items-center"
                                 >
                                   <Save className="h-5 w-5 mr-2" />
-                                  Create Product
+                                  {t("product_form.create_product")}
                                 </motion.div>
                               )}
                             </AnimatePresence>
@@ -1741,7 +1758,7 @@ export default function AddProductPage() {
                     <div className="mt-6">
                       <div className="flex justify-between items-center mb-2">
                         <span className="text-sm font-medium text-gray-600">
-                          Form Completion
+                          {t("product_form.form_completion")}
                         </span>
                         <span className="text-sm font-bold text-blue-600">
                           {validation.completionPercentage}%
