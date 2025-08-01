@@ -122,9 +122,9 @@ export class SpeechService {
 
     // Better configuration for multilingual support
     this.recognition.maxAlternatives = 1;
-    if (this.config.lang === "hi-IN") {
-      this.recognition.grammars = null; // Allow natural speech for Hindi
-    }
+    
+    // Remove problematic grammar setting that causes TypeError
+    // The speech recognition will work fine without explicit grammar for Hindi
 
     this.recognition.onstart = () => {
       this.isListening = true;

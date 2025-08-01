@@ -105,43 +105,49 @@ export function VoiceInputModal({
     setIsSupported(isSpeechRecognitionSupported());
 
     if (isSpeechRecognitionSupported() || useAssemblyAI) {
-      speechServiceRef.current = new SpeechService({
-        lang: selectedLanguage === "hi" ? "hi-IN" : "en-US",
-        continuous: false,
-        interimResults: true,
-        useAssemblyAI: useAssemblyAI,
-        onResult: (text: string, isInterim: boolean) => {
-          if (isInterim) {
-            setInterimTranscript(text);
-          } else {
-            setTranscript((prev) => {
-              const newText = prev ? `${prev} ${text}` : text;
-              return newText.substring(0, maxLength);
-            });
-            setInterimTranscript("");
+      try {
+        speechServiceRef.current = new SpeechService({
+          lang: selectedLanguage === "hi" ? "hi-IN" : "en-US",
+          continuous: false,
+          interimResults: true,
+          useAssemblyAI: useAssemblyAI,
+          onResult: (text: string, isInterim: boolean) => {
+            if (isInterim) {
+              setInterimTranscript(text);
+            } else {
+              setTranscript((prev) => {
+                const newText = prev ? `${prev} ${text}` : text;
+                return newText.substring(0, maxLength);
+              });
+              setInterimTranscript("");
+              setIsProcessing(false);
+            }
+          },
+          onError: (errorMessage: string) => {
+            setError(errorMessage);
+            setIsListening(false);
             setIsProcessing(false);
-          }
-        },
-        onError: (errorMessage: string) => {
-          setError(errorMessage);
-          setIsListening(false);
-          setIsProcessing(false);
-        },
-        onStart: () => {
-          setIsListening(true);
-          setError(null);
-          setHasStarted(true);
-          if (useAssemblyAI) {
-            setIsProcessing(true);
-          }
-        },
-        onEnd: () => {
-          setIsListening(false);
-          if (useAssemblyAI) {
-            setIsProcessing(true);
-          }
-        },
-      });
+          },
+          onStart: () => {
+            setIsListening(true);
+            setError(null);
+            setHasStarted(true);
+            if (useAssemblyAI) {
+              setIsProcessing(true);
+            }
+          },
+          onEnd: () => {
+            setIsListening(false);
+            if (useAssemblyAI) {
+              setIsProcessing(true);
+            }
+          },
+        });
+      } catch (error) {
+        console.error("Failed to initialize speech service:", error);
+        setError("Failed to initialize speech recognition. Please try refreshing the page.");
+        setIsSupported(false);
+      }
     }
 
     return () => {
@@ -154,10 +160,15 @@ export function VoiceInputModal({
   // Update speech service when language or AI option changes
   useEffect(() => {
     if (speechServiceRef.current) {
-      speechServiceRef.current.updateConfig({
-        lang: selectedLanguage === "hi" ? "hi-IN" : "en-US",
-        useAssemblyAI: useAssemblyAI,
-      });
+      try {
+        speechServiceRef.current.updateConfig({
+          lang: selectedLanguage === "hi" ? "hi-IN" : "en-US",
+          useAssemblyAI: useAssemblyAI,
+        });
+      } catch (error) {
+        console.error("Failed to update speech service config:", error);
+        setError("Failed to update language settings. Please try again.");
+      }
     }
   }, [selectedLanguage, useAssemblyAI]);
 
